@@ -3802,38 +3802,33 @@ components:
       type: integer
       minimum: 1
       maximum: 3
+    ApiClassification:
+      type: string
+      enum:
+        - NONE
+        - U
+        - FOUO
+        - CUI
+        - C
+        - S
+        - TS
+        - SCI
     ApiConfiguration:
       type: object
-      additionalProperties: false
       properties:
         classification:
-          type: string
-          enum:
-            - NONE
-            - U
-            - FOUO
-            - CUI
-            - C
-            - S
-            - TS
-            - SCI
+          $ref: '#/components/schemas/ApiClassification'
         commit:
-          type: object
-          properties:
-            branch:
-              type: string
-            sha:
-              type: string
-            tag:
-              type: string
-            describe:
-              type: string
+          $ref: '#/components/schemas/CommitObject'
         version:
-          type: string
+          $ref: '#/components/schemas/ApiVersion'
+      additionalProperties: false
     ApiDefinition:
       oneOf:
         - type: object
         - type: array
+    ApiVersion:
+      type: string
     Asset:
       type: object
       required:
@@ -3849,38 +3844,31 @@ components:
       additionalProperties: false
       properties:
         assetId:
-          readOnly: true
-          type: string
+          $ref: '#/components/schemas/AssetId'
         name:
-          type: string
-          nullable: false
-          maxLength: 255
+           $ref: '#/components/schemas/AssetName'
         fqdn:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetFqdn'
         collection:
           $ref: '#/components/schemas/CollectionBasic'
         description:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetDescription'
         ip:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetIp'
         labelIds:
           type: array
           items:
             $ref: '#/components/schemas/LabelId'
         mac:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetMac'
         noncomputing:
-          type: boolean
+          $ref: '#/components/schemas/AssetNoncomputing'
         metadata:
           $ref: '#/components/schemas/Metadata'  
+    AssetName:
+      type: string
+      nullable: false
+      maxLength: 255
     AssetBasic:
       type: object
       required:
@@ -3889,9 +3877,9 @@ components:
       additionalProperties: false
       properties:
         assetId:
-          type: string
+          $ref: '#/components/schemas/AssetId'
         name:
-          type: string
+          $ref: '#/components/schemas/AssetName'
     AssetLabels:
       type: object
       required:
@@ -3901,10 +3889,9 @@ components:
       additionalProperties: false
       properties:
         assetId:
-          $ref: '#/components/schemas/String255'
+          $ref: '#/components/schemas/AssetId'
         name:
-          $ref: '#/components/schemas/String255'
-
+          $ref: '#/components/schemas/AssetName'
     AssetBasicProjected:
       type: object
       required:
@@ -3913,11 +3900,11 @@ components:
       additionalProperties: false
       properties:
         assetId:
-          type: string
+          $ref: '#/components/schemas/AssetId'
         name:
-          type: string
+          $ref: '#/components/schemas/AssetName'
         collectionId:
-          type: string  #This is redundant except when in response to a request that changed an Asset's collection. 
+          $ref: '#/components/schemas/CollectionId'
         assetLabelIds:
           type: array
           items:
@@ -3926,6 +3913,24 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserBasic'
+    AssetFqdn:
+      type: string
+      nullable: true
+      maxLength: 255
+    AssetDescription:
+      type: string
+      nullable: true
+      maxLength: 255
+    AssetIp:
+      type: string
+      nullable: true
+      maxLength: 255
+    AssetMac:
+      type: string
+      nullable: true
+      maxLength: 255
+    AssetNoncomputing:
+      type: boolean
     AssetCreateOrReplace:
       type: object
       required:
@@ -3939,51 +3944,42 @@ components:
       additionalProperties: false
       properties:
         name:
-          type: string
-          nullable: false
-          maxLength: 255
+          $ref: '#/components/schemas/AssetName'
         fqdn:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetFqdn'
         collectionId:
-          description: The collectionId mapped to this Asset
-          type: string
+          $ref: '#/components/schemas/CollectionId'
         description:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetDescription'
         ip:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetIp'
         labelIds:
           type: array
           items:
             $ref: '#/components/schemas/LabelId'
         mac:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetMac'
         noncomputing:
-          type: boolean
+          $ref: '#/components/schemas/AssetNoncomputing'
         metadata:
           $ref: '#/components/schemas/Metadata'
         stigs:
-          description: The benchmarkIds mapped to this Asset
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/CollectionStig'
     AssetForCollection:
       type: object
       additionalProperties: false
       properties:
         assetId:
-          type: string
+          $ref: '#/components/schemas/AssetId'
         name:
-          type: string
+          $ref: '#/components/schemas/AssetName'
     AssetId:
-      $ref: '#/components/schemas/StringIntId'
+      type: string
+      minLength: 1
+      maxLength: 10
+      pattern: "^[0-9]{1,10}$"
     AssetProjected:
       type: object
       required:
@@ -3999,36 +3995,25 @@ components:
       additionalProperties: false
       properties:
         assetId:
-          readOnly: true
-          type: string
+          $ref: '#/components/schemas/AssetId'
         name:
-          type: string
-          nullable: false
-          maxLength: 255
+          $ref: '#/components/schemas/AssetName'
         fqdn:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetFqdn'
         collection:
           $ref: '#/components/schemas/CollectionBasic'
         description:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetDescription'
         ip:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetIp'
         labelIds:
           type: array
           items:
             $ref: '#/components/schemas/LabelId'
         mac:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetMac'
         noncomputing:
-          type: boolean
+          $ref: '#/components/schemas/AssetNoncomputing'
         metadata:
           $ref: '#/components/schemas/Metadata'    
         statusStats:
@@ -4038,8 +4023,7 @@ components:
             stigCount:
               type: integer
             ruleCount:
-              type: integer
-              nullable: true
+              $ref: '#/components/schemas/RuleCount'
             acceptedCount:
               type: integer
               nullable: true
@@ -4053,13 +4037,9 @@ components:
               type: integer
               nullable: true
             minTs:
-              type: string
-              format: date-time
-              nullable: true
+              $ref: '#/components/schemas/MinTs'
             maxTs:
-              type: string
-              format: date-time
-              nullable: true
+              $ref: '#/components/schemas/MaxTs'
         stigs:
           type: array
           description: The benchmarkIds mapped to this Asset
@@ -4103,14 +4083,13 @@ components:
         - ruleCount
       properties:
         benchmarkId:
-          type: string
+          $ref: '#/components/schemas/BenchmarkId'
         revisionStr:
           $ref: '#/components/schemas/RevisionStrRaw'
         revisionDate:
-          type: string
-          format: date
+          $ref: '#/components/schemas/RevisionDate'
         ruleCount:
-          type: integer
+          $ref: '#/components/schemas/RuleCount'
     AssetStigSelection:
       description: |
         An array that specifies a list of Assets/STIG items.
@@ -4129,7 +4108,7 @@ components:
         - assetId
       properties:
         assetId:
-          $ref: '#/components/schemas/StringIntId'
+          $ref: '#/components/schemas/AssetId'
         stigs:
           type: array
           minItems: 1
@@ -4143,41 +4122,30 @@ components:
       additionalProperties: false
       properties:
         name:
-          type: string
-          nullable: false
-          maxLength: 255
+          $ref: '#/components/schemas/AssetName'
         fqdn:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetFqdn'
         collectionId:
-          description: The collectionId mapped to this Asset
-          type: string
+          $ref: '#/components/schemas/CollectionId'
         description:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetDescription'
         ip:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetIp'
         labelIds:
           type: array
           items:
             $ref: '#/components/schemas/LabelId'
         mac:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetMac'
         noncomputing:
-          type: boolean
+          $ref: '#/components/schemas/AssetNoncomputing'
         metadata:
           $ref: '#/components/schemas/Metadata'
         stigs:
           description: The benchmarkIds mapped to this Asset
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/BenchmarkId'
     BenchmarkId:
         type: string           
     Cci:
@@ -4794,6 +4762,11 @@ components:
           minimum: -1
           maximum: 50
           example: 5
+    CollectionId:
+      type: string
+      minLength: 1
+      maxLength: 10
+      pattern: "^[0-9]{1,10}$"
     CollectionProjected:
       type: object
       required:
@@ -4914,13 +4887,9 @@ components:
         benchmarkId:
           type: string
         minTs:
-          type: string
-          format: date-time
-          nullable: true
+          $ref: '#/components/schemas/MinTs'
         maxTs:
-          type: string
-          format: date-time
-          nullable: true
+          $ref: '#/components/schemas/MaxTs'
         rules:  
           type: object
           properties:
@@ -5020,7 +4989,7 @@ components:
         revisionPinned:
           type: boolean   
         ruleCount:
-          type: integer
+          $ref: '#/components/schemas/RuleCount'
     CollectionStigWithAssetCount:
       type: object
       additionalProperties: false
@@ -5074,7 +5043,7 @@ components:
         revisionPinned:
           type: boolean   
         ruleCount:
-          type: integer
+           $ref: '#/components/schemas/RuleCount'
         isDefault:
           type: boolean
     CollectionUpdate:
@@ -5105,7 +5074,27 @@ components:
     CommentaryStringNullable:
       type: string
       nullable: true
-      maxLength: 32767                
+      maxLength: 32767     
+    CommitObject:
+      type: object
+      properties:
+        branch:
+          $ref: '#/components/schemas/CommitBranch'
+        sha:
+          $ref: '#/components/schemas/CommitSha'
+        tag:
+          $ref: '#/components/schemas/CommitTag'
+        describe:
+          $ref: '#/components/schemas/CommitDescribe'           
+    CommitBranch:
+      type: string
+    CommitSha:
+      type: string
+    CommitTag:
+      type: string
+    CommitDescribe:
+      type: string
+  
     Date:
       type: string
       format: date
@@ -5478,7 +5467,7 @@ components:
         assets:
           type: integer
         ruleCount:
-          type: integer
+          $ref: '#/components/schemas/RuleCount'
     MetricsDetailAggStig:
       allOf:
         - $ref: '#/components/schemas/MetricsAggStig'
@@ -5549,9 +5538,9 @@ components:
             assessed:
               type: integer
             minTs:
-              $ref: '#/components/schemas/StringDateTimeNullable'
+              $ref: '#/components/schemas/MinTs'
             maxTs:
-              $ref: '#/components/schemas/StringDateTimeNullable'
+              $ref: '#/components/schemas/MaxTs'
             maxTouchTs:
               $ref: '#/components/schemas/StringDateTimeNullable'
             results:
@@ -5635,9 +5624,9 @@ components:
             assessed:
               type: integer
             minTs:
-              $ref: '#/components/schemas/StringDateTimeNullable'
+              $ref: '#/components/schemas/MinTs'
             maxTs:
-              $ref: '#/components/schemas/StringDateTimeNullable'
+              $ref: '#/components/schemas/MaxTs'
             maxTouchTs:
               $ref: '#/components/schemas/StringDateTimeNullable'
             results:
@@ -5688,6 +5677,14 @@ components:
                   type: integer
                 high:
                   type: integer
+    MinTs:
+      type: string
+      format: date-time
+      nullable: true
+    MaxTs:
+      type: string
+      format: date-time
+      nullable: true
     ResultEngine:
       type: object
       nullable: true
@@ -6430,6 +6427,9 @@ components:
             $ref: '#/components/schemas/CollectionStigWithIsDefault'
         rule:
           $ref: '#/components/schemas/RuleAbbr'
+    RevisionDate:
+      type: string
+      format: date
     Revision:
       type: object
       required:
@@ -6463,7 +6463,7 @@ components:
           type: string
           format: date
         ruleCount:
-          type: integer
+          $ref: '#/components/schemas/RuleCount'
         collectionIds:
           type: array
           items:
@@ -6520,6 +6520,9 @@ components:
           type: string
         severity:
           type: string
+    RuleCount:
+      type: integer
+      nullable: true
     RuleProjected:
       type: object
       required:
@@ -6627,7 +6630,7 @@ components:
           format: date
           nullable: true
         ruleCount:
-          type: integer
+          $ref: '#/components/schemas/RuleCount'
         collectionIds:
           type: array
           items:
