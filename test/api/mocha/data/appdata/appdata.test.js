@@ -18,9 +18,10 @@ const user =
 describe('Appdata tests using "admin" user ', () => {
   before(async function () {
     this.timeout(4000)
-    await utils.loadAppData()
     await utils.uploadTestStigs()
+    await utils.loadAppData()
     await utils.createDisabledCollectionsandAssets()
+    // done()
   })
   describe('GET - getAppData - /op/appdata', () => {
     it('Export application data', async () => {

@@ -12,20 +12,58 @@ const adminToken = config.adminToken
 const loadAppData = async () => {
   
   try {
-    const res = await axios.post(
-      `${config.baseUrl}/op/appdata?elevate=true`,
-      appdata,
-      {
-        headers: {
-          Authorization: `Bearer ${adminToken}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
+    const directoryPath = path.join(__dirname, '../../form-data-files/')
+    const appdataFilename = "appdata.json"
+    const formData = new FormData()
+    const filePath = path.join(directoryPath, appdataFilename)
+    formData.append('importFile', fs.createReadStream(filePath), {
+      appdataFilename,
+      contentType: 'multipart/form-data'
+    })
+    
+    const axiosConfig = {
+      method: 'post',
+      url: `${config.baseUrl}/op/appdata?elevate=true`,
+      headers: {
+        ...formData.getHeaders(),
+        Authorization: `Bearer ${adminToken}`
+      },
+      data: formData
+    }    
+    // try {
+      const response = await axios(axiosConfig)
+      console.log(`Successfully uploaded ${appdataFilename}`)
+      return response
+    // } catch (error) {
+      // console.error(`Failed to upload ${stigFile}:`, error)
+    // }    
+    // const res = await axios.post(
+    //   `${config.baseUrl}/op/appdata?elevate=true`,
+    //   appdata,
+    //   {
+    //     headers: {
+    //       Authorization: `Bearer ${adminToken}`,
+    //       'Content-Type': 'application/json'
+    //     }
+    //   }
+    // )
+
+
+
   } catch (e) {
     console.log(e)
   }
 }
+
+
+
+
+// try {
+//   const response = await axios(axiosConfig)
+//   console.log(`Successfully uploaded ${stigFile}`)
+// } catch (error) {
+//   console.error(`Failed to upload ${stigFile}:`, error)
+// }
 
 const loadBatchAppData = async () => {
   try {
