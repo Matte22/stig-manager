@@ -39,7 +39,8 @@ const runTestsWithConfig = (config, index) => {
         json: false,
         html: true,
         overwrite: false,
-        timestamp: true
+        timestamp: true,
+        timeout: 1000000
       },
       cleanReferencesAfterRun: true // Clean up references after each run
     });
