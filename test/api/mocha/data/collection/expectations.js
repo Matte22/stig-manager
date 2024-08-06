@@ -1,66 +1,7 @@
-{
-  "common": {
-    "collectionId": "21",
-    "collectionName": "Test Collection",
-    "collectionDescription": "This is a test collection",
-    "collectionOwner": "admin",
-    "collectionOwnerID": "87",
-    "benchmark": "VPN_SRG_TEST",
-    "checklistLength": "81",
-    "revisionStr": "V1R1",
-    "grantCheckUserId": "85",
-    "testCollection":{
-      "name": "Collection X",
-      "collectionId": "21",
-      "collectionMetadataKey": "pocName",
-      "collectionMetadataValue": "poc2Patched",
-      "owners": ["87", "1", "45"],
-      "assetIDs_testCollection":["29","62","42","154"],
-      "assetsWithHistory":["42","154"],
-      "validStigs": ["VPN_SRG_TEST","Windows_10_STIG_TEST"],
-      "labelCount": 2,
-      "lvl1LabelName": "test-label-lvl1",
-      "lvl1Label":"5130dc84-9a68-11ec-b1bc-0242ac110002",
-      "fullLabel":"755b8a28-9a68-11ec-b1bc-0242ac110002",
-      "fullLabelName": "test-label-full",
-      "labels": [
-          "755b8a28-9a68-11ec-b1bc-0242ac110002",
-          "5130dc84-9a68-11ec-b1bc-0242ac110002"
-      ],
-      "allMetadata": [{
-        "key": "pocEmail",
-        "value": "pocEmail@email.com"
-        },
-        {
-        "key": "pocName",               
-        "value": "poc2Patched"
-        },
-        {
-        "key": "pocPhone",
-        "value": "12342"
-        },
-        {
-        "key": "reqRar",
-        "value": "true"
-      }],
-      "reviewHistory":{
-        "assetId": "42",
-        "startDate": "1900-10-01",
-        "endDate": "2020-10-01",
-        "ruleId": "SV-106179r1_rule",
-        "status": "submitted"
-      },
-      "rulesWithHistoryCnt": 2,
-      "reviewHistoryRuleCnt": 2,
-      "reviewHistoryTotalCnt": 7,
-      "reviewHistory_endDateCnt": 6,
-      "reviewHistory_startAndEndDateCnt": 2,
-      "reviewHistory_startDateCnt": 2,
-      "reviewHistory_byStatusCnt": 3,
-      "reviewHistory_testAssetCnt": 5,
-      "reviewHistory_ruleIdCnt": 4
-    }
-  },
+//This data contains expected response data that varies by iteration "scenario" or "user" for each test case. These expectations are relative to the "referenceData.js" data used to construct the API requests. 
+
+
+const distinct = {
   "stigmanadmin": {
     "user": "admin",
     "userId": "87",
@@ -78,13 +19,15 @@
     "lvl1LabelUses": 1,
     "historyResponseStatus": 200,
     "assignedStigs": ["VPN_SRG_TEST"],
-    "assetCnt_testCollection": 4,
     "checklistCnt_testCollection": 6,
     "grantCnt_testCollection": 7,
-    "assetIDs_testCollection":["29","62","42","154"],
+    "assetIds":["29","62","42","154"],
     "validStigs": ["VPN_SRG_TEST","Windows_10_STIG_TEST"],
     "collectionIds": ["21"],
-    "testBenchmarkAssignedCount": 3
+    "testBenchmarkAssignedCount": 3,
+    "deleteCollectionId_admin": "84",
+    "canDeleteCollection": true,
+    "canModifyCollection": true
     },
   "lvl1":{
     "user": "lvl1",
@@ -101,14 +44,15 @@
     "fullLabelUses": 1,
     "lvl1LabelUses": 1,
     "historyResponseStatus": 403,
-    "assetCnt_testCollection": 2,
     "checklistCnt_testCollection": 3,
     "grantCnt_testCollection": 7,
     "assignedStigs": ["VPN_SRG_TEST"],
-    "assetIDs_testCollection":["42","154"],
+    "assetIds":["42","154"],
     "validStigs": ["VPN_SRG_TEST"],
     "collectionIds": ["21"],
-    "testBenchmarkAssignedCount": 2
+    "testBenchmarkAssignedCount": 2,
+    "canDeleteCollection": false,
+    "canModifyCollection": false
   },
   "lvl2": {
     "user": "admin",
@@ -126,13 +70,14 @@
     "lvl1LabelUses": 1,
     "historyResponseStatus": 200,
     "assignedStigs": ["VPN_SRG_TEST"],
-    "assetCnt_testCollection": 4,
     "checklistCnt_testCollection": 6,
     "grantCnt_testCollection": 7,
-    "assetIDs_testCollection":["29","62","42","154"],
+    "assetIds":["29","62","42","154"],
     "validStigs": ["VPN_SRG_TEST","Windows_10_STIG_TEST"],
     "collectionIds": ["21"],
-    "testBenchmarkAssignedCount": 3
+    "testBenchmarkAssignedCount": 3,
+    "canDeleteCollection": false,
+    "canModifyCollection": false
     },
   "lvl3": {
     "user": "admin",
@@ -150,13 +95,14 @@
     "lvl1LabelUses": 1,
     "historyResponseStatus": 200,
     "assignedStigs": ["VPN_SRG_TEST"],
-    "assetCnt_testCollection": 4,
     "checklistCnt_testCollection": 6,
     "grantCnt_testCollection": 7,
-    "assetIDs_testCollection":["29","62","42","154"],
+    "assetIds":["29","62","42","154"],
     "validStigs": ["VPN_SRG_TEST","Windows_10_STIG_TEST"],
     "collectionIds": ["21"],
-    "testBenchmarkAssignedCount": 3
+    "testBenchmarkAssignedCount": 3,
+    "canDeleteCollection": false,
+    "canModifyCollection": true
     },
   "lvl4": {
     "user": "admin",
@@ -174,12 +120,14 @@
     "lvl1LabelUses": 1, 
     "historyResponseStatus": 200,
     "assignedStigs": ["VPN_SRG_TEST"],
-    "assetCnt_testCollection": 4,
     "checklistCnt_testCollection": 6,
     "grantCnt_testCollection": 7,
-    "assetIDs_testCollection":["29","62","42","154"],
+    "assetIds":["29","62","42","154"],
     "validStigs": ["VPN_SRG_TEST","Windows_10_STIG_TEST"],
     "collectionIds": ["21"],
-    "testBenchmarkAssignedCount": 3
+    "testBenchmarkAssignedCount": 3,
+    "canDeleteCollection": true,
+    "canModifyCollection": true
     }
-  }
+}
+module.exports = distinct;
