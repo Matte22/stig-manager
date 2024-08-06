@@ -7,55 +7,10 @@ const environment = require('../environment.json')
 
 const adminToken = config.adminToken
 
-const loadAppData = async () => {
+const loadAppData = async (appdataFileName = 'appdata.json') => {
 
-  const appdataFile = path.join(__dirname, '../../form-data-files/appdata.json')
-  const formData = new FormData()
-  formData.append('importFile', fs.createReadStream(appdataFile), {
-    filename: 'appdata.json',
-    contentType: 'application/json'
-  })
-  const axiosConfig = {
-    method: 'post',
-    url: `${config.baseUrl}/op/appdata?elevate=true`,
-    headers: {
-      ...formData.getHeaders(),
-      Authorization: `Bearer ${adminToken}`
-    },
-    data: formData
-  }
-  try {
-    const response = await axios(axiosConfig)
-  } catch (error) {
-    console.error(`Failed to upload:`, error)
-  }
-}
-
-const loadBatchAppData = async () => {
-  const appdataFile = path.join(__dirname, '../../form-data-files/batch-test-data.json')
-  const formData = new FormData()
-  formData.append('importFile', fs.createReadStream(appdataFile), {
-    filename: 'appdata.json',
-    contentType: 'application/json'
-  })
-  const axiosConfig = {
-    method: 'post',
-    url: `${config.baseUrl}/op/appdata?elevate=true`,
-    headers: {
-      ...formData.getHeaders(),
-      Authorization: `Bearer ${adminToken}`
-    },
-    data: formData
-  }
-  try {
-    const response = await axios(axiosConfig)
-  } catch (error) {
-    console.error(`Failed to upload:`, error)
-  }
-}
-
-const loadMetaMetricsAppData = async () => {
-  const appdataFile = path.join(__dirname, '../../form-data-files/appdata-meta-metrics-with-pin.json')
+  //const appdataFile = path.join(__dirname, '../../form-data-files/appdata.json')
+  const appdataFile = path.join(__dirname, `../../form-data-files/${appdataFileName}`)
   const formData = new FormData()
   formData.append('importFile', fs.createReadStream(appdataFile), {
     filename: 'appdata.json',
@@ -546,7 +501,6 @@ const setDefaultRevision = async (collectionId, benchmarkId, revisionStr) => {
 
 module.exports = {
   loadAppData,
-  loadMetaMetricsAppData,
   uploadTestStigs,
   getStigByCollectionBenchmarkId,
   setDefaultRevision,
@@ -556,7 +510,6 @@ module.exports = {
   getAssetsByLabel,
   getUser,
   getReviews,
-  loadBatchAppData,
   getCollectionMetricsDetails,
   getChecklist,
   replaceStigRevision,

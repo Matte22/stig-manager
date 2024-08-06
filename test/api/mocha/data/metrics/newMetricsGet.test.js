@@ -9,19 +9,19 @@ const path = require('path')
 const fs = require('fs')
 const users = require('../../iterations.json')
 
-const metricsFilePath = path.join(__dirname, 'metricsGet.json');
-let metricsData = JSON.parse(fs.readFileSync(metricsFilePath, 'utf8'));
+// const metricsFilePath = path.join(__dirname, 'metricsGet.json');
+// let metricsData = JSON.parse(fs.readFileSync(metricsFilePath, 'utf8'));
 
 
 
-async function storeResponseData(testCaseName, username, responseData) {
-    if (!metricsData[testCaseName]) {
-      metricsData[testCaseName] = {};
-    }
-    metricsData[testCaseName][username] = responseData;
-    fs.writeFileSync(metricsFilePath, JSON.stringify(metricsData, null, 2), 'utf8');
+// async function storeResponseData(testCaseName, username, responseData) {
+//     if (!metricsData[testCaseName]) {
+//       metricsData[testCaseName] = {};
+//     }
+//     metricsData[testCaseName][username] = responseData;
+//     fs.writeFileSync(metricsFilePath, JSON.stringify(metricsData, null, 2), 'utf8');
 
-}
+// }
 function loadExpectedData(testName) {
     const filePath = path.join(__dirname, 'metricsGet.json');
     const allExpectedData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -114,7 +114,6 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/asset?benchmarkId=${environment.metrics.benchmark}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                    await storeResponseData(this.test.title, user.name, res.body)
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
@@ -528,7 +527,6 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/asset?assetId=${environment.testAsset.assetId}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                await storeResponseData(this.test.title, user.name, res.body)
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){

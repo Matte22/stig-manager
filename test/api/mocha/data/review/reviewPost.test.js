@@ -63,7 +63,7 @@ describe('POST - Review', () => {
 
             beforeEach(async function () {
               this.timeout(4000)
-                await utils.loadBatchAppData()
+                await utils.loadAppData("batch-test-data.json")
             })
             it(`POST batch review: target assets, whole stig`, async () => {
 
@@ -885,7 +885,7 @@ describe('POST - Review', () => {
               
           beforeEach(async function () {
             this.timeout(4000)
-            await utils.loadBatchAppData()
+            await utils.loadAppData("batch-test-data.json")
             await utils.uploadTestStigs()
             await utils.createDisabledCollectionsandAssets()
           })
