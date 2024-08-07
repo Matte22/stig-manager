@@ -5,18 +5,24 @@ const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const environment = require('../../environment.json')
-const users = require("../../iterations.json")
+const users = require("../../iterations.js")
+const expectations = require('./expectations.js')
+const reference = require('./referenceData.js')
 
 describe('DELETE - Stig', () => {
 
     for(const user of users){
+        if (expectations[user.name] === undefined){
+            it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+            return
+        }
         describe(`user:${user.name}`, () => {
             describe('DELETE - deleteStigById - /stigs/{benchmarkId}', () => {
 
                 beforeEach(async function () {
                     this.timeout(4000)
-                    await utils.loadAppData()
                     await utils.uploadTestStigs()
+                    await utils.loadAppData()
                 })
 
                 it('Deletes a STIG (*** and all revisions ***) - expect fail, stig is assigned', async () => {
@@ -48,8 +54,8 @@ describe('DELETE - Stig', () => {
 
                 beforeEach(async function () {
                     this.timeout(4000)
-                    await utils.loadAppData()
                     await utils.uploadTestStigs()
+                    await utils.loadAppData()
                 })
 
                 it('Deletes the specified revision of a STIG latest', async () => {

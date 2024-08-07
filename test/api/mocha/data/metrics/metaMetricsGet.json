@@ -236,6 +236,85 @@
           "medium": 612
         }
       }
+    },
+    "collectioncreator": {
+      "collections": 0,
+      "assets": 0,
+      "stigs": 0,
+      "checklists": 0,
+      "metrics": {
+        "maxTs": null,
+        "minTs": null,
+        "results": {
+          "fail": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "pass": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "error": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "fixed": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "unknown": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "notchecked": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "notselected": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "informational": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "notapplicable": {
+            "total": 0,
+            "resultEngine": 0
+          }
+        },
+        "assessed": 0,
+        "findings": {
+          "low": 0,
+          "high": 0,
+          "medium": 0
+        },
+        "statuses": {
+          "saved": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "accepted": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "rejected": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "submitted": {
+            "total": 0,
+            "resultEngine": 0
+          }
+        },
+        "maxTouchTs": null,
+        "assessments": 0,
+        "assessmentsBySeverity": {
+          "low": 0,
+          "high": 0,
+          "medium": 0
+        }
+      }
     }
   },
   "meta metrics detail - no agg - coll param": {
@@ -475,6 +554,85 @@
           "medium": 612
         }
       }
+    },
+    "collectioncreator": {
+      "collections": 0,
+      "assets": 0,
+      "stigs": 0,
+      "checklists": 0,
+      "metrics": {
+        "maxTs": null,
+        "minTs": null,
+        "results": {
+          "fail": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "pass": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "error": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "fixed": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "unknown": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "notchecked": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "notselected": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "informational": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "notapplicable": {
+            "total": 0,
+            "resultEngine": 0
+          }
+        },
+        "assessed": 0,
+        "findings": {
+          "low": 0,
+          "high": 0,
+          "medium": 0
+        },
+        "statuses": {
+          "saved": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "accepted": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "rejected": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "submitted": {
+            "total": 0,
+            "resultEngine": 0
+          }
+        },
+        "maxTouchTs": null,
+        "assessments": 0,
+        "assessmentsBySeverity": {
+          "low": 0,
+          "high": 0,
+          "medium": 0
+        }
+      }
     }
   },
   "meta metrics detail - no agg - bench param": {
@@ -712,6 +870,85 @@
           "low": 14,
           "high": 22,
           "medium": 126
+        }
+      }
+    },
+    "collectioncreator": {
+      "collections": 0,
+      "assets": 0,
+      "stigs": 0,
+      "checklists": 0,
+      "metrics": {
+        "maxTs": null,
+        "minTs": null,
+        "results": {
+          "fail": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "pass": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "error": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "fixed": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "unknown": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "notchecked": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "notselected": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "informational": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "notapplicable": {
+            "total": 0,
+            "resultEngine": 0
+          }
+        },
+        "assessed": 0,
+        "findings": {
+          "low": 0,
+          "high": 0,
+          "medium": 0
+        },
+        "statuses": {
+          "saved": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "accepted": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "rejected": {
+            "total": 0,
+            "resultEngine": 0
+          },
+          "submitted": {
+            "total": 0,
+            "resultEngine": 0
+          }
+        },
+        "maxTouchTs": null,
+        "assessments": 0,
+        "assessmentsBySeverity": {
+          "low": 0,
+          "high": 0,
+          "medium": 0
         }
       }
     }
@@ -3197,6 +3434,37 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 736
       }
+    },
+    "collectioncreator": {
+      "collections": 0,
+      "assets": 0,
+      "stigs": 0,
+      "checklists": 0,
+      "metrics": {
+        "maxTs": null,
+        "minTs": null,
+        "results": {
+          "fail": 0,
+          "pass": 0,
+          "unassessed": 0,
+          "notapplicable": 0
+        },
+        "assessed": 0,
+        "findings": {
+          "low": 0,
+          "high": 0,
+          "medium": 0
+        },
+        "statuses": {
+          "accepted": 0,
+          "rejected": 0,
+          "saved": 0,
+          "submitted": 0
+        },
+        "maxTouchTs": null,
+        "assessments": 0
+        
+      }
     }
   },
   "meta metrics summary - no agg - collectionId param": {
@@ -3289,6 +3557,37 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 736
       }
+    },
+    "collectioncreator": {
+      "collections": 0,
+      "assets": 0,
+      "stigs": 0,
+      "checklists": 0,
+      "metrics": {
+        "maxTs": null,
+        "minTs": null,
+        "results": {
+          "fail": 0,
+          "pass": 0,
+          "unassessed": 0,
+          "notapplicable": 0
+        },
+        "assessed": 0,
+        "findings": {
+          "low": 0,
+          "high": 0,
+          "medium": 0
+        },
+        "statuses": {
+          "accepted": 0,
+          "rejected": 0,
+          "saved": 0,
+          "submitted": 0
+        },
+        "maxTouchTs": null,
+        "assessments": 0
+        
+      }
     }
   },
   "meta metrics summary - no agg - benchmark param": {
@@ -3380,6 +3679,37 @@
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 162
+      }
+    },
+    "collectioncreator": {
+      "collections": 0,
+      "assets": 0,
+      "stigs": 0,
+      "checklists": 0,
+      "metrics": {
+        "maxTs": null,
+        "minTs": null,
+        "results": {
+          "fail": 0,
+          "pass": 0,
+          "unassessed": 0,
+          "notapplicable": 0
+        },
+        "assessed": 0,
+        "findings": {
+          "low": 0,
+          "high": 0,
+          "medium": 0
+        },
+        "statuses": {
+          "accepted": 0,
+          "rejected": 0,
+          "saved": 0,
+          "submitted": 0
+        },
+        "maxTouchTs": null,
+        "assessments": 0
+        
       }
     }
   },

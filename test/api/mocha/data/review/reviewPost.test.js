@@ -5,7 +5,9 @@ const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const environment = require('../../environment.json')
-const users = require('../../iterations.json')
+const users = require('../../iterations.js')
+const expectations = require('./expectations.js')
+const reference = require('./referenceData.js')
 
 const checkReviews = (reviews, postreview, user) => {
   for(let review of reviews){
@@ -56,6 +58,10 @@ const checkReviews = (reviews, postreview, user) => {
 describe('POST - Review', () => {
 
   for(const user of users){
+    if (expectations[user.name] === undefined){
+      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+      return
+    }
     describe(`user:${user.name}`, () => {
 
       describe('POST - postReviewBatch - /collections/{collectionId}/reviews', () => {
@@ -63,6 +69,7 @@ describe('POST - Review', () => {
 
             beforeEach(async function () {
               this.timeout(4000)
+                await utils.uploadTestStigs()
                 await utils.loadAppData("batch-test-data.json")
             })
             it(`POST batch review: target assets, whole stig`, async () => {
@@ -86,6 +93,10 @@ describe('POST - Review', () => {
                 .post(`/collections/${environment.testCollection.collectionId}/reviews`)
                 .set('Authorization', `Bearer ${user.token}`)
                 .send(postreview)
+              if(user.name === 'collectioncreator') {
+                expect(res).to.have.status(403)
+                return
+              }
               expect(res).to.have.status(200)
               expect(res.body).to.be.an('object')
               expect(res.body).to.have.property('failedValidation')
@@ -176,6 +187,10 @@ describe('POST - Review', () => {
                 .post(`/collections/${environment.testCollection.collectionId}/reviews`)
                 .set('Authorization', `Bearer ${user.token}`)
                 .send(postreview)
+              if(user.name === 'collectioncreator') {
+                expect(res).to.have.status(403)
+                return
+              }
               expect(res).to.have.status(200)
               expect(res.body).to.be.an('object')
               expect(res.body).to.have.property('failedValidation')
@@ -264,6 +279,10 @@ describe('POST - Review', () => {
                 .post(`/collections/${environment.testCollection.collectionId}/reviews`)
                 .set('Authorization', `Bearer ${user.token}`)
                 .send(postreview)
+              if(user.name === 'collectioncreator') {
+                expect(res).to.have.status(403)
+                return
+              }
               expect(res).to.have.status(200)
               expect(res.body).to.be.an('object')
               expect(res.body).to.have.property('failedValidation')
@@ -309,6 +328,10 @@ describe('POST - Review', () => {
                 .post(`/collections/${environment.testCollection.collectionId}/reviews`)
                 .set('Authorization', `Bearer ${user.token}`)
                 .send(postreview)
+              if(user.name === 'collectioncreator') {
+                expect(res).to.have.status(403)
+                return
+              }
               expect(res).to.have.status(200)
               expect(res.body).to.be.an('object')
               expect(res.body).to.have.property('failedValidation')
@@ -355,6 +378,10 @@ describe('POST - Review', () => {
                 .post(`/collections/${environment.testCollection.collectionId}/reviews`)
                 .set('Authorization', `Bearer ${user.token}`)
                 .send(postreview)
+              if(user.name === 'collectioncreator') {
+                expect(res).to.have.status(403)
+                return
+              }
               expect(res).to.have.status(200)
               expect(res.body).to.be.an('object')
               expect(res.body).to.have.property('failedValidation')
@@ -402,6 +429,10 @@ describe('POST - Review', () => {
                 .post(`/collections/${environment.testCollection.collectionId}/reviews`)
                 .set('Authorization', `Bearer ${user.token}`)
                 .send(postreview)
+              if(user.name === 'collectioncreator') {
+                expect(res).to.have.status(403)
+                return
+              }
               expect(res).to.have.status(200)
               expect(res.body).to.be.an('object')
               expect(res.body).to.have.property('failedValidation')
@@ -480,6 +511,10 @@ describe('POST - Review', () => {
                 .post(`/collections/${environment.testCollection.collectionId}/reviews`)
                 .set('Authorization', `Bearer ${user.token}`)
                 .send(postreview)
+              if(user.name === 'collectioncreator') {
+                expect(res).to.have.status(403)
+                return
+              }
               expect(res).to.have.status(200)
               expect(res.body).to.be.an('object')
               expect(res.body).to.have.property('failedValidation')
@@ -526,6 +561,10 @@ describe('POST - Review', () => {
                 .post(`/collections/${environment.testCollection.collectionId}/reviews`)
                 .set('Authorization', `Bearer ${user.token}`)
                 .send(postreview)
+              if(user.name === 'collectioncreator') {
+                expect(res).to.have.status(403)
+                return
+              }
               expect(res).to.have.status(200)
               expect(res.body).to.be.an('object')
               expect(res.body).to.have.property('failedValidation')
@@ -602,6 +641,10 @@ describe('POST - Review', () => {
                 .post(`/collections/${environment.testCollection.collectionId}/reviews`)
                 .set('Authorization', `Bearer ${user.token}`)
                 .send(postreview)
+              if(user.name === 'collectioncreator') {
+                expect(res).to.have.status(403)
+                return
+              }
               expect(res).to.have.status(200)
               expect(res.body).to.be.an('object')
               expect(res.body).to.have.property('failedValidation')
@@ -673,6 +716,10 @@ describe('POST - Review', () => {
                 .post(`/collections/${environment.testCollection.collectionId}/reviews`)
                 .set('Authorization', `Bearer ${user.token}`)
                 .send(postreview)
+              if(user.name === 'collectioncreator') {
+                expect(res).to.have.status(403)
+                return
+              }
               expect(res).to.have.status(200)
               expect(res.body).to.be.an('object')
               expect(res.body).to.have.property('failedValidation')
@@ -743,6 +790,10 @@ describe('POST - Review', () => {
                 .post(`/collections/${environment.testCollection.collectionId}/reviews`)
                 .set('Authorization', `Bearer ${user.token}`)
                 .send(postreview)
+              if(user.name === 'collectioncreator') {
+                expect(res).to.have.status(403)
+                return
+              }
               expect(res).to.have.status(200)
               expect(res.body).to.be.an('object')
               expect(res.body).to.have.property('failedValidation')
@@ -789,6 +840,10 @@ describe('POST - Review', () => {
                   .post(`/collections/${environment.testCollection.collectionId}/reviews`)
                   .set('Authorization', `Bearer ${user.token}`)
                   .send(postreview)
+                if(user.name === 'collectioncreator') {
+                  expect(res).to.have.status(403)
+                  return
+                }
                 expect(res).to.have.status(200)
                 expect(res.body).to.be.an('object')
                 expect(res.body).to.have.property('failedValidation')
@@ -851,6 +906,10 @@ describe('POST - Review', () => {
                 .post(`/collections/${environment.testCollection.collectionId}/reviews`)
                 .set('Authorization', `Bearer ${user.token}`)
                 .send(postreview)
+              if(user.name === 'collectioncreator') {
+                expect(res).to.have.status(403)
+                return
+              }
               expect(res).to.have.status(200)
               expect(res.body).to.be.an('object')
               expect(res.body).to.have.property('failedValidation')
@@ -885,8 +944,8 @@ describe('POST - Review', () => {
               
           beforeEach(async function () {
             this.timeout(4000)
-            await utils.loadAppData("batch-test-data.json")
             await utils.uploadTestStigs()
+            await utils.loadAppData("batch-test-data.json")
             await utils.createDisabledCollectionsandAssets()
           })
             it(`POST batch Review: target by assets, and one rule, expect validation failure - invalid result for status`, async () => {
@@ -908,6 +967,10 @@ describe('POST - Review', () => {
                 .post(`/collections/${environment.testCollection.collectionId}/reviews`)
                 .set('Authorization', `Bearer ${user.token}`)
                 .send(postreview)
+              if(user.name === 'collectioncreator') {
+                expect(res).to.have.status(403)
+                return
+              }
               expect(res).to.have.status(200)
               expect(res.body).to.be.an('object')
               expect(res.body).to.have.property('failedValidation')
@@ -957,6 +1020,10 @@ describe('POST - Review', () => {
               .post(`/collections/${environment.testCollection.collectionId}/reviews`)
               .set('Authorization', `Bearer ${user.token}`)
               .send(postreview)
+            if(user.name === 'collectioncreator') {
+              expect(res).to.have.status(403)
+              return
+            }
             expect(res).to.have.status(200)
             expect(res.body).to.be.an('object')
             expect(res.body).to.have.property('failedValidation')
@@ -1025,6 +1092,10 @@ describe('POST - Review', () => {
               .post(`/collections/${environment.testCollection.collectionId}/reviews`)
               .set('Authorization', `Bearer ${user.token}`)
               .send(postreview)
+            if(user.name === 'collectioncreator') {
+              expect(res).to.have.status(403)
+              return
+            }
             expect(res).to.have.status(200)
             expect(res.body).to.be.an('object')
             expect(res.body).to.have.property('failedValidation')
@@ -1093,6 +1164,10 @@ describe('POST - Review', () => {
             .post(`/collections/${environment.testCollection.collectionId}/reviews`)
             .set('Authorization', `Bearer ${user.token}`)
             .send(postreview)
+          if(user.name === 'collectioncreator') {
+            expect(res).to.have.status(403)
+            return
+          }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('object')
           expect(res.body).to.have.property('failedValidation')
@@ -1174,6 +1249,10 @@ describe('POST - Review', () => {
                 updated: 0
             }
           }
+          if(user.name === 'collectioncreator') {
+            expect(res).to.have.status(403)
+            return
+          }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('object')
           expect(res.body).to.deep.equal(expectedResponse)
@@ -1198,6 +1277,10 @@ describe('POST - Review', () => {
                 inserted: 0,
                 updated: 1
             }
+          }
+          if(user.name === 'collectioncreator') {
+            expect(res).to.have.status(403)
+            return
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('object')

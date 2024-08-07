@@ -7,9 +7,11 @@ const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const environment = require('../../environment.json')
-const users = require('../../iterations.json')
+const users = require('../../iterations.js')
 const fs = require('fs')
 const path = require('path')
+const expectations = require('./expectations.js')
+const reference = require('./referenceData.js')
 
 
 function loadExpectedData(testName) {
@@ -18,18 +20,21 @@ function loadExpectedData(testName) {
     return allExpectedData[testName];
 }
 
-
 describe('GET - MetaMetrics', function () { 
   before(async function () {
     this.timeout(4000)
-    await utils.loadAppData("appdata-meta-metrics-with-pin.json")
     await utils.uploadTestStigs()
+    await utils.loadAppData("appdata-meta-metrics-with-pin.json")
     await utils.createDisabledCollectionsandAssets()
   })
 
   for(let user of users) {
+    if (expectations[user.name] === undefined){
+        it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+        return
+    }
     describe(`user:${user.name}`, function () {
-
+        
         describe('GET - getMetricsDetailByMeta - /collections/meta/metrics/detail', function () {
 
             it('meta metrics detail - no agg - no params', async function () {
@@ -39,12 +44,16 @@ describe('GET - MetaMetrics', function () {
                     .set('Authorization', `Bearer ${user.token}`)
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
+
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
+                }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['collectioncreator'])
                 }
                 else 
                 {
@@ -66,6 +75,9 @@ describe('GET - MetaMetrics', function () {
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['collectioncreator'])
+                }
                 else 
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
@@ -85,6 +97,9 @@ describe('GET - MetaMetrics', function () {
                 else if(user.name === 'stigmanadmin')
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
+                }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['collectioncreator'])
                 }
                 else 
                 {
@@ -109,6 +124,9 @@ describe('GET - MetaMetrics', function () {
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.eql([])
+                }
                 else 
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
@@ -127,6 +145,9 @@ describe('GET - MetaMetrics', function () {
                 else if(user.name === 'stigmanadmin')
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
+                }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.eql([])
                 }
                 else 
                 {
@@ -147,6 +168,9 @@ describe('GET - MetaMetrics', function () {
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.eql([])
+                }
                 else 
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
@@ -165,6 +189,9 @@ describe('GET - MetaMetrics', function () {
                 else if(user.name === 'stigmanadmin')
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
+                }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.eql([])
                 }
                 else 
                 {
@@ -189,6 +216,9 @@ describe('GET - MetaMetrics', function () {
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.eql([])
+                }
                 else 
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
@@ -208,6 +238,9 @@ describe('GET - MetaMetrics', function () {
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.eql([])
+                }
                 else 
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
@@ -226,6 +259,9 @@ describe('GET - MetaMetrics', function () {
                 else if(user.name === 'stigmanadmin')
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
+                }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.eql([])
                 }
                 else 
                 {
@@ -250,6 +286,9 @@ describe('GET - MetaMetrics', function () {
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['collectioncreator'])
+                }
                 else 
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
@@ -269,6 +308,9 @@ describe('GET - MetaMetrics', function () {
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['collectioncreator'])
+                }
                 else 
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
@@ -287,6 +329,9 @@ describe('GET - MetaMetrics', function () {
                 else if(user.name === 'stigmanadmin')
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
+                }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['collectioncreator'])
                 }
                 else 
                 {
@@ -311,6 +356,9 @@ describe('GET - MetaMetrics', function () {
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.eql([])
+                }
                 else 
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
@@ -329,6 +377,9 @@ describe('GET - MetaMetrics', function () {
                 else if(user.name === 'stigmanadmin')
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
+                }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.eql([])
                 }
                 else 
                 {
@@ -349,6 +400,9 @@ describe('GET - MetaMetrics', function () {
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.eql([])
+                }
                 else 
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
@@ -368,6 +422,9 @@ describe('GET - MetaMetrics', function () {
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.eql([])
+                }
                 else 
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
@@ -386,6 +443,9 @@ describe('GET - MetaMetrics', function () {
                 else if(user.name === 'stigmanadmin')
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
+                }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.eql([])
                 }
                 else 
                 {
@@ -410,6 +470,9 @@ describe('GET - MetaMetrics', function () {
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.eql([])
+                }
                 else 
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
@@ -428,6 +491,9 @@ describe('GET - MetaMetrics', function () {
                 else if(user.name === 'stigmanadmin')
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
+                }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.eql([])
                 }
                 else 
                 {
@@ -448,6 +514,9 @@ describe('GET - MetaMetrics', function () {
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.eql([])
+                }
                 else 
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
@@ -466,6 +535,9 @@ describe('GET - MetaMetrics', function () {
                 else if(user.name === 'stigmanadmin')
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
+                }
+                else if(user.name === "collectioncreator"){
+                    expect(res.body).to.eql([])
                 }
                 else 
                 {

@@ -25,7 +25,9 @@ const reference = {
     labelCount: 2,
     lvl1LabelName: "test-label-lvl1",
     lvl1Label: "5130dc84-9a68-11ec-b1bc-0242ac110002",
+    lvl1LabelAssetIds: ["42"],
     fullLabel: "755b8a28-9a68-11ec-b1bc-0242ac110002",
+    fullLabelAssetIds: ["62", "42"],
     fullLabelName: "test-label-full",
     labels: [
       "755b8a28-9a68-11ec-b1bc-0242ac110002",
@@ -127,3 +129,4 @@ const reference = {
 };
 
 module.exports = reference;
+ 

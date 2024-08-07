@@ -7,7 +7,7 @@
 // const environment = require('../../environment.json')
 // const path = require('path')
 // const fs = require('fs')
-// const users = require('../../iterations.json')
+// const users = require('../../iterations.js')
 
 // const metricsFilePath = path.join(__dirname, 'metricsGet.json');
 // let metricsData = JSON.parse(fs.readFileSync(metricsFilePath, 'utf8'));

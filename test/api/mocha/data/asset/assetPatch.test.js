@@ -5,30 +5,36 @@ const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const environment = require('../../environment.json')
-const users = require('../../iterations.json')
+const users = require('../../iterations.js')
+const expectations = require('./expectations.js')
+const reference = require('./referenceData.js')
 
 describe('PATCH - Asset', () => {
 
-  beforeEach(async function () {
-    this.timeout(4000)
-    await utils.loadAppData()
-    await utils.uploadTestStigs()
-    await utils.createDisabledCollectionsandAssets()
-  })
-
   for(const user of users){
+    if (expectations[user.name] === undefined){
+      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+      return
+    }
 
     describe(`user:${user.name}`, () => {
+
+      beforeEach(async function () {
+        this.timeout(4000)
+        await utils.uploadTestStigs()
+        await utils.loadAppData()
+        await utils.createDisabledCollectionsandAssets()
+      })
 
       describe(`updateAsset - /assets/{assetId}`, () => {
       
         it('Merge provided properties with an Asset - Change Collection - Fail for all users', async () => {
           const res = await chai
             .request(config.baseUrl)
-            .patch(`/assets/${environment.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
+            .patch(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token)
             .send({ 
-              "collectionId": environment.scrapLvl1User.userId,
+              "collectionId": reference.scrapLvl1User.userId,
               "description": "test desc",
               "ip": "1.1.1.1",
               "noncomputing": true,
@@ -46,10 +52,10 @@ describe('PATCH - Asset', () => {
         it('Merge provided properties with an Asset - Change Collection - valid for lvl3 and lvl4 only (IE works for admin for me)', async () => {
           const res = await chai
             .request(config.baseUrl)
-            .patch(`/assets/${environment.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
+            .patch(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token)
             .send({
-              "collectionId": environment.scrapCollection.collectionId,
+              "collectionId": reference.scrapCollection.collectionId,
               "description": "test desc",
               "ip": "1.1.1.1",
               "noncomputing": true,
@@ -60,19 +66,26 @@ describe('PATCH - Asset', () => {
                   "RHEL_7_STIG_TEST"
               ]
             })
-            if(user.name === 'lvl1' || user.name === 'lvl2'){
-              expect(res).to.have.status(403)
-              return
-            }
-            expect(res).to.have.status(200)
-            expect(res.body.collection.collectionId).to.equal(environment.scrapCollection.collectionId)
-            expect(res.body.labelIds).to.have.lengthOf(2)
-            for (const stigGrant of res.body.stigGrants) {
-              expect(stigGrant.users).to.have.lengthOf(0);
+          if(user.name === 'lvl1' || user.name === 'lvl2' || user.name === "collectioncreator"){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200)
+          expect(res.body.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
+          expect(res.body.labelIds).to.have.lengthOf(2)
+          for(const stig of res.body.stigs){
+            expect(stig.benchmarkId).to.be.oneOf([
+              'VPN_SRG_TEST',
+              'Windows_10_STIG_TEST',
+              'RHEL_7_STIG_TEST'
+            ])
+          }
+          for (const stigGrant of res.body.stigGrants) {
+            expect(stigGrant.users).to.have.lengthOf(0);
           }
 
           const effectedAsset = await utils.getAsset(res.body.assetId)
-          expect(effectedAsset.collection.collectionId).to.equal(environment.scrapCollection.collectionId)
+          expect(effectedAsset.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
           expect(effectedAsset.description).to.equal('test desc')
           expect(effectedAsset.labelIds).to.have.lengthOf(2)
           for (const stig of effectedAsset.stigs) {
@@ -89,10 +102,10 @@ describe('PATCH - Asset', () => {
         
           const res = await chai
             .request(config.baseUrl)
-            .patch(`/assets/${environment.scrapAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
+            .patch(`/assets/${reference.scrapAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token)
             .send({
-              "collectionId": environment.scrapCollection.collectionId,
+              "collectionId": reference.scrapCollection.collectionId,
               "description": "scrap",
               "ip": "1.1.1.1",
               "noncomputing": true,
@@ -108,13 +121,13 @@ describe('PATCH - Asset', () => {
                   "RHEL_7_STIG_TEST"
               ]
           })
-          if(user.name === 'lvl1' || user.name === 'lvl2'){
+          if(user.name === 'lvl1' || user.name === 'lvl2' || user.name === "collectioncreator"){
             expect(res).to.have.status(403)
             return
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('object')
-          expect(res.body.collection.collectionId).to.equal(environment.scrapCollection.collectionId)
+          expect(res.body.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
           expect(res.body.metadata).to.deep.equal({
             "pocName": "poc2Put",
             "pocEmail": "pocEmailPut@email.com",
@@ -123,7 +136,7 @@ describe('PATCH - Asset', () => {
           })
 
           const effectedAsset = await utils.getAsset(res.body.assetId)
-          expect(effectedAsset.collection.collectionId).to.equal(environment.scrapCollection.collectionId)
+          expect(effectedAsset.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
           expect(effectedAsset.description).to.equal('scrap')
           expect(effectedAsset.metadata).to.deep.equal({
             "pocName": "poc2Put",
@@ -139,14 +152,14 @@ describe('PATCH - Asset', () => {
         it('Delete Assets - expect success for valid users', async () => {
           const res = await chai
             .request(config.baseUrl)
-            .patch(`/assets?collectionId=${environment.testCollection.collectionId}`)
+            .patch(`/assets?collectionId=${reference.testCollection.collectionId}`)
             .set('Authorization', 'Bearer ' + user.token)
             .send({
               "operation": "delete",
               "assetIds": ["29","42"]
             })
         
-          if(user.name === 'lvl1' || user.name === 'lvl2'){
+          if(user.name === 'lvl1' || user.name === 'lvl2' || user.name === "collectioncreator"){
             expect(res).to.have.status(403)
             return
           }
@@ -165,7 +178,7 @@ describe('PATCH - Asset', () => {
         it('Delete Assets - assets not in collection', async () => {
             const res = await chai
               .request(config.baseUrl)
-              .patch(`/assets?collectionId=${environment.testCollection.collectionId}`)
+              .patch(`/assets?collectionId=${reference.testCollection.collectionId}`)
               .set('Authorization', 'Bearer ' + user.token)
               .send({
                 "operation": "delete",
@@ -191,19 +204,20 @@ describe('PATCH - Asset', () => {
         it('Merge provided properties with an Asset - Change metadata', async () => {
           const res = await chai
             .request(config.baseUrl)
-            .patch(`/assets/${environment.scrapAsset.assetId}/metadata`)
+            .patch(`/assets/${reference.scrapAsset.assetId}/metadata`)
             .set('Authorization', 'Bearer ' + user.token)
             .send({
               "testkey":"poc2Patched"
             })
-            if(user.name === 'lvl1' || user.name === 'lvl2'){
+
+            if(user.name === 'lvl1' || user.name === 'lvl2' || user.name === "collectioncreator"){
               expect(res).to.have.status(403)
               return
             }
             expect(res.body).to.deep.equal({
               "testkey": "poc2Patched",
             })
-            const effectedAsset = await utils.getAsset(environment.scrapAsset.assetId)
+            const effectedAsset = await utils.getAsset(reference.scrapAsset.assetId)
             expect(effectedAsset.metadata).to.deep.equal({
               "testkey": "poc2Patched"
             })

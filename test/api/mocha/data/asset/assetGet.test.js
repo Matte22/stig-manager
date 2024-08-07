@@ -6,7 +6,7 @@ const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const environment = require('../../environment.json')
 const xml2js = require('xml2js');
-const users = require('../../iterations.json')
+const users = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
 
@@ -14,12 +14,16 @@ const reference = require('./referenceData.js')
 describe('GET - Asset', () => {
   before(async function () {
     this.timeout(4000)
-    await utils.loadAppData()
     await utils.uploadTestStigs()
+    await utils.loadAppData()
     await utils.createDisabledCollectionsandAssets()
   })
 
   for(const user of users){
+    if (expectations[user.name] === undefined){
+      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+      return
+    }
 
     describe(`user:${user.name}`, () => {
       const distinct = expectations[user.name]
@@ -32,7 +36,7 @@ describe('GET - Asset', () => {
             .get(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "lvl1" || user.name === "lvl2"){
+          if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator"){
             expect(res).to.have.status(403)
             return
           }
@@ -73,7 +77,7 @@ describe('GET - Asset', () => {
             .get(`/assets/${reference.testAssetNoStigs.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "lvl1" || user.name === "lvl2"){
+          if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator"){
             expect(res).to.have.status(403)
             return
           }
@@ -108,6 +112,11 @@ describe('GET - Asset', () => {
             .get(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs`)
             .set('Authorization', 'Bearer ' + user.token)
 
+          if(user.name === "collectioncreator"){
+            expect(res).to.have.status(403)
+            return
+          }
+
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('object')        
           expect(res.body.name).to.eql(reference.testAsset.name)
@@ -136,7 +145,7 @@ describe('GET - Asset', () => {
             .get(`/assets/${reference.testAssetNoStigs.assetId}?projection=statusStats&projection=stigs`)
             .set('Authorization', 'Bearer ' + user.token)
 
-            if(user.name === "lvl1"){
+            if(user.name === "lvl1" || user.name === "collectioncreator"){
               expect(res).to.have.status(403)
               return
             }
@@ -168,6 +177,10 @@ describe('GET - Asset', () => {
             .get(`/assets/${reference.testAsset.assetId}/metadata`)
             .set('Authorization', 'Bearer ' + user.token)
 
+          if(user.name === "collectioncreator"){
+            expect(res).to.have.status(403)
+            return
+          }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('object')      
           expect(res.body.testkey).to.exist
@@ -180,7 +193,10 @@ describe('GET - Asset', () => {
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/metadata/keys`)
             .set('Authorization', 'Bearer ' + user.token)
-
+          if(user.name === "collectioncreator"){
+            expect(res).to.have.status(403)
+            return
+          }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array')
           expect(res.body).to.include(reference.testAsset.metadataKey)
@@ -194,7 +210,10 @@ describe('GET - Asset', () => {
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/metadata/keys/${reference.testAsset.metadataKey}`)
             .set('Authorization', 'Bearer ' + user.token)
-
+          if(user.name === "collectioncreator"){
+            expect(res).to.have.status(403)
+            return
+          }
           expect(res).to.have.status(200)
           expect(res.body).to.include(reference.testAsset.metadataValue)
         })
@@ -204,12 +223,16 @@ describe('GET - Asset', () => {
 
         it('Assets accessible to the requester (with STIG grants projection)', async () => {
           const res = await chai
-            .request(config.baseUrl).get(`/assets?collectionId=${reference.testCollection.collectionId}&benchmarkId=${reference.benchmark}`)
+            .request(config.baseUrl).get(`/assets?collectionId=${reference.testCollection.collectionId}&benchmarkId=${reference.benchmark}&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token)
+          if(user.name === "collectioncreator" || user.name === "lvl1" || user.name === "lvl2"){
+            expect(res).to.have.status(403)
+            return
+          }
           expect(res).to.have.status(200)
-          expect(res.body).to.be.an('array').of.length(3)
+          expect(res.body).to.be.an('array').of.length(distinct.assetsAvailableStigGrants.length)
           for(const asset of res.body){
-            expect(asset.assetId).to.be.oneOf(reference.testCollection.assetIds)
+            expect(asset.assetId).to.be.oneOf(distinct.assetsAvailableStigGrants)
           }
           const jsonData = res.body;
           const regex = new RegExp("asset")
@@ -224,7 +247,7 @@ describe('GET - Asset', () => {
             .request(config.baseUrl).get(`/assets?collectionId=${environment.testCollection.collectionId}&projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "lvl1" || user.name === "lvl2"){
+          if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator"){
             expect(res).to.have.status(403)
             return
           }
@@ -232,7 +255,7 @@ describe('GET - Asset', () => {
             expect(res).to.have.status(200)
           }
 
-          expect(res.body).to.be.an('array').of.length(4)
+          expect(res.body).to.be.an('array').of.length(distinct.assetIds.length)
         
           const jsonData = res.body;
           const assetMatchString = environment.assetMatchString
@@ -240,88 +263,57 @@ describe('GET - Asset', () => {
           
           for (let asset of jsonData){
             expect(asset.name).to.match(regex)
+            expect(asset.assetId).to.be.oneOf(distinct.assetIds)
 
-            if(res.request.url.includes('/projection=statusStats/')){
-              expect(asset.statusStats).to.exist;
-              if(asset.assetId === environment.testAsset.assetId){
-                if (res.request.url.includes('benchmarkId=')) {
-                  expect(asset.statusStats.ruleCount).to.eql(81);
-                } else {
-                  expect(asset.statusStats.ruleCount).to.eql(368);
-                }
-              }
+            expect(asset.statusStats).to.exist;
+            if(asset.assetId === reference.testAsset.assetId){
+                expect(asset.statusStats.ruleCount).to.eql(distinct.testAssetStats.ruleCount);
             }
-            if (res.request.url.includes('projection=stigs')) {
-              for(let stig of asset.stigs){
-                expect(stig.benchmarkId).to.be.oneOf(environment.testCollection.validStigs);
-              }
+            for(let stig of asset.stigs){
+              expect(stig.benchmarkId).to.be.oneOf(reference.testCollection.validStigs);
             }
-            if (res.request.url.includes('projection=stigGrants')) {
-              for(let grant of asset.stigGrants){
-                expect(grant.benchmarkId).to.be.oneOf(environment.testCollection.validStigs);
-              }
+            for(let grant of asset.stigGrants){
+              expect(grant.benchmarkId).to.be.oneOf(reference.testCollection.validStigs);
             }
           }
-
         })
 
         it('Assets accessible to the requester - labels', async () => {
           const res = await chai
-            .request(config.baseUrl).get(`/assets?collectionId=${environment.testCollection.collectionId}&labelId=${environment.testCollection.testLabel}`)
+            .request(config.baseUrl).get(`/assets?collectionId=${reference.testCollection.collectionId}&labelId=${reference.testCollection.fullLabel}`)
             .set('Authorization', 'Bearer ' + user.token)
 
+          if(user.name === "collectioncreator"){
+            expect(res).to.have.status(403)
+            return
+          }
           expect(res).to.have.status(200)
-          if(user.name === "lvl1"){
-            expect(res.body).to.be.an('array').of.length(1)
-          }
-          else{
-          expect(res.body).to.be.an('array').of.length(2)
-          }
-
+          expect(res.body).to.be.an('array').of.length(distinct.assetsAvailableFullLabel.length)
           for(let asset of res.body){
-            expect(asset.labelIds).to.include(environment.testCollection.testLabel)
+            expect(asset.labelIds).to.include(reference.testCollection.fullLabel)
           }
         })
 
-    it('Assets accessible to the requester - No StigGrants (for lvl1 user success)', async () => {
-      const res = await chai
-        .request(config.baseUrl).get(`/assets?collectionId=${environment.testCollection.collectionId}&benchmarkId=${environment.testCollection.benchmark}&projection=statusStats&projection=stigs`)
-        .set('Authorization', 'Bearer ' + user.token)
+        it('Assets accessible to the requester - No StigGrants (for lvl1 user success)', async () => {
+          const res = await chai
+            .request(config.baseUrl).get(`/assets?collectionId=${reference.testCollection.collectionId}&benchmarkId=${reference.benchmark}`)
+            .set('Authorization', 'Bearer ' + user.token)
 
-      expect(res).to.have.status(200)
-
-      if(user.name === "lvl1"){
-        expect(res.body).to.be.an('array').of.length(2)
-      }
-      else{
-        expect(res.body).to.be.an('array').of.length(3)
-      }
-      
-      const jsonData = res.body;
-      const assetMatchString = environment.assetMatchString
-      const regex = new RegExp(assetMatchString)
-      
-      for (let asset of jsonData){
-        expect(asset.name).to.match(regex)
-
-        if(res.request.url.includes('/projection=statusStats/')){
-          expect(asset.statusStats).to.exist;
-          if(asset.assetId === environment.testAsset.assetId){
-            if (res.request.url.includes('benchmarkId=')) {
-              expect(asset.statusStats.ruleCount).to.eql(81);
-            } else {
-              expect(asset.statusStats.ruleCount).to.eql(368);
-            }
+          if(user.name === "collectioncreator"){
+            expect(res).to.have.status(403)
+            return
           }
-        }
-        if (res.request.url.includes('projection=stigs')) {
-          for(let stig of asset.stigs){
-            expect(stig.benchmarkId).to.be.oneOf(environment.testCollection.validStigs);
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array').of.length(distinct.assetsAvailableBenchmark.length)
+          
+          const jsonData = res.body;
+          const regex = new RegExp("asset")
+          
+          for (let asset of jsonData){
+            expect(asset.name).to.match(regex)
+            expect(asset.assetId).to.be.oneOf(distinct.assetsAvailableBenchmark)
           }
-        }
-      }
-    })
-
+        })
       })
 
       describe('getChecklistByAsset - /assets/{assetId}/checklists', () => {
@@ -330,8 +322,13 @@ describe('GET - Asset', () => {
 
           const res = await chai
             .request(config.baseUrl)
-            .get(`/assets/${environment.testAsset.assetId}/checklists?benchmarkId=${environment.testCollection.benchmark}`)
+            .get(`/assets/${reference.testAsset.assetId}/checklists?benchmarkId=${reference.benchmark}`)
             .set('Authorization', 'Bearer ' + user.token)
+
+          if(user.name === "collectioncreator"){
+            expect(res).to.have.status(403)
+            return
+          }
 
           expect(res).to.have.status(200)
 
@@ -343,21 +340,20 @@ describe('GET - Asset', () => {
           let cklHostName = cklData.CHECKLIST.ASSET[0].HOST_NAME[0]
           let cklIStigs = cklData.CHECKLIST.STIGS[0].iSTIG
       
-          const assetMatchString = environment.assetMatchString
-          const regex = new RegExp(assetMatchString)
+          const regex = new RegExp("asset")
           expect(cklHostName).to.match(regex)
 
           for (let stig of cklIStigs){
             for(let stigData of stig.STIG_INFO[0].SI_DATA){
               if (stigData.SID_NAME[0] == 'stigid'){
                 currentStigId = stigData.SID_DATA[0]
-                expect(currentStigId).to.be.eql(environment.testCollection.benchmark)
+                expect(currentStigId).to.be.eql(reference.benchmark)
             }
             }
             let cklVulns = stig.VULN;
             expect(cklVulns).to.be.an('array');
             if (currentStigId == 'VPN_SRG_TEST') {
-                expect(cklVulns).to.be.an('array').of.length(environment.metrics.checklistLength);
+                expect(cklVulns).to.be.an('array').of.length(reference.checklistLength);
             }
           }
         })
@@ -366,25 +362,29 @@ describe('GET - Asset', () => {
             
             const res = await chai
               .request(config.baseUrl)
-              .get(`/assets/${environment.testAsset.assetId}/checklists?format=cklb`)
+              .get(`/assets/${reference.testAsset.assetId}/checklists?format=cklb`)
               .set('Authorization', 'Bearer ' + user.token)
+
+            if(user.name === "collectioncreator"){
+              expect(res).to.have.status(403)
+              return
+            }
       
             expect(res).to.have.status(200)
             let cklbData = res.body
             let cklbHostName = cklbData.target_data.host_name
             let cklbIStigs = cklbData.stigs
 
-            const assetMatchString = environment.assetMatchString
-            const regex = new RegExp(assetMatchString)
+            const regex = new RegExp("asset")
             expect(cklbHostName).to.match(regex)
 
             for (let stig of cklbIStigs){
               let stigId = stig.stig_id
-              expect(stigId).to.be.oneOf(environment.testCollection.validStigs)
+              expect(stigId).to.be.oneOf(reference.testCollection.validStigs)
               let cklbVulns = stig.rules;
               expect(cklbVulns).to.be.an('array');
               if (stigId == 'VPN_SRG_TEST') {
-                  expect(cklbVulns).to.be.an('array').of.length(environment.metrics.checklistLength);
+                  expect(cklbVulns).to.be.an('array').of.length(reference.checklistLength);
               }
             }
         })
@@ -393,30 +393,32 @@ describe('GET - Asset', () => {
 
           const res = await chai
             .request(config.baseUrl)
-            .get(`/assets/${environment.testAsset.assetId}/checklists?format=cklb&benchmarkId=${environment.testCollection.benchmark}&benchmarkId=Windows_10_STIG_TEST`)
+            .get(`/assets/${reference.testAsset.assetId}/checklists?format=cklb&benchmarkId=${reference.benchmark}&benchmarkId=Windows_10_STIG_TEST`)
             .set('Authorization', 'Bearer ' + user.token)
 
+          if(user.name === "collectioncreator"){
+            expect(res).to.have.status(403)
+            return
+          }
           if(user.name === "lvl1"){
             expect(res).to.have.status(400)
             return
           }
-         
           expect(res).to.have.status(200)
           let cklbData = res.body
           let cklbHostName = cklbData.target_data.host_name
           let cklbIStigs = cklbData.stigs
 
-          const assetMatchString = environment.assetMatchString
-          const regex = new RegExp(assetMatchString)
+          const regex = new RegExp("asset")
           expect(cklbHostName).to.match(regex)
 
           for (let stig of cklbIStigs){
             let stigId = stig.stig_id
-            expect(stigId).to.be.oneOf(environment.testCollection.validStigs)
+            expect(stigId).to.be.oneOf(reference.testCollection.validStigs)
             let cklbVulns = stig.rules;
             expect(cklbVulns).to.be.an('array');
             if (stigId == 'VPN_SRG_TEST') {
-                expect(cklbVulns).to.be.an('array').of.length(environment.metrics.checklistLength);
+                expect(cklbVulns).to.be.an('array').of.length(reference.checklistLength);
             }
           }
 
@@ -426,8 +428,13 @@ describe('GET - Asset', () => {
 
           const res = await chai
             .request(config.baseUrl)
-            .get(`/assets/${environment.testAsset.assetId}/checklists/`)
+            .get(`/assets/${reference.testAsset.assetId}/checklists/`)
             .set('Authorization', 'Bearer ' + user.token)
+
+          if(user.name === "collectioncreator"){
+            expect(res).to.have.status(403)
+            return
+          }
 
           expect(res).to.have.status(200)
 
@@ -440,21 +447,20 @@ describe('GET - Asset', () => {
           let cklHostName = cklData.CHECKLIST.ASSET[0].HOST_NAME[0]
           let cklIStigs = cklData.CHECKLIST.STIGS[0].iSTIG
 
-          const assetMatchString = environment.assetMatchString
-          const regex = new RegExp(assetMatchString)
+          const regex = new RegExp("asset")
           expect(cklHostName).to.match(regex)
 
           for (let stig of cklIStigs){
             for(let stigData of stig.STIG_INFO[0].SI_DATA){
               if (stigData.SID_NAME[0] == 'stigid'){
                 currentStigId = stigData.SID_DATA[0]
-                expect(currentStigId).to.be.oneOf(environment.testCollection.validStigs)
+                expect(currentStigId).to.be.oneOf(reference.testCollection.validStigs)
             }
             }
             let cklVulns = stig.VULN;
             expect(cklVulns).to.be.an('array');
             if (currentStigId == 'VPN_SRG_TEST') {
-                expect(cklVulns).to.be.an('array').of.length(environment.metrics.checklistLength);
+                expect(cklVulns).to.be.an('array').of.length(reference.checklistLength);
             }
           }
         })
@@ -463,9 +469,13 @@ describe('GET - Asset', () => {
             
             const res = await chai
               .request(config.baseUrl)
-              .get(`/assets/${environment.testAsset.assetId}/checklists?benchmarkId=${environment.testCollection.benchmark}&benchmarkId=Windows_10_STIG_TEST`)
+              .get(`/assets/${reference.testAsset.assetId}/checklists?benchmarkId=${reference.benchmark}&benchmarkId=Windows_10_STIG_TEST`)
               .set('Authorization', 'Bearer ' + user.token)
       
+            if(user.name === "collectioncreator"){
+              expect(res).to.have.status(403)
+              return
+            }
             if(user.name === "lvl1"){
               expect(res).to.have.status(400)
               return
@@ -482,21 +492,20 @@ describe('GET - Asset', () => {
             let cklHostName = cklData.CHECKLIST.ASSET[0].HOST_NAME[0]
             let cklIStigs = cklData.CHECKLIST.STIGS[0].iSTIG
       
-            const assetMatchString = environment.assetMatchString
-            const regex = new RegExp(assetMatchString)
+            const regex = new RegExp("asset")
             expect(cklHostName).to.match(regex)
       
             for (let stig of cklIStigs){
               for(let stigData of stig.STIG_INFO[0].SI_DATA){
                 if (stigData.SID_NAME[0] == 'stigid'){
                   currentStigId = stigData.SID_DATA[0]
-                  expect(currentStigId).to.be.oneOf(environment.testCollection.validStigs)
+                  expect(currentStigId).to.be.oneOf(reference.testCollection.validStigs)
               }
               }
               let cklVulns = stig.VULN;
               expect(cklVulns).to.be.an('array');
               if (currentStigId == 'VPN_SRG_TEST') {
-                  expect(cklVulns).to.be.an('array').of.length(environment.metrics.checklistLength);
+                  expect(cklVulns).to.be.an('array').of.length(reference.checklistLength);
               }
             }
         })
@@ -508,8 +517,13 @@ describe('GET - Asset', () => {
 
           const res = await chai
             .request(config.baseUrl)
-            .get(`/assets/${environment.testAsset.assetId}/checklists/${environment.testCollection.benchmark}/${environment.testCollection.revisionStr}?format=ckl`)
+            .get(`/assets/${reference.testAsset.assetId}/checklists/${reference.benchmark}/${reference.revisionStr}?format=ckl`)
             .set('Authorization', 'Bearer ' + user.token)
+
+          if(user.name === "collectioncreator"){
+            expect(res).to.have.status(204)
+            return
+          }
 
           expect(res).to.have.status(200)
 
@@ -522,21 +536,20 @@ describe('GET - Asset', () => {
           let cklHostName = cklData.CHECKLIST.ASSET[0].HOST_NAME[0]
           let cklIStigs = cklData.CHECKLIST.STIGS[0].iSTIG
 
-          const assetMatchString = environment.assetMatchString
-          const regex = new RegExp(assetMatchString)
+          const regex = new RegExp("asset")
           expect(cklHostName).to.match(regex)
 
           for (let stig of cklIStigs){
             for(let stigData of stig.STIG_INFO[0].SI_DATA){
               if (stigData.SID_NAME[0] == 'stigid'){
                 currentStigId = stigData.SID_DATA[0]
-                expect(currentStigId).to.be.eql(environment.testCollection.benchmark)
+                expect(currentStigId).to.be.eql(reference.benchmark)
             }
             }
             let cklVulns = stig.VULN;
             expect(cklVulns).to.be.an('array');
             if (currentStigId == 'VPN_SRG_TEST') {
-                expect(cklVulns).to.be.an('array').of.length(environment.metrics.checklistLength);
+                expect(cklVulns).to.be.an('array').of.length(reference.checklistLength);
             }
           }
         })
@@ -545,8 +558,13 @@ describe('GET - Asset', () => {
 
           const res = await chai
             .request(config.baseUrl)
-            .get(`/assets/${environment.testAsset.assetId}/checklists/${environment.testCollection.benchmark}/${environment.testCollection.revisionStr}?format=cklb`)
+            .get(`/assets/${reference.testAsset.assetId}/checklists/${reference.benchmark}/${reference.revisionStr}?format=cklb`)
             .set('Authorization', 'Bearer ' + user.token)
+
+          if(user.name === "collectioncreator"){
+            expect(res).to.have.status(204)
+            return
+          }
 
           expect(res).to.have.status(200)
         
@@ -554,17 +572,16 @@ describe('GET - Asset', () => {
           let cklbHostName = cklbData.target_data.host_name
           let cklbIStigs = cklbData.stigs
 
-          const assetMatchString = environment.assetMatchString
-          const regex = new RegExp(assetMatchString)
+          const regex = new RegExp("asset")
           expect(cklbHostName).to.match(regex)
 
           for (let stig of cklbIStigs){
             let stigId = stig.stig_id
-            expect(stigId).to.be.oneOf(environment.testCollection.validStigs)
+            expect(stigId).to.be.oneOf(reference.testCollection.validStigs)
             let cklbVulns = stig.rules;
             expect(cklbVulns).to.be.an('array');
             if (stigId == 'VPN_SRG_TEST') {
-                expect(cklbVulns).to.be.an('array').of.length(environment.metrics.checklistLength);
+                expect(cklbVulns).to.be.an('array').of.length(reference.checklistLength);
             }
           }
         })
@@ -573,11 +590,15 @@ describe('GET - Asset', () => {
 
           const res = await chai
             .request(config.baseUrl)
-            .get(`/assets/${environment.testAsset.assetId}/checklists/${environment.testCollection.benchmark}/${environment.testCollection.revisionStr}?format=json`)
+            .get(`/assets/${reference.testAsset.assetId}/checklists/${reference.benchmark}/${reference.revisionStr}?format=json`)
             .set('Authorization', 'Bearer ' + user.token)
 
+          if(user.name === "collectioncreator"){
+            expect(res).to.have.status(204)
+            return
+          }
           expect(res).to.have.status(200)
-          expect(res.body).to.be.an('array').of.length(environment.metrics.checklistLength)
+          expect(res.body).to.be.an('array').of.length(reference.checklistLength)
         })
       })
 
@@ -587,14 +608,16 @@ describe('GET - Asset', () => {
 
           const res = await chai
             .request(config.baseUrl)
-            .get(`/assets/${environment.testAsset.assetId}/stigs`)
+            .get(`/assets/${reference.testAsset.assetId}/stigs`)
             .set('Authorization', 'Bearer ' + user.token)
-
           expect(res).to.have.status(200)
-          expect(res.body).to.be.an('array')
+          if(user.name === "collectioncreator"){
+            expect(res.body).to.eql([])
+            return
+          }
           
           for(let stig of res.body){
-            expect(stig.benchmarkId).to.be.oneOf(environment.testCollection.validStigs)
+            expect(stig.benchmarkId).to.be.oneOf(reference.testCollection.validStigs)
           }
         })
       })
@@ -605,20 +628,20 @@ describe('GET - Asset', () => {
 
           const res = await chai
             .request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/labels/${environment.testCollection.testLabel}/assets`)
+            .get(`/collections/${reference.testCollection.collectionId}/labels/${reference.testCollection.fullLabel}/assets`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          expect(res).to.have.status(200)
-          if(user.name === "lvl1"){
-            expect(res.body).to.be.an('array').of.length(1)
-          }else{
-            expect(res.body).to.be.an('array').of.length(2)
+          if(user.name === "collectioncreator"){
+            expect(res).to.have.status(403)
+            return
           }
-          const assetMatchString = environment.assetMatchString
-          const regex = new RegExp(assetMatchString)
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array').of.length(distinct.assetsAvailableFullLabel.length)
+          
+          const regex = new RegExp("asset")
           for(let asset of res.body){
             expect(asset.name).to.match(regex)
-            expect(asset.assetId).to.be.oneOf(['42','62'])
+            expect(asset.assetId).to.be.oneOf(distinct.assetsAvailableFullLabel)
           }   
         })
       })
@@ -629,22 +652,24 @@ describe('GET - Asset', () => {
 
           const res = await chai
             .request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/stigs/${environment.testCollection.benchmark}/assets?projection=restrictedUserAccess`)
+            .get(`/collections/${reference.testCollection.collectionId}/stigs/${reference.benchmark}/assets?projection=restrictedUserAccess`)
             .set('Authorization', 'Bearer ' + user.token)
-
-          expect(res).to.have.status(200)
-          if(user.name === "lvl1"){
-            expect(res.body).to.be.an('array').of.length(2)
-          }else{
-            expect(res.body).to.be.an('array').of.length(3)
+            
+          if(user.name === "collectioncreator"){
+            expect(res).to.have.status(403)
+            return
           }
-          const assetMatchString = environment.assetMatchString
-          const regex = new RegExp(assetMatchString)
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array').of.length(distinct.assetsAvailableBenchmark.length)
+          const regex = new RegExp("asset")
           for(let asset of res.body){
             expect(asset.name).to.match(regex)
-
-            if(res.request.url.includes('/projection=restrictedUserAccess/')){
-              expect(asset.restrictedUserAccess).to.exist;
+            expect(asset.assetId).to.be.oneOf(distinct.assetsAvailableBenchmark)
+            expect(asset.restrictedUserAccess).to.exist
+            if(asset.restrictedUserAccess){
+              for(let user of asset.restrictedUserAccess){
+                expect(user.username).to.be.eql("lvl1")
+              }
             }
           }   
         })
@@ -652,41 +677,41 @@ describe('GET - Asset', () => {
 
           const res = await chai
             .request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/stigs/${environment.testCollection.benchmark}/assets?projection=restrictedUserAccess&labelId=${environment.lvl1.label}`)
+            .get(`/collections/${reference.testCollection.collectionId}/stigs/${reference.benchmark}/assets?labelId=${reference.testCollection.lvl1Label}`)
             .set('Authorization', 'Bearer ' + user.token)
 
+          if(user.name === "collectioncreator"){
+            expect(res).to.have.status(403)
+            return
+          }
           expect(res).to.have.status(200)
-          expect(res.body).to.be.an('array')
-          expect(res.body).to.be.an('array').of.length(1)
-          const assetMatchString = environment.assetMatchString
-          const regex = new RegExp(assetMatchString)
+          expect(res.body).to.be.an('array').of.length(reference.testCollection.lvl1LabelAssetIds.length)
+          for(const asset of res.body){
+            expect(asset.assetId).to.be.oneOf(reference.testCollection.lvl1LabelAssetIds)
+          }
+          const regex = new RegExp("asset")
           for(let asset of res.body){
             expect(asset.name).to.match(regex)
-            if(res.request.url.includes('/projection=restrictedUserAccess/')){
-              expect(asset.restrictedUserAccess).to.exist;
-            }
           }   
         })
         it('Assets in a Collection attached to a STIG - label', async () => {
 
           const res = await chai
             .request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/stigs/${environment.testCollection.benchmark}/assets?projection=restrictedUserAccess&labelId=${environment.testCollection.testLabel}`)
+            .get(`/collections/${reference.testCollection.collectionId}/stigs/${reference.benchmark}/assets?labelId=${reference.testCollection.fullLabel}`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          expect(res).to.have.status(200)
-          if(user.name === "lvl1"){
-            expect(res.body).to.be.an('array').of.length(1)
-          }else{
-            expect(res.body).to.be.an('array').of.length(2)
+          if(user.name === "collectioncreator"){
+            expect(res).to.have.status(403)
+            return
           }
-          const assetMatchString = environment.assetMatchString
-          const regex = new RegExp(assetMatchString)
+
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array').of.length(distinct.assetsAvailableFullLabel.length)
+
+          const regex = new RegExp("asset")
           for(let asset of res.body){
             expect(asset.name).to.match(regex)
-            if(res.request.url.includes('/projection=restrictedUserAccess/')){
-              expect(asset.restrictedUserAccess).to.exist;
-            }
           }   
         })
       })

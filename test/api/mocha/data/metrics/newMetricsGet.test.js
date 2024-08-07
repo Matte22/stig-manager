@@ -9,7 +9,9 @@ const utils = require('../../utils/testUtils')
 const environment = require('../../environment.json')
 const path = require('path')
 const fs = require('fs')
-const users = require('../../iterations.json')
+const users = require('../../iterations.js')
+const expectations = require('./expectations.js')
+const reference = require('./referenceData.js')
 
 
 // const metricsFilePath = path.join(__dirname, 'metricsGet.json');
@@ -35,27 +37,33 @@ function loadExpectedData(testName) {
 describe('GET - Metrics', function () { 
   before(async function () {
     this.timeout(4000)
-    await utils.loadAppData()
     await utils.uploadTestStigs()
+    await utils.loadAppData()
     await utils.createDisabledCollectionsandAssets()
 
     
   })
 
   for(const user of users){
+    if (expectations[user.name] === undefined){
+        it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+        return
+    }
     describe(`user:${user.name}`, function () {
 
         describe('GET - getMetricsDetailByCollection - /collections/{collectionId}/metrics/detail', function () {
-
-        
 
             it('Return detailed metrics for the specified Collection no param', async function () {
             const res = await chai.request(config.baseUrl)
                 .get(`/collections/${environment.testCollection.collectionId}/metrics/detail`)
                 .set('Authorization', `Bearer ${user.token}`)
-
-            const expectedData = loadExpectedData(this.test.title)
+            if(user.name === "collectioncreator"){
+                expect(res).to.have.status(403)
+                return
+            }
             expect(res).to.have.status(200)
+            const expectedData = loadExpectedData(this.test.title)
+          
             if(user.name === 'lvl1'){
                 expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
             }
@@ -70,8 +78,12 @@ describe('GET - Metrics', function () {
                 .get(`/collections/${environment.testCollection.collectionId}/metrics/detail?benchmarkId=${environment.metrics.benchmark}&assetId=${environment.testAsset.assetId}&labelName=${environment.testCollection.testLabelName}`)
                 .set('Authorization', `Bearer ${user.token}`)
 
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -89,8 +101,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/asset`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -104,8 +120,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/asset?assetId=${environment.testAsset.assetId}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -119,8 +139,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/asset?benchmarkId=${environment.metrics.benchmark}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -134,8 +158,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/asset?benchmarkId=${environment.metrics.benchmark}&assetId=${environment.testAsset.assetId}&labelId=${environment.testCollection.testLabel}&labelName=${environment.testCollection.testLabelName}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -149,8 +177,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/asset?labelId=${environment.testCollection.testLabel}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                    const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -164,8 +196,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/asset?labelName=${environment.metrics.labelFull}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -185,8 +221,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/collection`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -202,8 +242,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/collection?assetId=${environment.testAsset.assetId}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -218,8 +262,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/collection?labelId=${environment.testCollection.testLabel}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -233,8 +281,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/collection?labelName=${environment.metrics.labelFull}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -248,8 +300,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/collection?benchmarkId=${environment.metrics.benchmark}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -264,13 +320,15 @@ describe('GET - Metrics', function () {
 
             it('Return detail metrics - label agg', async function () {
 
-             
-
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/label`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -285,8 +343,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/label?benchmarkId=${environment.metrics.benchmark}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                    const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -301,8 +363,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/label?assetId=${environment.testAsset.assetId}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -317,8 +383,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/label?labelId=${environment.testCollection.testLabel}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -333,8 +403,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/label?labelName=${environment.testCollection.testLabelName}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -352,8 +426,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/stig`)
                     .set('Authorization', `Bearer ${user.token}`)
-                    const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -369,8 +447,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/stig?benchmarkId=${environment.metrics.benchmark}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -385,8 +467,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/stig?assetId=${environment.testAsset.assetId}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -401,8 +487,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/stig?labelId=${environment.testCollection.testLabel}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -417,8 +507,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/detail/stig?labelName=${environment.testCollection.testLabelName}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -440,8 +534,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -454,8 +552,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                 .get(`/collections/${environment.testCollection.collectionId}/metrics/summary?benchmarkId=${environment.metrics.benchmark}`)
                 .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -468,8 +570,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary?assetId=${environment.testAsset.assetId}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -482,8 +588,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary?labelId=${environment.testCollection.testLabel}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -496,9 +606,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary?labelName=${environment.testCollection.testLabelName}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
-
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -517,8 +630,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/asset`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -532,8 +649,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/asset?assetId=${environment.testAsset.assetId}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -547,8 +668,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/asset?benchmarkId=${environment.metrics.benchmark}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -563,8 +688,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/asset?labelId=${environment.testCollection.testLabel}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -578,8 +707,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/asset?labelName=${environment.metrics.labelFull}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -597,8 +730,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/collection`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -613,8 +750,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/collection?assetId=${environment.testAsset.assetId}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -629,8 +770,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/collection?labelId=${environment.testCollection.testLabel}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -644,8 +789,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/collection?labelName=${environment.metrics.labelFull}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -660,8 +809,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/collection?benchmarkId=${environment.metrics.benchmark}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -681,8 +834,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/label`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -697,8 +854,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/label?benchmarkId=${environment.metrics.benchmark}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -713,8 +874,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/label?assetId=${environment.testAsset.assetId}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -731,8 +896,12 @@ describe('GET - Metrics', function () {
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/label?labelId=${environment.testCollection.testLabel}`)
                     .set('Authorization', `Bearer ${user.token}`)
                    
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -748,8 +917,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/label?labelName=${environment.testCollection.testLabelName}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -765,13 +938,15 @@ describe('GET - Metrics', function () {
 
             it('Return summary metrics - stig agg', async function () {
 
-        
-
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/stig`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -786,8 +961,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/stig?benchmarkId=${environment.metrics.benchmark}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -802,8 +981,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/stig?assetId=${environment.testAsset.assetId}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -817,8 +1000,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/stig?labelId=${environment.testCollection.testLabel}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
@@ -833,8 +1020,12 @@ describe('GET - Metrics', function () {
                 const res = await chai.request(config.baseUrl)
                     .get(`/collections/${environment.testCollection.collectionId}/metrics/summary/stig?labelName=${environment.metrics.labelFull}`)
                     .set('Authorization', `Bearer ${user.token}`)
-                const expectedData = loadExpectedData(this.test.title)
+                if(user.name === "collectioncreator"){
+                    expect(res).to.have.status(403)
+                    return
+                }
                 expect(res).to.have.status(200)
+                const expectedData = loadExpectedData(this.test.title)
                 if(user.name === 'lvl1'){
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
