@@ -23,6 +23,10 @@ describe('DELETE - Collection ', () => {
   })
 
   for(const user of users){
+    if (expectations[user.name] === undefined){
+      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+      return
+    }
 
     describe(`user:${user.name}`, () => {
       const distinct = expectations[user.name]
@@ -146,7 +150,7 @@ describe('DELETE - Collection ', () => {
 
         it('History records - date', async () => {
             const res = await chai.request(config.baseUrl)
-                .delete(`/collections/${reference.testCollection.collectionId}/review-history?retentionDate=2020-10-01`)
+                .delete(`/collections/${reference.testCollection.collectionId}/review-history?retentionDate=${reference.testCollection.reviewHistory.endDate}`)
                 .set('Authorization', `Bearer ${user.token}`)
                 
             if(distinct.canModifyCollection === false){
@@ -155,12 +159,12 @@ describe('DELETE - Collection ', () => {
             }
   
             expect(res).to.have.status(200)
-            expect(res.body.HistoryEntriesDeleted).to.be.equal(6)
+            expect(res.body.HistoryEntriesDeleted).to.be.equal(reference.testCollection.reviewHistory.deletedEntriesByDate)
         })
 
         it('History records - date and asset', async () => {
             const res = await chai.request(config.baseUrl)
-                .delete(`/collections/${reference.testCollection.collectionId}/review-history?retentionDate=2020-10-01&assetId=${reference.testCollection.testAssetId}`)
+                .delete(`/collections/${reference.testCollection.collectionId}/review-history?retentionDate=${reference.testCollection.reviewHistory.endDate}&assetId=${reference.testCollection.testAssetId}`)
                 .set('Authorization', `Bearer ${user.token}`)
 
               if(distinct.canModifyCollection === false){
@@ -169,7 +173,7 @@ describe('DELETE - Collection ', () => {
               }
   
             expect(res).to.have.status(200)
-            expect(res.body.HistoryEntriesDeleted).to.be.equal(4)
+            expect(res.body.HistoryEntriesDeleted).to.be.equal(reference.testCollection.reviewHistory.deletedEntriesByDateAsset)
         })
       })
     })
