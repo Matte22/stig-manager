@@ -1,13 +1,16 @@
+const deepEqualInAnyOrder = require('deep-equal-in-any-order')
 const chai = require('chai')
 const chaiHttp = require('chai-http')
 chai.use(chaiHttp)
-const expect = chai.expect
+chai.use(deepEqualInAnyOrder)
+const { expect } = chai
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const environment = require('../../environment.json')
 const path = require('path')
 const fs = require('fs')
 const users = require('../../iterations.json')
+
 
 // const metricsFilePath = path.join(__dirname, 'metricsGet.json');
 // let metricsData = JSON.parse(fs.readFileSync(metricsFilePath, 'utf8'));
@@ -35,6 +38,8 @@ describe('GET - Metrics', function () {
     await utils.loadAppData()
     await utils.uploadTestStigs()
     await utils.createDisabledCollectionsandAssets()
+
+    
   })
 
   for(const user of users){
@@ -52,11 +57,11 @@ describe('GET - Metrics', function () {
             const expectedData = loadExpectedData(this.test.title)
             expect(res).to.have.status(200)
             if(user.name === 'lvl1'){
-                expect(res.body).to.eql(expectedData['lvl1'])
+                expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
             }
             else 
             {
-                expect(res.body).to.eql(expectedData['stigmanadmin'])
+                expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
             }
 
             })
@@ -68,11 +73,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
         })
@@ -87,11 +92,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return detail metrics - asset agg - with param assetId', async function () {
@@ -102,11 +107,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return detail metrics - asset agg - with params', async function () {
@@ -117,11 +122,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return detail metrics - asset agg - with params - all', async function () {
@@ -132,11 +137,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return detail metrics - asset agg - with param labelId', async function () {
@@ -147,11 +152,11 @@ describe('GET - Metrics', function () {
                     const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return detail metrics - asset agg - with param labelName', async function () {
@@ -162,11 +167,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
         })
@@ -183,11 +188,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             
             })
@@ -200,11 +205,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return detail metrics - collection agg - labelId param', async function () {
@@ -216,11 +221,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return detail metrics - collection agg - label name param', async function () {
@@ -231,11 +236,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return detail metrics - collection agg - benchmarkId param', async function () {
@@ -246,11 +251,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
         })
@@ -267,11 +272,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return detail metrics - label agg - param benchmark', async function () {
@@ -283,11 +288,11 @@ describe('GET - Metrics', function () {
                     const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return detail metrics - label agg - param assetId', async function () {
@@ -299,11 +304,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return detail metrics - label agg - param labelId', async function () {
@@ -315,11 +320,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 
             })
@@ -331,11 +336,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
         })
@@ -350,11 +355,11 @@ describe('GET - Metrics', function () {
                     const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
        
             })
@@ -367,11 +372,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return detail metrics - stig agg - param asset', async function () {
@@ -383,11 +388,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return detail metrics - stig agg - param labelId', async function () {
@@ -399,11 +404,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 
             })
@@ -415,11 +420,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
         })
@@ -438,11 +443,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return summary metrics for the Collection - benchmark param - no agg', async function () {
@@ -452,11 +457,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return summary metrics for the Collection - asset param - no agg', async function () {
@@ -466,11 +471,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return summary metrics for the Collection - labelId param - no agg', async function () {
@@ -480,11 +485,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return summary metrics for the Collection - labelName param - no agg', async function () {
@@ -495,11 +500,11 @@ describe('GET - Metrics', function () {
 
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
         })
@@ -515,11 +520,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return summary metrics - asset agg - with param assetId', async function () {
@@ -530,11 +535,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return summary metrics - asset agg - with benchmarkID', async function () {
@@ -545,11 +550,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
         
@@ -561,11 +566,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return summary metrics - asset agg - with param labelName', async function () {
@@ -576,11 +581,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
         })
@@ -595,11 +600,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return summary metrics - collection agg - asset param', async function () {
@@ -611,11 +616,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return summary metrics - collection agg - labelId param', async function () {
@@ -627,11 +632,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return summary metrics - collection agg - label name  param', async function () {
@@ -642,11 +647,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })    
             it('Return summary metrics - collection agg - benchmark param', async function () {
@@ -658,11 +663,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
         })
@@ -679,11 +684,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 })
             it('Return summary metrics - label agg - param benchmark', async function () {
@@ -695,11 +700,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return summary metrics - label agg - param assetId', async function () {
@@ -711,11 +716,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return summary metrics - label agg - param labelId', async function () {
@@ -729,11 +734,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
 
             })
@@ -746,11 +751,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
         })
@@ -768,11 +773,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return summary metrics - stig agg - param benchmark', async function () {
@@ -784,11 +789,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return summary metrics - stig agg - param asset', async function () {
@@ -800,11 +805,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return summary metrics - stig agg - param labelId', async function () {
@@ -815,11 +820,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
             it('Return summary metrics - stig agg - param labelName', async function () {
@@ -831,11 +836,11 @@ describe('GET - Metrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
         })

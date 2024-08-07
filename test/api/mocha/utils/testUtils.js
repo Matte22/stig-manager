@@ -7,6 +7,25 @@ const environment = require('../environment.json')
 
 const adminToken = config.adminToken
 
+
+// canidate for a function? (used to store responses for a test (metrics))
+/** const metricsFilePath = path.join(__dirname, 'metricsGet.json');
+let metricsData = JSON.parse(fs.readFileSync(metricsFilePath, 'utf8'));
+async function storeResponseData(testCaseName, username, responseData) {
+    if (!metricsData[testCaseName]) {
+      metricsData[testCaseName] = {};
+    }
+    metricsData[testCaseName][username] = responseData;
+    fs.writeFileSync(metricsFilePath, JSON.stringify(metricsData, null, 2), 'utf8');
+
+}
+function loadExpectedData(testName) {
+    const filePath = path.join(__dirname, 'metricsGet.json');
+    const allExpectedData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    return allExpectedData[testName];
+}*/
+
+
 const loadAppData = async (appdataFileName = 'appdata.json') => {
 
   //const appdataFile = path.join(__dirname, '../../form-data-files/appdata.json')

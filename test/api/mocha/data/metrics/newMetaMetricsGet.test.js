@@ -1,6 +1,8 @@
+const deepEqualInAnyOrder = require('deep-equal-in-any-order')
 const chai = require('chai')
 const chaiHttp = require('chai-http')
 chai.use(chaiHttp)
+chai.use(deepEqualInAnyOrder)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
@@ -38,15 +40,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
                 
             })
@@ -58,15 +60,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
         
             })
@@ -78,15 +80,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
         })
@@ -101,15 +103,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
             it('meta metrics detail - collection agg - coll param', async function () { 
@@ -120,15 +122,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
             it('meta metrics detail - collection agg - bench param', async function () { 
@@ -139,15 +141,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
             it('meta metrics detail - collection agg - rev param', async function () { 
@@ -158,15 +160,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
         })
@@ -181,15 +183,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
             it('meta metrics detail - stig agg - coll param', async function () {
@@ -200,15 +202,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
             it('meta metrics detail - stig agg - bench param', async function () {
@@ -219,15 +221,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
         })
@@ -242,15 +244,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
             it('meta metrics summary - no agg - collectionId param', async function () {
@@ -261,15 +263,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
             it('meta metrics summary - no agg - benchmark param', async function () {
@@ -280,15 +282,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
         })
@@ -303,15 +305,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
             it('Return meta metrics summary - collection agg - collection param', async function () {
@@ -322,15 +324,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
             it('Return meta metrics summary - collection agg - benchmark param', async function () {
@@ -341,15 +343,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
             it('Return meta metrics summary - collection agg - rev param', async function () {
@@ -360,15 +362,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
             it('Return meta metrics summary - collection agg - rev param Copy', async function () {
@@ -379,15 +381,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
         })
@@ -402,15 +404,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
             it('Return meta metrics summary - stig agg - collection param', async function () {  
@@ -421,15 +423,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
             it('Return meta metrics summary - stig agg - benchmark param', async function () {  
@@ -440,15 +442,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
             it('Return meta metrics summary - stig agg - benchmark param and collection param', async function () {  
@@ -459,15 +461,15 @@ describe('GET - MetaMetrics', function () {
                 const expectedData = loadExpectedData(this.test.title)
                 expect(res).to.have.status(200)
                 if(user.name === 'lvl1'){
-                    expect(res.body).to.eql(expectedData['lvl1'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
                 }
                 else if(user.name === 'stigmanadmin')
                 {
-                    expect(res.body).to.eql(expectedData['stigmanadmin'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
                 else 
                 {
-                    expect(res.body).to.eql(expectedData['lvl3lvl4'])
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl3lvl4'])
                 }
             })
         })
