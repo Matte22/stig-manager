@@ -4,14 +4,9 @@
 
 const reference = {
   collectionId: "21",
-  collectionName: "Test Collection",
-  collectionDescription: "This is a test collection",
-  collectionOwner: "admin",
-  collectionOwnerID: "87",
   benchmark: "VPN_SRG_TEST",
   checklistLength: "81",
   revisionStr: "V1R1",
-  grantCheckUserId: "85",
   testCollection: {
     name: "Collection X",
     collectionId: "21",
@@ -67,10 +62,6 @@ const reference = {
     reviewHistory_byStatusCnt: 3,
     reviewHistory_testAssetCnt: 5,
     reviewHistory_ruleIdCnt: 4,
-  },
-  deleteCollection: {
-    collectionId_adminOnly: "84",
-    collectionId: "85",
   },
   scrapCollection: {
     collectionId: "1",

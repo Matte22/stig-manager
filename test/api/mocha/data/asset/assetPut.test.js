@@ -24,7 +24,7 @@ describe('PUT - Asset', () => {
       return
     }
     describe(`user:${user.name}`, () => {
-
+      const distinct = expectations[user.name]
       describe(`replaceAsset -/assets/{assetId}`, () => {
         
         it('Set all properties of an Asset', async function () {
@@ -53,13 +53,12 @@ describe('PUT - Asset', () => {
               ]
           })
 
-          if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator"){
+          if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
             return
           }
-          else{
-            expect(res).to.have.status(200)
-          }
+          expect(res).to.have.status(200)
+          
           expect(res.body.statusStats).to.exist
           expect(res.body.stigs).to.be.an('array').of.length(3)
           for (let stig of res.body.stigs) {
@@ -115,13 +114,12 @@ describe('PUT - Asset', () => {
                   "RHEL_7_STIG_TEST"
               ]
             })
-            if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator"){
+            if(!distinct.canModifyAssets){
               expect(res).to.have.status(403)
               return
             }
-            else{
-              expect(res).to.have.status(200)
-            }
+            expect(res).to.have.status(200)
+            
        
             const effectedAsset = await utils.getAsset(res.body.assetId)
             expect(effectedAsset.collection.collectionId).to.equal(reference.testCollection.collectionId)
@@ -154,13 +152,13 @@ describe('PUT - Asset', () => {
                   "RHEL_7_STIG_TEST"
               ]
           })
-          if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator"){
+
+          if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
             return
           }
-          else{
-            expect(res).to.have.status(200)
-          }
+          expect(res).to.have.status(200)
+          
           expect(res.body.metadata).to.exist
           expect(res.body.metadata).to.have.property(reference.scrapAsset.metadataKey)
           expect(res.body.metadata[reference.scrapAsset.metadataKey]).to.equal(reference.scrapAsset.metadataValue)
@@ -201,13 +199,12 @@ describe('PUT - Asset', () => {
             .send({
               [reference.scrapAsset.metadataKey]: reference.scrapAsset.metadataValue
             })
-          if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator"){
+          if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
             return
           }
-          else{
-            expect(res).to.have.status(200)
-          }
+          expect(res).to.have.status(200)
+          
           expect(res.body).to.have.property(reference.scrapAsset.metadataKey)
           expect(res.body[reference.scrapAsset.metadataKey]).to.equal(reference.scrapAsset.metadataValue)
 
@@ -224,13 +221,12 @@ describe('PUT - Asset', () => {
             .set('Content-Type', 'application/json') 
             .send(`${JSON.stringify(reference.scrapAsset.metadataValue)}`)
 
-          if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator"){
+          if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
             return
           }
-          else{
-            expect(res).to.have.status(204)
-          }
+          
+          expect(res).to.have.status(204)
           const effectedAsset = await utils.getAsset(reference.scrapAsset.assetId)
           expect(effectedAsset.metadata).to.have.property(reference.scrapAsset.metadataKey)
         })
@@ -241,13 +237,11 @@ describe('PUT - Asset', () => {
           const res = await chai.request(config.baseUrl)
             .put(`/assets/${reference.scrapAsset.assetId}/stigs/${reference.scrapAsset.scrapBenchmark}`)
             .set('Authorization', 'Bearer ' + user.token)
-          if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator"){
+          if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
             return
           }
-          else{
-            expect(res).to.have.status(200)
-          }
+          expect(res).to.have.status(200)
           expect(res.body).to.be.an('array').of.length(3)
           for (let stig of res.body) {
             if (stig.benchmarkId === reference.scrapAsset.scrapBenchmark) {
@@ -270,13 +264,12 @@ describe('PUT - Asset', () => {
             .put(`/collections/${reference.testCollection.collectionId}/labels/${reference.testCollection.fullLabel}/assets`)
             .set('Authorization', 'Bearer ' + user.token)
             .send([reference.testAsset.assetId])
-          if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator"){
+          if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
             return
           }
-          else{
-            expect(res).to.have.status(200)
-          }
+         
+          expect(res).to.have.status(200)
           expect(res.body).to.be.an('array').of.length(1)
           expect(res.body[0].assetId).to.equal(reference.testAsset.assetId)
 

@@ -18,7 +18,7 @@ describe('PATCH - Asset', () => {
     }
 
     describe(`user:${user.name}`, () => {
-
+      const distinct = expectations[user.name]
       beforeEach(async function () {
         this.timeout(4000)
         await utils.uploadTestStigs()
@@ -66,7 +66,7 @@ describe('PATCH - Asset', () => {
                   "RHEL_7_STIG_TEST"
               ]
             })
-          if(user.name === 'lvl1' || user.name === 'lvl2' || user.name === "collectioncreator"){
+          if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
             return
           }
@@ -121,7 +121,7 @@ describe('PATCH - Asset', () => {
                   "RHEL_7_STIG_TEST"
               ]
           })
-          if(user.name === 'lvl1' || user.name === 'lvl2' || user.name === "collectioncreator"){
+          if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
             return
           }
@@ -159,7 +159,7 @@ describe('PATCH - Asset', () => {
               "assetIds": ["29","42"]
             })
         
-          if(user.name === 'lvl1' || user.name === 'lvl2' || user.name === "collectioncreator"){
+          if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
             return
           }
@@ -210,7 +210,7 @@ describe('PATCH - Asset', () => {
               "testkey":"poc2Patched"
             })
 
-            if(user.name === 'lvl1' || user.name === 'lvl2' || user.name === "collectioncreator"){
+            if(!distinct.canModifyAssets){
               expect(res).to.have.status(403)
               return
             }

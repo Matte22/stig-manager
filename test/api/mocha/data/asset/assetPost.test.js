@@ -23,7 +23,7 @@ describe('POST - Asset', () => {
       return
     }
     describe(`user:${user.name}`, () => {
-  
+      const distinct = expectations[user.name]
       describe(`createAsset - /assets`, () => {
 
         it('Create an Asset (with stigs projection)', async () => {
@@ -48,13 +48,12 @@ describe('POST - Asset', () => {
             }
           )
           
-          if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator"){
+          if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
             return
           }
-          else{
             expect(res).to.have.status(201)
-          }
+          
           expect(assetGetToPost(res.body)).to.eql(res.request._data)
 
           const effectedAsset = await utils.getAsset(res.body.assetId)
@@ -87,13 +86,12 @@ describe('POST - Asset', () => {
               stigs: reference.testCollection.validStigs
             })
           
-            if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator"){
+            if(!distinct.canModifyAssets){
               expect(res).to.have.status(403)
               return
             }
-            else{
-              expect(res).to.have.status(201)
-            }
+            expect(res).to.have.status(201)
+            
             expect(res.body).to.have.property('statusStats')
             expect(res.body.statusStats.ruleCount).to.equal(reference.testAsset.stats.ruleCount)
 
@@ -124,13 +122,13 @@ describe('POST - Asset', () => {
               stigs: reference.testCollection.validStigs
             })
           
-            if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator"){
-              expect(res).to.have.status(403)
-              return
-            }
-            else{
-              expect(res).to.have.status(201)
-            }
+          if(!distinct.canModifyAssets){
+            expect(res).to.have.status(403)
+            return
+          }
+          
+          expect(res).to.have.status(201)
+           
           for(const stig of res.body.stigGrants) {
             expect(stig.benchmarkId).to.be.oneOf(reference.testCollection.validStigs)
           }
