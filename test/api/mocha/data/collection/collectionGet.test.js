@@ -141,18 +141,10 @@ describe('GET - Collection', () => {
               .get(`/collections?name=${'delete'}&name-match=contains`)
               .set('Authorization', `Bearer ${user.token}`)
           expect(res).to.have.status(200)
-          // if(user.name === 'stigmanadmin'){
           expect(res.body).to.have.lengthOf(distinct.collectionDeleteMatchCnt)
           if (distinct.collectionDeleteMatchCnt > 0){
             expect(res.body[0].name).to.have.string('delete')
           }
-          // // if(user.name === 'lvl1' || user.name === 'lvl2' || user.name === 'lvl3'){
-          //   expect(res.body).to.have.lengthOf(0)
-          // // }
-          // if(user.name === 'lvl4'){
-          //   expect(res.body).to.have.lengthOf(1)
-          //   expect(res.body[0].name).to.have.string('delete')
-          // }
         })
       })
 
@@ -174,7 +166,7 @@ describe('GET - Collection', () => {
           expect(res.body.statistics.assetCount).to.eql(distinct.assetIds.length)
           
           // grants projection
-          // todo: lvl1 user seems to be getting all grants
+          // todo: lvl1 user seems to be getting all grants, but should only see owners and themselves (or grants projection is invalid for lvl1 users)
           expect(res.body.grants).to.be.an('array').of.length(distinct.grantCnt_testCollection)
 
           const testCollectionOwnerArray = res.body.owners.map(owner => owner.userId)
@@ -334,11 +326,10 @@ describe('GET - Collection', () => {
             expect(res).to.have.status(403)
             return
           }
-          if(user.name === 'lvl1' || user.name === 'lvl2'){
+          if(distinct.canModifyCollection === false){
             expect(res).to.have.status(403)
-            // this.skip()
             return
-          }
+        }
 
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array').of.length(2)
@@ -402,10 +393,10 @@ describe('GET - Collection', () => {
                   expect(res).to.have.status(403)
                   return
                 }                
-                if(user.name === 'lvl1' || user.name === 'lvl2'){
+                if(distinct.canModifyCollection === false){
                   expect(res).to.have.status(403)
                   return
-                }
+              }
                 expect(res).to.have.status(200)
                 expect(res.body).to.be.an('object')
                 expect(res.body[reference.testCollection.collectionMetadataKey]).to.equal(reference.testCollection.collectionMetadataValue)
@@ -422,7 +413,7 @@ describe('GET - Collection', () => {
                   expect(res).to.have.status(403)
                   return
                 }
-                if(user.name === 'lvl1' || user.name === 'lvl2'){
+                if(distinct.canModifyCollection === false){
                   expect(res).to.have.status(403)
                   return
                 }
@@ -445,7 +436,7 @@ describe('GET - Collection', () => {
                   expect(res).to.have.status(403)
                   return
                 }
-                if(user.name === 'lvl1' || user.name === 'lvl2'){
+                if(distinct.canModifyCollection === false){
                   expect(res).to.have.status(403)
                   return
                 }
@@ -797,11 +788,7 @@ describe('GET - Collection', () => {
                   return
                 }
                 expect(res).to.have.status(200)
-                // if(user.name === 'lvl1'){
-                //   expect(res.body).to.be.an('array').of.length(1)
-                // }else{
-                  expect(res.body).to.be.an('array').of.length(distinct.validStigs.length)
-                // }
+                expect(res.body).to.be.an('array').of.length(distinct.validStigs.length)
                 for(const stig of res.body){
                   expect(distinct.validStigs).to.include(stig.benchmarkId)
                   expect(stig.revisionPinned).to.equal(false)
@@ -836,11 +823,7 @@ describe('GET - Collection', () => {
                   return
                 }
                 expect(res).to.have.status(200)
-                // if(user.name === 'lvl1'){
-                //   expect(res.body).to.be.an('array').of.length(1)
-                // }else{
-                  expect(res.body).to.be.an('array').of.length(distinct.validStigs.length)
-                // }
+                expect(res.body).to.be.an('array').of.length(distinct.validStigs.length)
                 for(const stig of res.body){
                   expect(distinct.validStigs).to.include(stig.benchmarkId)
                   const regex = new RegExp("asset")

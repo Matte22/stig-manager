@@ -87,7 +87,7 @@ describe('PATCH - Collection', () => {
                 expect(grant.user.userId).to.be.oneOf(patchRequest.grants.map(g => g.userId))
             }
 
-            // projections  --- TODO:  these responses call the GET service, so do we need to double-check it here?
+            // projections  --- TODO:  these responses call the GET service, which is tested elsewhere, so do we need to double-check it here?
             // expect(res.body.assets).to.have.lengthOf(3)
             // expect(res.body.owners).to.have.lengthOf(3)
             expect(res.body.statistics).to.have.property("assetCount").to.equal(res.body.assets.length)
