@@ -5,17 +5,23 @@ const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const environment = require('../../environment.json')
-const users = require("../../iterations.json")
+const users = require("../../iterations.js")
+const expectations = require('./expectations.js')
+const reference = require('./referenceData.js')
 
 describe('GET - Stig', () => {
 
     before(async function () {
-    this.timeout(4000)
-    await utils.loadAppData()
-    await utils.uploadTestStigs()
+        this.timeout(4000)
+        await utils.uploadTestStigs()
+        await utils.loadAppData()
     })
 
     for(const user of users){
+        if (expectations[user.name] === undefined){
+            it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+            return
+        }
         describe(`user:${user.name}`, () => {
             describe('GET - getSTIGs - /stigs', () => {
 
@@ -23,6 +29,7 @@ describe('GET - Stig', () => {
                     const res = await chai.request(config.baseUrl)
                     .get('/stigs')
                     .set('Authorization', `Bearer ${user.token}`)
+                   
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('array')
                     expect(res.body).to.be.lengthOf(8)

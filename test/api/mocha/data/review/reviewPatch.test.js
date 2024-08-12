@@ -5,7 +5,9 @@ const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const environment = require('../../environment.json')
-const users = require('../../iterations.json')
+const users = require('../../iterations.js')
+const expectations = require('./expectations.js')
+const reference = require('./referenceData.js')
 
 
 describe('PATCH - Review', () => {
@@ -17,6 +19,10 @@ describe('PATCH - Review', () => {
   })
   
   for(const user of users) {
+    if (expectations[user.name] === undefined){
+      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+      return
+    }
     describe(`user:${user.name}`, () => {
       describe('PATCH - patchReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId}', () => {
 
@@ -31,7 +37,10 @@ describe('PATCH - Review', () => {
             .patch(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${'SV-106181r1_rule'}`)
             .set('Authorization', `Bearer ${user.token}`)
             .send({detail:"these details have changed, but the status remains"})
-          
+          if(user.name === 'collectioncreator') {
+            expect(res).to.have.status(403)
+            return
+          }
           expect(res).to.have.status(200)
           expect(res.body.status).to.have.property('label').that.equals('submitted')
         })
@@ -40,7 +49,10 @@ describe('PATCH - Review', () => {
               .patch(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${'SV-106181r1_rule'}`)
               .set('Authorization', `Bearer ${user.token}`)
               .send({result: "pass"})
-            
+            if(user.name === 'collectioncreator') {
+              expect(res).to.have.status(403)
+              return
+            }
             expect(res).to.have.status(200)
             expect(res.body.result).to.eql("pass")
             expect(res.body.status).to.have.property('label').that.equals('saved')
@@ -50,7 +62,10 @@ describe('PATCH - Review', () => {
               .patch(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${'SV-106181r1_rule'}`)
               .set('Authorization', `Bearer ${user.token}`)
               .send({status: "submitted"})
-            
+            if(user.name === 'collectioncreator') {
+              expect(res).to.have.status(403)
+              return
+            }
             expect(res).to.have.status(200)
             expect(res.body.status).to.have.property('label').that.equals('submitted')
         })
@@ -59,7 +74,10 @@ describe('PATCH - Review', () => {
               .patch(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${'SV-106181r1_rule'}`)
               .set('Authorization', `Bearer ${user.token}`)
               .send({result: "fail"})
-            
+            if(user.name === 'collectioncreator') {
+              expect(res).to.have.status(403)
+              return
+            }
             expect(res).to.have.status(200)
             expect(res.body.result).to.eql("fail")
             expect(res.body.status).to.have.property('label').that.equals('saved')
@@ -120,7 +138,10 @@ describe('PATCH - Review', () => {
                 ],
               },
             })
-          
+          if(user.name === 'collectioncreator') {
+            expect(res).to.have.status(403)
+            return
+          }
           expect(res).to.have.status(200)
           expect(res.body.result).to.eql("pass")
           expect(res.body.touchTs).to.eql(res.body.ts)
@@ -132,7 +153,7 @@ describe('PATCH - Review', () => {
             .set('Authorization', `Bearer ${user.token}`)
             .send({status: "accepted"})
           
-          if(user.name === "lvl1" || user.name === "lvl2") {
+          if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator") {
             expect(res).to.have.status(403)
             return
           }
@@ -152,6 +173,10 @@ describe('PATCH - Review', () => {
               comment: "sure",
               status: "submitted",
             })
+          if(user.name === 'collectioncreator') {
+            expect(res).to.have.status(403)
+            return
+          }
           expect(res).to.have.status(200)
           expect(res.body.status.label).to.eql("submitted")    
           expect(res.body.result).to.eql("pass")
@@ -174,7 +199,10 @@ describe('PATCH - Review', () => {
             .patch(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${environment.testCollection.ruleId}/metadata`)
             .set('Authorization', `Bearer ${user.token}`)
             .send({[environment.testCollection.metadataKey]: environment.testCollection.metadataValue})
-    
+          if(user.name === 'collectioncreator') {
+            expect(res).to.have.status(403)
+            return
+          }
           expect(res).to.have.status(200)
           expect(res.body).to.eql({[environment.testCollection.metadataKey]: environment.testCollection.metadataValue})
         

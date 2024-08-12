@@ -5,7 +5,9 @@ const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const environment = require('../../environment.json')
-const users = require('../../iterations.json')
+const users = require('../../iterations.js')
+const expectations = require('./expectations.js')
+const reference = require('./referenceData.js')
 
 describe('GET - User', () => {
   before(async function () {
@@ -16,6 +18,10 @@ describe('GET - User', () => {
   })
 
   for(const user of users) {
+    if (expectations[user.name] === undefined){
+      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+      return
+    }
 
     describe(`user:${user.name}`, () => {
 

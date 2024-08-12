@@ -5,19 +5,25 @@ const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const environment = require('../../environment.json')
-const users = require('../../iterations.json')
+const users = require('../../iterations.js')
+const expectations = require('./expectations.js')
+const reference = require('./referenceData.js')
 
 describe('POST - Asset', () => {
   before(async function () {
     this.timeout(4000)
-    await utils.loadAppData()
     await utils.uploadTestStigs()
+    await utils.loadAppData()
     await utils.createDisabledCollectionsandAssets()
   })
 
   for (const user of users) {
+    if (expectations[user.name] === undefined){
+      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+      return
+    }
     describe(`user:${user.name}`, () => {
-  
+      const distinct = expectations[user.name]
       describe(`createAsset - /assets`, () => {
 
         it('Create an Asset (with stigs projection)', async () => {
@@ -27,35 +33,34 @@ describe('POST - Asset', () => {
             .set('Authorization', 'Bearer ' + user.token)
             .send({
               name: 'TestAsset' + Math.floor(Math.random() * 1000),
-              collectionId: environment.testCollection.collectionId,
+              collectionId: reference.testCollection.collectionId,
               description: 'test',
               ip: '1.1.1.1',
               noncomputing: true,
-              labelIds: [environment.testCollection.testLabel],
+              labelIds: [reference.testCollection.fullLabel],
               metadata: {
                 pocName: 'pocName',
                 pocEmail: 'pocEmail@example.com',
                 pocPhone: '12345',
                 reqRar: 'true'
               },
-              stigs: environment.testCollection.validStigs
+              stigs: reference.testCollection.validStigs
             }
           )
           
-          if(user.name === "lvl1" || user.name === "lvl2"){
+          if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
             return
           }
-          else{
             expect(res).to.have.status(201)
-          }
+          
           expect(assetGetToPost(res.body)).to.eql(res.request._data)
 
           const effectedAsset = await utils.getAsset(res.body.assetId)
 
-          expect(effectedAsset.collection.collectionId).to.equal(environment.testCollection.collectionId)
+          expect(effectedAsset.collection.collectionId).to.equal(reference.testCollection.collectionId)
           for(const stig of effectedAsset.stigs) { 
-            expect(stig.benchmarkId).to.be.oneOf(environment.testCollection.validStigs)
+            expect(stig.benchmarkId).to.be.oneOf(reference.testCollection.validStigs)
           }
           expect(effectedAsset.description).to.equal('test')
         })
@@ -67,33 +72,32 @@ describe('POST - Asset', () => {
             .set('Authorization', 'Bearer ' + user.token)
             .send({
               name: 'TestAsset' + Math.floor(Math.random() * 1000),
-              collectionId: environment.testCollection.collectionId,
+              collectionId: reference.testCollection.collectionId,
               description: 'test',
               ip: '1.1.1.1',
               noncomputing: true,
-              labelIds: [environment.testCollection.testLabel],
+              labelIds: [reference.testCollection.fullLabel],
               metadata: {
                 pocName: 'pocName',
                 pocEmail: 'pocEmail@example.com',
                 pocPhone: '12345',
                 reqRar: 'true'
               },
-              stigs: environment.testCollection.validStigs
+              stigs: reference.testCollection.validStigs
             })
           
-            if(user.name === "lvl1" || user.name === "lvl2"){
+            if(!distinct.canModifyAssets){
               expect(res).to.have.status(403)
               return
             }
-            else{
-              expect(res).to.have.status(201)
-            }
+            expect(res).to.have.status(201)
+            
             expect(res.body).to.have.property('statusStats')
-            expect(res.body.statusStats.ruleCount).to.equal(368)
+            expect(res.body.statusStats.ruleCount).to.equal(reference.testAsset.stats.ruleCount)
 
             const effectedAsset = await utils.getAsset(res.body.assetId)
 
-            expect(effectedAsset.statusStats.ruleCount).to.equal(368)
+            expect(effectedAsset.statusStats.ruleCount).to.equal(reference.testAsset.stats.ruleCount)
 
         })
 
@@ -104,34 +108,33 @@ describe('POST - Asset', () => {
             .set('Authorization', 'Bearer ' + user.token)
             .send({
               name: 'TestAsset' + Math.floor(Math.random() * 1000),
-              collectionId: environment.testCollection.collectionId,
+              collectionId: reference.testCollection.collectionId,
               description: 'test',
               ip: '1.1.1.1',
               noncomputing: true,
-              labelIds: [environment.testCollection.testLabel],
+              labelIds: [reference.testCollection.fullLabel],
               metadata: {
                 pocName: 'pocName',
                 pocEmail: 'pocEmail@example.com',
                 pocPhone: '12345',
                 reqRar: 'true'
               },
-              stigs: environment.testCollection.validStigs
+              stigs: reference.testCollection.validStigs
             })
           
-            if(user.name === "lvl1" || user.name === "lvl2"){
-              expect(res).to.have.status(403)
-              return
-            }
-            else{
-              expect(res).to.have.status(201)
-            }
-          expect(res.body).to.have.property('stigGrants')
+          if(!distinct.canModifyAssets){
+            expect(res).to.have.status(403)
+            return
+          }
+          
+          expect(res).to.have.status(201)
+           
           for(const stig of res.body.stigGrants) {
-            expect(stig.benchmarkId).to.be.oneOf(environment.testCollection.validStigs)
+            expect(stig.benchmarkId).to.be.oneOf(reference.testCollection.validStigs)
           }
           const effectedAsset = await utils.getAsset(res.body.assetId)
           for(const stig of effectedAsset.stigGrants) {
-            expect(stig.benchmarkId).to.be.oneOf(environment.testCollection.validStigs)
+            expect(stig.benchmarkId).to.be.oneOf(reference.testCollection.validStigs)
           }
         })
       })

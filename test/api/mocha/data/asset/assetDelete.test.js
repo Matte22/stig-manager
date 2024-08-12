@@ -5,7 +5,10 @@ const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const environment = require('../../environment.json')
-const users = require('../../iterations.json')
+const users = require('../../iterations.js')
+const expectations = require('./expectations.js')
+const reference = require('./referenceData.js')
+const distinct = require('./expectations.js')
 
 
 describe('DELETE - Collection', () => {
@@ -18,9 +21,13 @@ describe('DELETE - Collection', () => {
   })
 
   for(const user of users){
+    if (expectations[user.name] === undefined){
+      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+      return
+    }
 
     describe(`user:${user.name}`, () => {
-
+        const distinct = expectations[user.name]
       describe(`deleteAssetMetadataKey - /assets/{assetId}/metadata/keys/{key}`, () => {
         it('Delete one metadata key/value of an Asset', async () => {
           const res = await chai
@@ -30,7 +37,7 @@ describe('DELETE - Collection', () => {
             .set('Authorization', 'Bearer ' + user.token)
             .send(`${JSON.stringify(environment.scrapAsset.metadataValue)}`)
 
-          if(user.name === "lvl1" || user.name === "lvl2"){
+          if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
             return
           }
@@ -46,7 +53,7 @@ describe('DELETE - Collection', () => {
             .request(config.baseUrl)
             .delete(`/assets/${environment.scrapAsset.assetId}/stigs`)
             .set('Authorization', 'Bearer ' + user.token)
-          if(user.name === "lvl1" || user.name === "lvl2"){
+          if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
             return
           }
@@ -63,7 +70,7 @@ describe('DELETE - Collection', () => {
             .request(config.baseUrl)
             .delete(`/assets/${environment.scrapAsset.assetId}/stigs/${environment.scrapAsset.scrapBenchmark}`)
             .set('Authorization', 'Bearer ' + user.token)
-          if(user.name === "lvl1" || user.name === "lvl2"){
+          if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
             return
           }
@@ -106,7 +113,7 @@ describe('DELETE - Collection', () => {
             .request(config.baseUrl)
             .delete(`/assets/${assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token)
-        if(user.name === "lvl1" || user.name === "lvl2"){
+        if(!distinct.canModifyAssets){
           expect(res).to.have.status(403)
           return
         }
@@ -122,7 +129,7 @@ describe('DELETE - Collection', () => {
             .request(config.baseUrl)
             .delete(`/assets/${environment.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token) 
-          if(user.name === "lvl1" || user.name === "lvl2"){
+          if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
             return
           }
