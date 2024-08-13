@@ -92,7 +92,7 @@ describe('PATCH - Collection', () => {
             // expect(res.body.owners).to.have.lengthOf(3)
             expect(res.body.statistics).to.have.property("assetCount").to.equal(res.body.assets.length)
 
-            for(stig of res.body.stigs) {
+            for(let stig of res.body.stigs) {
                 expect(stig.benchmarkId).to.be.oneOf(reference.scrapCollection.validStigs)
             }
           })
