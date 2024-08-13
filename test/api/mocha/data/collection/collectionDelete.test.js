@@ -26,7 +26,7 @@ describe('DELETE - Collection ', () => {
     
     if (expectations[user.name] === undefined){
       it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
-      return
+      continue
     }
 
     describe(`user:${user.name}`, () => {

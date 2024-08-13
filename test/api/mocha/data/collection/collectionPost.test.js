@@ -22,7 +22,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
   for(const user of users) {
     if (expectations[user.name] === undefined){
       it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
-      return
+      continue
     }
 
 
