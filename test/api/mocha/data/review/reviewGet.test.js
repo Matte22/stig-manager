@@ -7,7 +7,6 @@ const utils = require('../../utils/testUtils')
 const environment = require('../../environment.json')
 const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
-
 const users = require('../../iterations.js')
 
 describe('GET - Review', () => {
@@ -21,13 +20,14 @@ describe('GET - Review', () => {
   for(const user of users){
     if (expectations[user.name] === undefined){
       it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
-      return
+      continue
     }
     describe(`user:${user.name}`, () => {
+      const distinct = expectations[user.name]
       describe('GET - getReviewsByCollection - /collections/{collectionId}/reviews', () => {
         it('Return a list of reviews accessible to the requester', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews?projection=rule&projection=stigs&projection=metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews?projection=rule&projection=stigs&projection=metadata`)
             .set('Authorization', `Bearer ${user.token}`)
 
           if(user.name === 'collectioncreator') {
@@ -52,11 +52,11 @@ describe('GET - Review', () => {
             expect(review.stigs).to.be.an('array')  
             expect(review).to.have.property('metadata')
 
-            expect(review.assetId).to.be.oneOf(environment.testCollection.assetIDsInCollection)
+            expect(review.assetId).to.be.oneOf(reference.testCollection.assetIds)
 
             for(let stig of review.stigs){
               expect(stig).to.have.property('benchmarkId')
-              expect(stig.benchmarkId).to.be.oneOf(environment.testCollection.validStigs)
+              expect(stig.benchmarkId).to.be.oneOf(reference.testCollection.validStigs)
             }
 
             //check metadata
@@ -70,38 +70,32 @@ describe('GET - Review', () => {
         })
         it('Return a list of reviews accessible to the requester, assetId Projection.', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews?assetId=${environment.testAsset.assetId}&projection=rule&projection=stigs&projection=metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews?assetId=${reference.testAsset.assetId}&projection=rule&projection=stigs&projection=metadata`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
             return
           }
           expect(res).to.have.status(200)
-      
-          if(user.name === 'lvl1'){
-            expect(res.body).to.be.lengthOf(6)
-          }
-          else{
-            expect(res.body).to.be.lengthOf(9)
-          }
+    
+          expect(res.body).to.be.lengthOf(distinct.testAsset.reviewsAvailableToUser)
 
-          
           for(let review of res.body){
             // checking for basic properties
             expect(review).to.have.property('assetId')
-            expect(review.assetId).to.be.equal(environment.testAsset.assetId)
+            expect(review.assetId).to.be.equal(reference.testAsset.assetId)
 
             expect(review).to.have.property('assetLabelIds')
 
             for(let assetLabelId of review.assetLabelIds){
-              expect(assetLabelId).to.be.oneOf(environment.testAsset.labels)
+              expect(assetLabelId).to.be.oneOf(reference.testAsset.labels)
             }
 
             expect(review.metadata).to.be.an('object')
             
             for(let stig of review.stigs){
               expect(stig).to.have.property('benchmarkId')
-              expect(stig.benchmarkId).to.be.oneOf(environment.testCollection.validStigs)
+              expect(stig.benchmarkId).to.be.oneOf(reference.testCollection.validStigs)
             }
             expect(review.rule).to.be.an('object')
             expect(review.rule).to.have.property('ruleId')
@@ -110,31 +104,24 @@ describe('GET - Review', () => {
         })
         it('Return a list of reviews accessible to the requester, benchmarkId Projection.', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews?benchmarkId=${environment.testCollection.benchmark}&projection=rule&projection=stigs&projection=metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews?benchmarkId=${reference.benchmark}&projection=rule&projection=stigs&projection=metadata`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
             return
           }
           expect(res).to.have.status(200)
-          expect(res.body).to.be.an('array')
-          if(user.name === 'lvl1'){
-            expect(res.body).to.be.lengthOf(11)
-          }
-          else {
-            expect(res.body).to.be.lengthOf(14)
-          }
-
+          expect(res.body).to.be.lengthOf(distinct.testCollection.reviewsForTestBenchmark)
           for(let review of res.body){
             for(let stig of review.stigs){
               expect(stig).to.have.property('benchmarkId')
-              expect(stig.benchmarkId).to.be.equal(environment.testCollection.benchmark)
+              expect(stig.benchmarkId).to.be.equal(reference.testCollection.benchmark)
             }        
           }
         })
         it('Return a list of reviews accessible to the requester, metadata Projection.', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews?projection=rule&projection=stigs&metadata=${environment.testCollection.metadataKey}%3A${environment.testCollection.metadataValue}&projection=metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews?projection=rule&projection=stigs&metadata=${reference.testCollection.metadataKey}%3A${reference.testCollection.metadataValue}&projection=metadata`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
@@ -146,13 +133,13 @@ describe('GET - Review', () => {
 
           for(let review of res.body){
             expect(review.metadata).to.be.an('object')
-            expect(review.metadata).to.have.property(environment.testCollection.metadataKey)
-            expect(review.metadata[environment.testCollection.metadataKey]).to.be.equal(environment.testCollection.metadataValue)
+            expect(review.metadata).to.have.property(reference.testCollection.metadataKey)
+            expect(review.metadata[reference.testCollection.metadataKey]).to.be.equal(reference.testCollection.metadataValue)
           }
         })
         it('Return a list of reviews accessible to the requester, result projection fail only', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews?result=fail&projection=rule&projection=stigs&projection=metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews?result=fail&projection=rule&projection=stigs&projection=metadata`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
@@ -160,43 +147,32 @@ describe('GET - Review', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array')
-          if(user.name === 'lvl1'){
-            expect(res.body).to.be.lengthOf(6)
-          }
-          else {
-            expect(res.body).to.be.lengthOf(8)
-          }
-
+          expect(res.body).to.be.lengthOf(distinct.testCollection.reviewsForResultFailAllAssets)
+        
           for(let review of res.body){
             expect(review.result).to.be.equal('fail')
           }
         })
         it('Return a list of reviews accessible to the requester, ruleid projection', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews?ruleId=${environment.testCollection.ruleId}&projection=rule&projection=stigs&projection=metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews?ruleId=${reference.testCollection.ruleId}&projection=rule&projection=stigs&projection=metadata`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
             return
           }
           expect(res).to.have.status(200)
-          expect(res.body).to.be.an('array')
-          if(user.name === 'lvl1'){
-            expect(res.body).to.be.lengthOf(2)
-          }
-          else {
-            expect(res.body).to.be.lengthOf(3)
-          }
+          expect(res.body).to.be.lengthOf(distinct.testCollection.reviewsForTestRuleId)
 
           for(let review of res.body){
-            expect(review.ruleId).to.be.equal(environment.testCollection.ruleId)
-            expect(review.rule.ruleId).to.be.equal(environment.testCollection.ruleId)
-            expect(review.ruleIds).to.include(environment.testCollection.ruleId)
+            expect(review.ruleId).to.be.equal(reference.testCollection.ruleId)
+            expect(review.rule.ruleId).to.be.equal(reference.testCollection.ruleId)
+            expect(review.ruleIds).to.include(reference.testCollection.ruleId)
           }
         })
         it('Return a list of reviews accessible to the requester, status projection: saved.', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews?status=saved&projection=rule&projection=stigs&projection=metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews?status=saved&projection=rule&projection=stigs&projection=metadata`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
@@ -204,12 +180,7 @@ describe('GET - Review', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array')
-          if(user.name === 'lvl1'){
-            expect(res.body).to.be.lengthOf(4)
-          }
-          else {
-            expect(res.body).to.be.lengthOf(6)
-          }
+          expect(res.body).to.be.lengthOf(distinct.testCollection.reviewsForStatusSaved)
 
           for(let review of res.body){
             expect(review.status.label).to.be.equal('saved')
@@ -217,30 +188,24 @@ describe('GET - Review', () => {
         })
         it('Return a list of reviews accessible to the requester, userId projection.', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews?userId=${environment.stigmanadmin.userId}&projection=rule&projection=stigs&projection=metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews?userId=${reference.stigmanadmin.userId}&projection=rule&projection=stigs&projection=metadata`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
             return
           }
           expect(res).to.have.status(200)
-          expect(res.body).to.be.an('array')
-          if(user.name === 'lvl1'){
-            expect(res.body).to.be.lengthOf(9)
-          }
-          else {
-            expect(res.body).to.be.lengthOf(14)
-          }
+          expect(res.body).to.be.lengthOf(distinct.testCollection.reviewsForStigmanadmin)
 
           for(let review of res.body){
-            expect(review.userId).to.be.equal(environment.stigmanadmin.userId)
+            expect(review.userId).to.be.equal(reference.stigmanadmin.userId)
           }
         })
       })
       describe('GET - getReviewsByAsset - /collections/{collectionId}/reviews/{assetId}', () => {
         it('Return a list of Reviews for an Asset', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}?projection=rule&projection=stigs&projection=metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}?projection=rule&projection=stigs&projection=metadata`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
@@ -248,12 +213,10 @@ describe('GET - Review', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array')
-
-
           for(let review of res.body){
             // checking for basic properties
             expect(review).to.have.property('assetId')
-            expect(review.assetId).to.be.equal(environment.testAsset.assetId)
+            expect(review.assetId).to.be.equal(reference.testAsset.assetId)
             expect(review).to.have.property('assetLabelIds')
             expect(review).to.have.property('assetName')
             expect(review).to.have.property('resultEngine')
@@ -268,7 +231,7 @@ describe('GET - Review', () => {
 
             for(let stig of review.stigs){
               expect(stig).to.have.property('benchmarkId')
-              expect(stig.benchmarkId).to.be.oneOf(environment.testAsset.validStigs)
+              expect(stig.benchmarkId).to.be.oneOf(reference.testAsset.validStigs)
             }
 
             //check metadata
@@ -282,7 +245,7 @@ describe('GET - Review', () => {
         })
         it('Return a list of Reviews for an Asset, benchmarkId Projection.', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}?benchmarkId=${environment.testCollection.benchmark}&projection=rule&projection=stigs&projection=metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}?benchmarkId=${reference.benchmark}&projection=rule&projection=stigs&projection=metadata`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
@@ -290,20 +253,19 @@ describe('GET - Review', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array')
-          expect(res.body).to.be.lengthOf(6)
-
+          expect(res.body).to.be.lengthOf(reference.testAsset.testBenchmarkReviews)
 
           for(let review of res.body){
-            expect(review.assetId).to.be.equal(environment.testAsset.assetId)
+            expect(review.assetId).to.be.equal(reference.testAsset.assetId)
             for(let stig of review.stigs){
               expect(stig).to.have.property('benchmarkId')
-              expect(stig.benchmarkId).to.be.equal(environment.testCollection.benchmark)
+              expect(stig.benchmarkId).to.be.equal(reference.testCollection.benchmark)
             }        
           }
         })
         it('Return a list of Reviews for an Asset , metadata Projection.', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}?projection=rule&projection=stigs&metadata=${environment.testAsset.metadataKey}%3A${environment.testAsset.metadataValue}&projection=metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}?projection=rule&projection=stigs&metadata=${reference.testAsset.metadataKey}%3A${reference.testAsset.metadataValue}&projection=metadata`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
@@ -314,15 +276,15 @@ describe('GET - Review', () => {
           expect(res.body).to.be.lengthOf(1)
 
           for(let review of res.body){
-            expect(review.assetId).to.be.equal(environment.testAsset.assetId)
+            expect(review.assetId).to.be.equal(reference.testAsset.assetId)
             expect(review.metadata).to.be.an('object')
-            expect(review.metadata).to.have.property(environment.testCollection.metadataKey)
-            expect(review.metadata[environment.testCollection.metadataKey]).to.be.equal(environment.testCollection.metadataValue)
+            expect(review.metadata).to.have.property(reference.testCollection.metadataKey)
+            expect(review.metadata[reference.testCollection.metadataKey]).to.be.equal(reference.testCollection.metadataValue)
           }
         })
         it('Return a list of reviews accessible to the requester, result projection pass only', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}?result=pass&projection=rule&projection=stigs&projection=metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}?result=pass&projection=rule&projection=stigs&projection=metadata`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
@@ -330,21 +292,18 @@ describe('GET - Review', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array')
-          if(user.name === 'lvl1'){
-            expect(res.body).to.be.lengthOf(2)
-          }
-          else {
-            expect(res.body).to.be.lengthOf(4)
-          }
+         
+          expect(res.body).to.be.lengthOf(distinct.testAsset.reviewsForResultPass)
+        
 
           for(let review of res.body){
-            expect(review.assetId).to.be.equal(environment.testAsset.assetId)
+            expect(review.assetId).to.be.equal(reference.testAsset.assetId)
             expect(review.result).to.be.equal('pass')
           }
         })
         it('Return a list of reviews accessible to the requester, result projection fail only', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}?result=fail&projection=rule&projection=stigs&projection=metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}?result=fail&projection=rule&projection=stigs&projection=metadata`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
@@ -352,21 +311,16 @@ describe('GET - Review', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array')
-          if(user.name === 'lvl1'){
-            expect(res.body).to.be.lengthOf(3)
-          }
-          else {
-            expect(res.body).to.be.lengthOf(4)
-          }
+          expect(res.body).to.be.lengthOf(distinct.testAsset.reviewsForResultFail)
 
           for(let review of res.body){
-            expect(review.assetId).to.be.equal(environment.testAsset.assetId)
+            expect(review.assetId).to.be.equal(reference.testAsset.assetId)
             expect(review.result).to.be.equal('fail')
           }
         })
         it('Return a list of reviews accessible to the requester, result projection informational only', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}?result=informational&projection=rule&projection=stigs&projection=metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}?result=informational&projection=rule&projection=stigs&projection=metadata`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
@@ -377,13 +331,13 @@ describe('GET - Review', () => {
           expect(res.body).to.be.lengthOf(0)
 
           for(let review of res.body){
-            expect(review.assetId).to.be.equal(environment.testAsset.assetId)
+            expect(review.assetId).to.be.equal(reference.testAsset.assetId)
             expect(review.result).to.be.equal('informational')
           }
         })
         it('Return a list of reviews accessible to the requester, status projection: saved.', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}?status=saved&projection=rule&projection=stigs&projection=metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}?status=saved&projection=rule&projection=stigs&projection=metadata`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
@@ -391,15 +345,11 @@ describe('GET - Review', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array')
-          if(user.name === 'lvl1'){
-            expect(res.body).to.be.lengthOf(1)
-          }
-          else {
-            expect(res.body).to.be.lengthOf(2)
-          }
+          expect(res.body).to.be.lengthOf(distinct.testAsset.reviewsForStatusSaved)
+         
 
           for(let review of res.body){
-            expect(review.assetId).to.be.equal(environment.testAsset.assetId)
+            expect(review.assetId).to.be.equal(reference.testAsset.assetId)
             expect(review.status.label).to.be.equal('saved')
           }
         })
@@ -413,15 +363,10 @@ describe('GET - Review', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array')
-          if(user.name === 'lvl1'){
-            expect(res.body).to.be.lengthOf(5)
-          }
-          else {
-            expect(res.body).to.be.lengthOf(7)
-          }
+          expect(res.body).to.be.lengthOf(distinct.testAsset.reviewsForStatusSubmitted)
           
           for(let review of res.body){
-            expect(review.assetId).to.be.equal(environment.testAsset.assetId)
+            expect(review.assetId).to.be.equal(reference.testAsset.assetId)
             expect(review.status.label).to.be.equal('submitted')
           }
         })
@@ -430,7 +375,7 @@ describe('GET - Review', () => {
 
         it('Return the Review for an Asset and Rule', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${environment.testCollection.ruleId}?projection=rule&projection=stigs&projection=metadata&projection=history`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}?projection=rule&projection=stigs&projection=metadata&projection=history`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
@@ -443,7 +388,7 @@ describe('GET - Review', () => {
         
           // checking for basic properties
           expect(review).to.have.property('assetId')
-          expect(review.assetId).to.be.equal(environment.testAsset.assetId)
+          expect(review.assetId).to.be.equal(reference.testAsset.assetId)
 
           expect(review).to.have.property('assetLabelIds')
           expect(review).to.have.property('assetName')
@@ -455,15 +400,15 @@ describe('GET - Review', () => {
           expect(review).to.have.property('rule')
           expect(review.rule).to.be.an('object')
           expect(review.rule).to.have.property('ruleId')
-          expect(review.rule.ruleId).to.be.equal(environment.testCollection.ruleId)
+          expect(review.rule.ruleId).to.be.equal(reference.testCollection.ruleId)
 
           expect(review).to.have.property('stigs')
           expect(review.stigs).to.be.an('array')  
 
           expect(review).to.have.property('metadata')
           expect(review.metadata).to.be.an('object')
-          expect(review.metadata).to.have.property(environment.testCollection.metadataKey)
-          expect(review.metadata[environment.testCollection.metadataKey]).to.be.equal(environment.testCollection.metadataValue)
+          expect(review.metadata).to.have.property(reference.testCollection.metadataKey)
+          expect(review.metadata[reference.testCollection.metadataKey]).to.be.equal(reference.testCollection.metadataValue)
 
           expect(review).to.have.property('history')
           expect(review.history).to.be.an('array')  
@@ -474,7 +419,7 @@ describe('GET - Review', () => {
           }
           for(let stig of review.stigs){
             expect(stig).to.have.property('benchmarkId')
-            expect(stig.benchmarkId).to.be.oneOf(environment.testAsset.validStigs)
+            expect(stig.benchmarkId).to.be.oneOf(reference.testAsset.validStigs)
           } 
         })
       })
@@ -482,7 +427,7 @@ describe('GET - Review', () => {
 
         it('Return the metadata for a Review', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${environment.testCollection.ruleId}/metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
@@ -490,8 +435,8 @@ describe('GET - Review', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('object')
-          expect(res.body).to.have.property(environment.testAsset.metadataKey)
-          expect(res.body[environment.testAsset.metadataKey]).to.be.equal(environment.testAsset.metadataValue)
+          expect(res.body).to.have.property(reference.testAsset.metadataKey)
+          expect(res.body[reference.testAsset.metadataKey]).to.be.equal(reference.testAsset.metadataValue)
         })
 
       })
@@ -499,7 +444,7 @@ describe('GET - Review', () => {
           
           it('Return the Review Metadata KEYS for an Asset and Rule', async () => {
             const res = await chai.request(config.baseUrl)
-              .get(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${environment.testCollection.ruleId}/metadata/keys`)
+              .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata/keys`)
               .set('Authorization', `Bearer ${user.token}`)
             if(user.name === 'collectioncreator') {
               expect(res).to.have.status(403)
@@ -508,14 +453,14 @@ describe('GET - Review', () => {
             expect(res).to.have.status(200)
             expect(res.body).to.be.an('array')
             expect(res.body).to.be.lengthOf(1)
-            expect(res.body).to.include(environment.testAsset.metadataKey)
+            expect(res.body).to.include(reference.testAsset.metadataKey)
           })
       })
       describe('GET - getReviewMetadataValue - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {
 
         it('Return the Review Metadata VALUE for an Asset/Rule/metadata KEY', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${environment.testCollection.ruleId}/metadata/keys/${environment.testAsset.metadataKey}`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata/keys/${reference.testAsset.metadataKey}`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
@@ -523,7 +468,7 @@ describe('GET - Review', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('string')
-          expect(res.body).to.equal(environment.testAsset.metadataValue)  
+          expect(res.body).to.equal(reference.testAsset.metadataValue)  
         })
       })
     })

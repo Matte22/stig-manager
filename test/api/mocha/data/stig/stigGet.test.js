@@ -6,8 +6,8 @@ const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const environment = require('../../environment.json')
 const users = require("../../iterations.js")
-const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
+const expectations = require('./expectations.js')
 
 describe('GET - Stig', () => {
 
@@ -20,7 +20,7 @@ describe('GET - Stig', () => {
     for(const user of users){
         if (expectations[user.name] === undefined){
             it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
-            return
+            continue
         }
         describe(`user:${user.name}`, () => {
             describe('GET - getSTIGs - /stigs', () => {
@@ -32,10 +32,10 @@ describe('GET - Stig', () => {
                    
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('array')
-                    expect(res.body).to.be.lengthOf(8)
+                    expect(res.body).to.be.lengthOf(reference.allStigsForAdmin.length)
                     for(let stig of res.body){
                         expect(stig).to.have.property('benchmarkId')
-                        expect(stig.benchmarkId).to.be.oneOf(environment.allStigsForAdmin)
+                        expect(stig.benchmarkId).to.be.oneOf(reference.allStigsForAdmin)
                     }
                 })
                 it('Return a list of available STIGs NAME FILTER', async () => {
@@ -44,33 +44,34 @@ describe('GET - Stig', () => {
                     .set('Authorization', `Bearer ${user.token}`)
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('array')
-                    expect(res.body).to.be.lengthOf(3)
-
+                    expect(res.body).to.be.lengthOf(reference.vpnStigs.length)
+                    for(let stig of res.body){
+                        expect(stig.benchmarkId).to.be.oneOf(reference.vpnStigs)
+                    }
                 })
             })
             describe('GET - getCci - /stigs/ccis/{cci}', () => {
 
                 it('Return data for the specified CCI', async () => {
                     const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/ccis/${environment.testCollection.cci}?projection=stigs&projection=emassAp&projection=references`)
+                    .get(`/stigs/ccis/${reference.testCollection.cci}?projection=stigs&projection=emassAp&projection=references`)
                     .set('Authorization', `Bearer ${user.token}`)
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('object')
-                    expect(res.body.cci).to.be.equal(environment.testCollection.cci)
+                    expect(res.body.cci).to.be.equal(reference.testCollection.cci)
                     expect(res.body).to.have.property('stigs')
                     expect(res.body).to.have.property('emassAp')
                     expect(res.body).to.have.property('references')
                 })
             })
             describe('GET - getRuleByRuleId - /stigs/rules/{ruleId}', () => {
-
                 it('Return data for the specified rule', async () => {
                     const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/rules/${environment.testCollection.ruleId}?projection=detail&projection=ccis&projection=check&projection=fix`)
+                    .get(`/stigs/rules/${reference.testCollection.ruleId}?projection=detail&projection=ccis&projection=check&projection=fix`)
                     .set('Authorization', `Bearer ${user.token}`)
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('object')
-                    expect(res.body.ruleId).to.be.equal(environment.testCollection.ruleId)
+                    expect(res.body.ruleId).to.be.equal(reference.testCollection.ruleId)
                     expect(res.body).to.have.property('detail')
                     expect(res.body).to.have.property('ccis')
                     expect(res.body).to.have.property('check')
@@ -115,12 +116,12 @@ describe('GET - Stig', () => {
 
                 it('Return properties of the specified STIG', async () => {
                     const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${environment.testCollection.benchmark}`)
+                    .get(`/stigs/${reference.benchmark}`)
                     .set('Authorization', `Bearer ${user.token}`)
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('object')
                     expect(res.body).to.have.property('benchmarkId')
-                    expect(res.body.benchmarkId).to.be.equal(environment.testCollection.benchmark)
+                    expect(res.body.benchmarkId).to.be.equal(reference.benchmark)
                 })
             })
             describe('GET - getRevisionsByBenchmarkId - /stigs/{benchmarkId}/revisions', () => {
@@ -157,33 +158,34 @@ describe('GET - Stig', () => {
             })
 
                 it('Return a list of revisions for the specified STIG', async () => {
-
                     const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${environment.testCollection.benchmark}/revisions`)
+                    .get(`/stigs/${reference.benchmark}/revisions`)
                     .set('Authorization', `Bearer ${user.token}`)
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('array')
                     expect(res.body).to.be.lengthOf(2)
-                
+                    for(let revision of res.body){
+                        expect(revision.ruleCount).to.eql(reference.checklistLength)
+                        expect(revision.benchmarkId).to.be.equal(reference.benchmark)
+                    }
                 })
-
             })
             describe('GET - getRevisionByString - /stigs/{benchmarkId}/revisions/{revisionStr}', () => {
 
                 it('Return metadata for the specified revision of a STIG', async () => {
                     const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${environment.testCollection.benchmark}/revisions/${environment.testCollection.revisionStr}`)
+                    .get(`/stigs/${reference.benchmark}/revisions/${reference.revisionStr}`)
                     .set('Authorization', `Bearer ${user.token}`)
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('object')
                     expect(res.body).to.have.property('revisionStr')
-                    expect(res.body.revisionStr).to.be.equal(environment.testCollection.revisionStr)
+                    expect(res.body.revisionStr).to.be.equal(reference.revisionStr)
                 })
             })
             describe('GET - getCcisByRevision - /stigs/{benchmarkId}/revisions/{revisionStr}/ccis', () => {
                 it('Return a list of CCIs from a STIG revision', async () => {
                     const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${environment.testCollection.benchmark}/revisions/${environment.testCollection.revisionStr}/ccis`)
+                    .get(`/stigs/${reference.benchmark}/revisions/${reference.revisionStr}/ccis`)
                     .set('Authorization', `Bearer ${user.token}`)
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('array')
@@ -191,10 +193,9 @@ describe('GET - Stig', () => {
                 })
             })
             describe('GET - getGroupsByRevision - /stigs/{benchmarkId}/revisions{revisionStr}/groups', () => {
-
                 it('Return the list of groups for the specified revision of a STIG.', async () => {
                     const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${environment.testCollection.benchmark}/revisions/${environment.testCollection.revisionStr}/groups?projection=rules`)
+                    .get(`/stigs/${reference.benchmark}/revisions/${reference.revisionStr}/groups?projection=rules`)
                     .set('Authorization', `Bearer ${user.token}`)
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('array')
@@ -209,12 +210,12 @@ describe('GET - Stig', () => {
 
                 it('Return the rules, checks and fixes for a Group from a specified revision of a STIG.', async () => {
                     const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${environment.testCollection.benchmark}/revisions/${environment.testCollection.revisionStr}/groups/${environment.testCollection.groupId}?projection=rules`)
+                    .get(`/stigs/${reference.benchmark}/revisions/${reference.revisionStr}/groups/${reference.testCollection.groupId}?projection=rules`)
                     .set('Authorization', `Bearer ${user.token}`)
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('object')
                     expect(res.body).to.have.property('groupId')
-                    expect(res.body.groupId).to.be.equal(environment.testCollection.groupId)
+                    expect(res.body.groupId).to.be.equal(reference.testCollection.groupId)
                     expect(res.body).to.have.property('rules')
                     expect(res.body.rules).to.be.an('array')
                 })
@@ -222,11 +223,11 @@ describe('GET - Stig', () => {
             describe('GET - getRulesByRevision - /stigs/{benchmarkId}/revisions/{revisionStr}/rules', () => {
                 it("Return rule data for the LATEST revision of a STIG", async () => {
                     const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${environment.testCollection.benchmark}/revisions/${'latest'}/rules?projection=detail&projection=ccis&projection=check&projection=fix`)
+                    .get(`/stigs/${reference.benchmark}/revisions/${'latest'}/rules?projection=detail&projection=ccis&projection=check&projection=fix`)
                     .set('Authorization', `Bearer ${user.token}`)
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('array')
-                    expect(res.body).to.be.lengthOf(81)
+                    expect(res.body).to.be.lengthOf(reference.checklistLength)
                     expect(res.body[0]).to.have.property('detail')
                     expect(res.body[0]).to.have.property('ccis')
                     expect(res.body[0]).to.have.property('check')
@@ -234,7 +235,7 @@ describe('GET - Stig', () => {
                 })
                 it("Return rule data for the specified revision of a STIG.", async () => {
                     const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${environment.testCollection.benchmark}/revisions/${environment.testCollection.revisionStr}/rules?projection=detail&projection=ccis&projection=check&projection=fix`)
+                    .get(`/stigs/${reference.benchmark}/revisions/${reference.revisionStr}/rules?projection=detail&projection=ccis&projection=check&projection=fix`)
                     .set('Authorization', `Bearer ${user.token}`)
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('array')
@@ -248,7 +249,7 @@ describe('GET - Stig', () => {
             describe('GET - getRuleByRevision - /stigs/{benchmarkId}/revisions/{revisionStr}/rules/{ruleId}', () => {
                 it("Return rule data for the specified revision of a STIG.", async () => {
                     const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${environment.testCollection.benchmark}/revisions/${environment.testCollection.revisionStr}/rules/${environment.testCollection.ruleId}?projection=detail&projection=ccis&projection=check&projection=fix`)
+                    .get(`/stigs/${reference.benchmark}/revisions/${reference.revisionStr}/rules/${reference.testCollection.ruleId}?projection=detail&projection=ccis&projection=check&projection=fix`)
                     .set('Authorization', `Bearer ${user.token}`)
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('object')
@@ -256,7 +257,7 @@ describe('GET - Stig', () => {
                     expect(res.body).to.have.property('ccis')
                     expect(res.body).to.have.property('check')
                     expect(res.body).to.have.property('fix')
-                    expect(res.body.ruleId).to.be.equal(environment.testCollection.ruleId)
+                    expect(res.body.ruleId).to.be.equal(reference.testCollection.ruleId)
                 })
             })
         })

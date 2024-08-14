@@ -8,14 +8,14 @@ const environment = require('../../environment.json')
 const fs = require('fs')
 const path = require('path')
 const users = require("../../iterations.js")
-const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
+const expectations = require('./expectations.js')
 
 describe('POST - Stig', () => {
     before(async function () {
     this.timeout(4000)
-    await utils.loadAppData()
     await utils.uploadTestStigs()
+    await utils.loadAppData()
     await utils.createDisabledCollectionsandAssets()
     await utils.deleteStig(environment.testCollection.benchmark)
     })
@@ -23,15 +23,15 @@ describe('POST - Stig', () => {
     for(const user of users){
         if (expectations[user.name] === undefined){
             it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
-            return
-          }
+            continue
+        }
         describe(`user:${user.name}`, () => {
             describe('POST - importBenchmark - /stigs', () => {
 
                 it('Import a new STIG - new', async () => {
                 
                     const directoryPath = path.join(__dirname, '../../../form-data-files/')
-                    const testStigfile = environment.testStigfile
+                    const testStigfile = reference.testStigfile
                     const filePath = path.join(directoryPath, testStigfile)
             
                     const res = await chai.request(config.baseUrl)
@@ -54,7 +54,7 @@ describe('POST - Stig', () => {
                 it('Import a new STIG - preserve', async () => {
                 
                     const directoryPath = path.join(__dirname, '../../../form-data-files/')
-                    const testStigfile = environment.testStigfile
+                    const testStigfile = reference.testStigfile
                     const filePath = path.join(directoryPath, testStigfile)
             
                     const res = await chai.request(config.baseUrl)
@@ -78,7 +78,7 @@ describe('POST - Stig', () => {
                 it('Import a new STIG - clobber', async () => {
                 
                     const directoryPath = path.join(__dirname, '../../../form-data-files/')
-                    const testStigfile = environment.testStigfile
+                    const testStigfile = reference.testStigfile
                     const filePath = path.join(directoryPath, testStigfile)
             
                     const res = await chai.request(config.baseUrl)

@@ -18,7 +18,7 @@ const distinct = {
     assetIds: ['29', '62', '42', '154'],
     validStigs: ['VPN_SRG_TEST', 'Windows_10_STIG_TEST'],
     collectionIds: ['21'],
-    canModifyAssets: true,
+    canModifyCollection: true,
     assetsAvailableFullLabel: ["62","42"],
     assetsAvailableBenchmark: ["42","62", "154"],
     assetsAvailableStigGrants:["42","62", "154"],
@@ -37,7 +37,7 @@ const distinct = {
     user: 'lvl1',
     userId: '85',
     grant: 'restricted',
-    canModifyAssets: false,
+    canModifyCollection: false,
     assignedStigs: ['VPN_SRG_TEST'],
     assetIds: ['42', '154'],
     assetsAvailableFullLabel: ["42"],
@@ -57,7 +57,7 @@ const distinct = {
     },
     user: 'admin',
     userId: '87',
-    canModifyAssets: false,
+    canModifyCollection: false,
     grant: 'admin',
     assignedStigs: ['VPN_SRG_TEST'],
     assetIds: ['29', '62', '42', '154'],
@@ -79,7 +79,7 @@ const distinct = {
     user: 'admin',
     userId: '87',
     grant: 'admin',
-    canModifyAssets: true,
+    canModifyCollection: true,
     assignedStigs: ['VPN_SRG_TEST'],
     assetIds: ['29', '62', '42', '154'],
     validStigs: ['VPN_SRG_TEST', 'Windows_10_STIG_TEST'],
@@ -101,7 +101,7 @@ const distinct = {
     user: 'admin',
     userId: '87',
     grant: 'admin',
-    canModifyAssets: true,
+    canModifyCollection: true,
     assetsAvailableFullLabel: ["62","42"],
     assignedStigs: ['VPN_SRG_TEST'],
     assetIds: ['29', '62', '42', '154'],
@@ -111,7 +111,7 @@ const distinct = {
     assetsAvailableStigGrants:["42","62", "154"],
   },
   collectioncreator: {
-    canModifyAssets: false,
+    canModifyCollection: false,
   }
 }
 module.exports = distinct
