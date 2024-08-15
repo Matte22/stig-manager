@@ -266,73 +266,72 @@ describe('POST - Collection - not all tests run for all iterations', () => {
           await utils.createDisabledCollectionsandAssets()
         })
         
-        it("export results to another collection - entire asset - create asset in destination", async () => {
+        // it("export results to another collection - entire asset - create asset in destination", async () => {
 
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
-            .set("Authorization", `Bearer ${user.token}`)
-            .send([
-              {
-                assetId: reference.testAsset.assetId,
-              },
-            ])
+        //   const res = await chai
+        //     .request(config.baseUrl)
+        //     .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
+        //     .set("Authorization", `Bearer ${user.token}`)
+        //     .send([
+        //       {
+        //         assetId: reference.testAsset.assetId,
+        //       },
+        //     ])
             
-            if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
-              return
-            }
-            expect(res).to.have.status(200)
-            const response = res.body.toString().split("\n")
-            expect(response).to.be.an('array')
-            expect(response).to.have.lengthOf.at.least(1)
+        //     if(distinct.canModifyCollection === false){
+        //       expect(res).to.have.status(403)
+        //       return
+        //     }
+        //     expect(res).to.have.status(200)
+        //     const response = res.body.toString().split("\n")
+        //     expect(response).to.be.an('array')
+        //     expect(response).to.have.lengthOf.at.least(1)
 
-            for(const message of response){ 
-                if(message.length > 0){
-                    let messageObj = JSON.parse(message)
-                    if(messageObj.stage == "result"){
-                      expect(messageObj.counts.assetsCreated).to.eql(1)
-                      expect(messageObj.counts.stigsMapped).to.eql(2)
-                      expect(messageObj.counts.reviewsInserted).to.eql(9)
-                      expect(messageObj.counts.reviewsUpdated).to.eql(0)
-                    }
-                }
-            }
-        })
+        //     for(const message of response){ 
+        //         if(message.length > 0){
+        //             let messageObj = JSON.parse(message)
+        //             if(messageObj.stage == "result"){
+        //               expect(messageObj.counts.assetsCreated).to.eql(1)
+        //               expect(messageObj.counts.stigsMapped).to.eql(2)
+        //               expect(messageObj.counts.reviewsInserted).to.eql(9)
+        //               expect(messageObj.counts.reviewsUpdated).to.eql(0)
+        //             }
+        //         }
+        //     }
+        // })
+        // it("export results to another collection - entire asset - asset exists", async () => {
 
-        it("export results to another collection - entire asset - asset exists", async () => {
+        //   const res = await chai
+        //     .request(config.baseUrl)
+        //     .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
+        //     .set("Authorization", `Bearer ${user.token}`)
+        //     .send([
+        //       {
+        //         assetId: reference.testAsset.assetId,
+        //       },
+        //     ])
 
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
-            .set("Authorization", `Bearer ${user.token}`)
-            .send([
-              {
-                assetId: reference.testAsset.assetId,
-              },
-            ])
+        //     if(distinct.canModifyCollection === false){
+        //       expect(res).to.have.status(403)
+        //       return
+        //     }
 
-            if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
-              return
-            }
-
-            expect(res).to.have.status(200)
-            const response = res.body.toString().split("\n")
-            expect(response).to.be.an('array')
-            expect(response).to.have.lengthOf.at.least(1)
-            for(const message of response){ 
-                if(message.length > 0){
-                    let messageObj = JSON.parse(message)
-                    if(messageObj.stage == "result"){
-                      expect(messageObj.counts.assetsCreated).to.eql(0)
-                      expect(messageObj.counts.stigsMapped).to.eql(0)
-                      expect(messageObj.counts.reviewsInserted).to.eql(0)
-                      expect(messageObj.counts.reviewsUpdated).to.eql(9)
-                    }
-                }
-            }
-        })
+        //     expect(res).to.have.status(200)
+        //     const response = res.body.toString().split("\n")
+        //     expect(response).to.be.an('array')
+        //     expect(response).to.have.lengthOf.at.least(1)
+        //     for(const message of response){ 
+        //         if(message.length > 0){
+        //             let messageObj = JSON.parse(message)
+        //             if(messageObj.stage == "result"){
+        //               expect(messageObj.counts.assetsCreated).to.eql(0)
+        //               expect(messageObj.counts.stigsMapped).to.eql(0)
+        //               expect(messageObj.counts.reviewsInserted).to.eql(0)
+        //               expect(messageObj.counts.reviewsUpdated).to.eql(9)
+        //             }
+        //         }
+        //     }
+        // })
       })
 
 

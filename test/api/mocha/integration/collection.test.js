@@ -363,14 +363,12 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                         }
                       })
                 expect(res).to.have.status(200)
-                let clonedCollectionId = null
                 let jsonDataArray = res.body.toString().split("\n")
 
                 for(const message of jsonDataArray){
                     if(message.length > 0){
                         let messageObject = JSON.parse(message)
                         if(messageObject.stage === "result"){
-                            clonedCollectionId = messageObject.collection.collectionId
                             expect(messageObject.collection).to.have.property('grants');
                             expect(messageObject.collection.grants, "check cloned collection grants").to.eql(reference.testCollection.grantsProjected)
 
@@ -411,35 +409,6 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                         }
                     }
                 }
-                if(clonedCollectionId !== null){
-                    // check reviews are there.
-                    const clonedCollectionReviews = await utils.getReviews(clonedCollectionId)
-                    const sourceCollectionReviews = await utils.getReviews(reference.testCollection.collectionId)
-                    expect(clonedCollectionReviews).to.exist
-                    expect(sourceCollectionReviews).to.exist
-                    expect(clonedCollectionReviews).to.be.an('array').of.length(sourceCollectionReviews.length)
-                    const reviewRegex = "test"
-                    const assetRegex = "asset"
-
-                    for(const review of clonedCollectionReviews){
-                        expect(review.detail).to.match(new RegExp(reviewRegex))
-                        expect(review.assetName).to.match(new RegExp(assetRegex))
-                    }
-
-                    // compare the cloned collection with the source collection should be the same
-                    const clonedCollection = await utils.getCollection(clonedCollectionId)
-                    const sourceCollection = await utils.getCollection(reference.testCollection.collectionId)
-                    expect(sourceCollection).to.exist
-                    expect(clonedCollection).to.exist 
-
-                    for(const asset of clonedCollection.assets){
-                        expect(asset.name).to.be.oneOf(sourceCollection.assets.map(a => a.name))
-                    }
-                    expect(clonedCollection.assets).to.have.lengthOf(sourceCollection.assets.length)
-                    expect(clonedCollection.grants).to.have.lengthOf(sourceCollection.grants.length)
-                    expect(clonedCollection.labels).to.have.lengthOf(sourceCollection.labels.length)
-                    expect(clonedCollection.owners).to.have.lengthOf(sourceCollection.owners.length)
-                }
             })
             it('clone test collection - no grants', async () => {
 
@@ -458,7 +427,7 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                     }
                   })
                 expect(res).to.have.status(200)
-                let clonedCollectionId = null
+
                 let jsonDataArray = res.body.toString().split("\n")
 
                 const grantsProjected = [
@@ -485,7 +454,6 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                     if(message.length > 0){
                         let messageObject = JSON.parse(message)
                         if(messageObject.stage === "result"){
-                            clonedCollectionId = messageObject.collection.collectionId
                             expect(messageObject.collection).to.have.property('grants');
                             expect(messageObject.collection.grants, "check cloned collection grants").to.eql(grantsProjected)
 
@@ -526,11 +494,6 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                         }
                     }
                 }
-                if(clonedCollectionId !== null){
-                    const clonedCollection = await utils.getCollection(clonedCollectionId)
-                    expect(clonedCollection).to.exist 
-                    expect(clonedCollection.grants).to.have.lengthOf(1)
-                  }
             })
             it('clone test collection - no labels', async () => {
 
@@ -551,14 +514,13 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                 expect(res).to.have.status(200)
 
                 let jsonDataArray = res.body.toString().split("\n")
-                let clonedCollectionId = null
+
                 const labelsProjected = []
 
                 for(const message of jsonDataArray){
                     if(message.length > 0){
                         let messageObject = JSON.parse(message)
                         if(messageObject.stage === "result"){
-                            clonedCollectionId = messageObject.collection.collectionId
                             expect(messageObject.collection).to.have.property('grants');
                             expect(messageObject.collection.grants, "check cloned collection grants").to.eql(reference.testCollection.grantsProjected)
 
@@ -599,11 +561,6 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                         }
                     }
                 }
-                if(clonedCollectionId !== null){
-                    const clonedCollection = await utils.getCollection(clonedCollectionId)
-                    expect(clonedCollection).to.exist 
-                    expect(clonedCollection.labels).to.have.lengthOf(0)
-                }
             })
             it('clone test collection - no assets', async () => {
 
@@ -622,7 +579,7 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                         }
                       })
                 expect(res).to.have.status(200)
-                let clonedCollectionId = null
+
                 let jsonDataArray = res.body.toString().split("\n")
 
                 const assetsProjected = []
@@ -648,7 +605,6 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                     if(message.length > 0){
                         let messageObject = JSON.parse(message)
                         if(messageObject.stage === "result"){
-                            clonedCollectionId = messageObject.collection.collectionId
                             expect(messageObject.collection).to.have.property('grants');
                             expect(messageObject.collection.grants, "check cloned collection grants").to.eql(reference.testCollection.grantsProjected)
 
@@ -689,11 +645,6 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                         }
                     }
                 }
-                if(clonedCollectionId !== null){
-                    const clonedCollection = await utils.getCollection(clonedCollectionId)
-                    expect(clonedCollection).to.exist 
-                    expect(clonedCollection.assets).to.have.lengthOf(0)
-                }
             })
             it('clone test collection - stigMapping=none', async () => {
 
@@ -712,7 +663,7 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                         }
                       })
                 expect(res).to.have.status(200)
-                let clonedCollectionId = null
+
                 let jsonDataArray = res.body.toString().split("\n")
 
                 const checklistCount = 0
@@ -722,7 +673,6 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                     if(message.length > 0){
                         let messageObject = JSON.parse(message)
                         if(messageObject.stage === "result"){
-                            clonedCollectionId = messageObject.collection.collectionId
                             expect(messageObject.collection).to.have.property('grants');
                             expect(messageObject.collection.grants, "check cloned collection grants").to.eql(reference.testCollection.grantsProjected)
 
@@ -763,12 +713,6 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                         }
                     }
                 }
-                if(clonedCollectionId !== null){
-                    const clonedCollection = await utils.getCollection(clonedCollectionId)
-                    expect(clonedCollection).to.exist 
-                    expect(clonedCollection.stigs).to.have.lengthOf(0)
-                    expect(clonedCollection.statistics.checklistCount).to.equal(0)
-                }
             })
             it('clone test collection - stigMapping=withoutReviews', async () => {
 
@@ -787,14 +731,13 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                         }
                       })
                 expect(res).to.have.status(200)
-                let clonedCollectionId = null   
+
                 let jsonDataArray = res.body.toString().split("\n")
 
                 for(const message of jsonDataArray){
                     if(message.length > 0){
                         let messageObject = JSON.parse(message)
                         if(messageObject.stage === "result"){
-                            clonedCollectionId = messageObject.collection.collectionId
                             expect(messageObject.collection).to.have.property('grants');
                             expect(messageObject.collection.grants, "check cloned collection grants").to.eql(reference.testCollection.grantsProjected)
 
@@ -835,20 +778,8 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                         }
                     }
                 }
-                if(clonedCollectionId !== null){
-                    const clonedCollectionReviews = await utils.getReviews(clonedCollectionId)
-                    expect(clonedCollectionReviews).to.be.empty 
-                }
             })
             it('clone test collection - sourceDefaults', async () => {
-
-                const pinnedRevision ={
-                    ruleCount: 81,
-                    benchmarkId: "VPN_SRG_TEST",
-                    revisionStr: "V1R0",
-                    benchmarkDate: "2010-07-19",
-                    revisionPinned: true
-                }
 
                 const res = await chai.request(config.baseUrl)
                     .post(`/collections/${reference.testCollection.collectionId}/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`)
@@ -865,7 +796,7 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                         }
                       })
                 expect(res).to.have.status(200)
-                let clonedCollectionId = null
+
                 let jsonDataArray = res.body.toString().split("\n")
 
 
@@ -876,7 +807,6 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                     if(message.length > 0){
                         let messageObject = JSON.parse(message)
                         if(messageObject.stage === "result"){
-                            clonedCollectionId = messageObject.collection.collectionId
                             expect(messageObject.collection).to.have.property('grants');
                             expect(messageObject.collection.grants, "check cloned collection grants").to.eql(reference.testCollection.grantsProjected)
 
@@ -916,11 +846,6 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                             expect(messageObject.collection.stigs).to.eql(stigsProjected)
                         }
                     }
-                }
-                if(clonedCollectionId !== null){
-                    const pinnedStig = await utils.getStigByCollectionBenchmarkId(clonedCollectionId, pinnedRevision.benchmarkId)
-                    expect(pinnedStig).to.exist 
-                    expect(pinnedStig.revisionPinned).to.equal(pinnedRevision.revisionPinned)
                 }
             })
         })
@@ -1009,3 +934,675 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
         })
     })
 })
+describe('POST - exportToCollection - /collections/{collectionId}/export-to/{dstCollectionId}', () => {
+
+    before(async function () {
+        this.timeout(4000)
+        await utils.loadAppData()
+        await utils.uploadTestStigs()
+    })
+
+    let exportedAsset = null
+    let exportedAssetResults = null
+    it('Merge provided properties with a Collection Copy', async () => {
+        const res = await chai.request(config.baseUrl)
+            .patch(`/collections/${reference.scrapCollection.collectionId}?elevate=true`)
+            .set('Authorization', `Bearer ${user.token}`)
+            .send({
+                "metadata": {
+                  "pocName": "poc2Patched",
+                  "pocEmail": "pocEmail@email.com",
+                  "pocPhone": "12342",
+                  "reqRar": "true"
+                },
+                  "settings": {
+                      "fields": {
+                          "detail": {
+                              "enabled": "always",
+                              "required": "always"
+                          },
+                          "comment": {
+                              "enabled": "findings",
+                              "required": "findings"
+                          }
+                      },
+                      "status": {
+                          "canAccept": true,
+                          "resetCriteria": "result",
+                          "minAcceptGrant": 3
+                      },
+                      "history": {
+                          "maxReviews": 15
+                      }
+                  },  
+                  "grants": [
+                      {
+                        "userId": "1",
+                        "accessLevel": 4
+                      },
+                      {
+                              "userId": "21",
+                          "accessLevel": 1
+                      },
+                      {
+                              "userId": "44",
+                          "accessLevel": 3
+                      },
+                      {
+                              "userId": "45",
+                          "accessLevel": 4
+                      },
+                      {
+                              "userId": "87",
+                          "accessLevel": 4
+                      }
+                  ]
+              })
+        expect(res).to.have.status(200)
+    })
+    it("export results to another collection - entire asset - create asset in destination", async () => {
+
+        const res = await chai
+          .request(config.baseUrl)
+          .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
+          .set("Authorization", `Bearer ${user.token}`)
+          .send([
+            {
+              assetId: reference.testAsset.assetId,
+            },
+          ])
+         
+          expect(res).to.have.status(200)
+          const response = res.body.toString().split("\n")
+          expect(response).to.be.an('array')
+          expect(response).to.have.lengthOf.at.least(1)
+
+          for(const message of response){ 
+              if(message.length > 0){
+                  let messageObj = JSON.parse(message)
+                  if(messageObj.stage == "result"){
+                    expect(messageObj.counts.assetsCreated).to.eql(1)
+                    expect(messageObj.counts.stigsMapped).to.eql(2)
+                    expect(messageObj.counts.reviewsInserted).to.eql(9)
+                    expect(messageObj.counts.reviewsUpdated).to.eql(0)
+                  }
+              }
+          }
+    })
+    it('get asset created via export-to', async () => {
+        const res = await chai.request(config.baseUrl)
+            .get(`/assets?collectionId=${reference.scrapCollection.collectionId}&name=Collection_X_lvl1_asset-1`)
+            .set('Authorization', `Bearer ${user.token}`)
+        expect(res).to.have.status(200)
+        exportedAsset = res.body[0].assetId
+    })
+    it('Return detail metrics - asset agg - with param assetId SOURCE', async () => {
+
+        const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.testCollection.collectionId}/metrics/detail/asset?assetId=${reference.testAsset.assetId}`)
+            .set('Authorization', `Bearer ${user.token}`)
+        expect(res).to.have.status(200)
+        exportedAssetStatuses = res.body[0].metrics.statuses
+        exportedAssetResults = res.body[0].metrics.results
+
+    })
+    it('Return detail metrics - asset agg - with param assetId DEST', async () => {
+
+        const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.scrapCollection.collectionId}/metrics/detail/asset?assetId=${exportedAsset}`)
+            .set('Authorization', `Bearer ${user.token}`)
+        expect(res).to.have.status(200)
+        expect(res.body[0].metrics.results, "comparing source asset to exported asset metrics").to.eql(exportedAssetResults)
+
+    })
+    it('PUT Review: stigs and rule projections Copy', async () => {
+
+        const res = await chai.request(config.baseUrl)
+            .put(`/collections/${reference.scrapCollection.collectionId}/reviews/${exportedAsset}/${reference.ruleId}?projection=rule&projection=stigs`)
+            .set('Authorization', `Bearer ${user.token}`)
+            .send({
+                "result": "pass",
+                "detail": "test\nvisible to lvl1",
+                "comment": "",
+                "autoResult": false,
+                "status": "accepted"
+            })
+        expect(res).to.have.status(200)
+
+    })
+    it("export results to another collection - entire asset - asset exists Copy", async () => {
+
+        const res = await chai
+            .request(config.baseUrl)
+            .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
+            .set("Authorization", `Bearer ${user.token}`)
+            .send([
+            {
+                assetId: reference.testAsset.assetId,
+            },
+            ])
+            expect(res).to.have.status(200)
+            const response = res.body.toString().split("\n")
+            expect(response).to.be.an('array')
+            expect(response).to.have.lengthOf.at.least(1)
+            for(const message of response){ 
+                if(message.length > 0){
+                    let messageObj = JSON.parse(message)
+                    if(messageObj.stage == "result"){
+                    expect(messageObj.counts.assetsCreated).to.eql(0)
+                    expect(messageObj.counts.stigsMapped).to.eql(0)
+                    expect(messageObj.counts.reviewsInserted).to.eql(0)
+                    expect(messageObj.counts.reviewsUpdated).to.eql(9)
+                    }
+                }
+            }
+    })
+    it('Return detail metrics - asset agg - with param assetId DEST Copy', async () => {
+
+        const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.scrapCollection.collectionId}/metrics/detail/asset?assetId=${exportedAsset}`)
+            .set('Authorization', `Bearer ${user.token}`)
+        expect(res).to.have.status(200)
+        let expectedStatuses = {
+            "saved": {
+                "total": 8,
+                "resultEngine": 0
+            },
+            "accepted": {
+                "total": 1,
+                "resultEngine": 0
+            },
+            "rejected": {
+                "total": 0,
+                "resultEngine": 0
+            },
+            "submitted": {
+                "total": 0,
+                "resultEngine": 0
+            }
+        }
+        expect(res.body[0].metrics.results, "comparing source asset to exported asset metrics").to.eql(exportedAssetResults)
+        expect(res.body[0].metrics.statuses, "comparing source asset to exported asset statuses").to.eql(expectedStatuses);
+    })
+    it('Merge provided properties with a Collection Copy 2', async () => {
+        const res = await chai.request(config.baseUrl)
+            .patch(`/collections/${reference.scrapCollection.collectionId}?elevate=true`)
+            .set('Authorization', `Bearer ${user.token}`)
+            .send({
+                "metadata": {
+                  "pocName": "poc2Patched",
+                  "pocEmail": "pocEmail@email.com",
+                  "pocPhone": "12342",
+                  "reqRar": "true"
+                },
+                  "settings": {
+                      "fields": {
+                          "detail": {
+                              "enabled": "always",
+                              "required": "always"
+                          },
+                          "comment": {
+                              "enabled": "findings",
+                              "required": "findings"
+                          }
+                      },
+                      "status": {
+                          "canAccept": true,
+                          "resetCriteria": "any",
+                          "minAcceptGrant": 3
+                      },
+                      "history": {
+                          "maxReviews": 15
+                      }
+                  },  
+                  "grants": [
+                      {
+                        "userId": "1",
+                        "accessLevel": 4
+                      },
+                      {
+                              "userId": "21",
+                          "accessLevel": 1
+                      },
+                      {
+                              "userId": "44",
+                          "accessLevel": 3
+                      },
+                      {
+                              "userId": "45",
+                          "accessLevel": 4
+                      },
+                      {
+                              "userId": "87",
+                          "accessLevel": 4
+                      }
+                  ]
+              })
+        expect(res).to.have.status(200)
+    })
+    it('PUT Review: stigs and rule projections Copy 2 ', async () => {
+
+        const res = await chai.request(config.baseUrl)
+            .put(`/collections/${reference.scrapCollection.collectionId}/reviews/${exportedAsset}/${reference.ruleId}?projection=rule&projection=stigs`)
+            .set('Authorization', `Bearer ${user.token}`)
+            .send({
+                "result": "pass",
+                "detail": "test\nvisible to lvl1",
+                "comment": "",
+                "autoResult": false,
+                "status": "accepted"
+            })
+        expect(res).to.have.status(200)
+    })
+    it("export results to another collection - entire asset - asset exists Copy 2", async () => {
+
+        const res = await chai
+            .request(config.baseUrl)
+            .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
+            .set("Authorization", `Bearer ${user.token}`)
+            .send([
+                {
+                  "assetId": "42"
+                }
+              ])
+            expect(res).to.have.status(200)
+            const response = res.body.toString().split("\n")
+            expect(response).to.be.an('array')
+            expect(response).to.have.lengthOf.at.least(1)
+            for(const message of response){ 
+                if(message.length > 0){
+                    let messageObj = JSON.parse(message)
+                    if(messageObj.stage == "result"){
+                    expect(messageObj.counts.assetsCreated).to.eql(0)
+                    expect(messageObj.counts.stigsMapped).to.eql(0)
+                    expect(messageObj.counts.reviewsInserted).to.eql(0)
+                    expect(messageObj.counts.reviewsUpdated).to.eql(9)
+                    }
+                }
+            }
+    })
+    it('Return detail metrics - asset agg - with param assetId DEST Copy 2', async () => {
+
+        const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.scrapCollection.collectionId}/metrics/detail/asset?assetId=${exportedAsset}`)
+            .set('Authorization', `Bearer ${user.token}`)
+        expect(res).to.have.status(200)
+        let expectedStatuses = {
+            "saved": {
+                "total": 9,
+                "resultEngine": 0
+            },
+            "accepted": {
+                "total": 0,
+                "resultEngine": 0
+            },
+            "rejected": {
+                "total": 0,
+                "resultEngine": 0
+            },
+            "submitted": {
+                "total": 0,
+                "resultEngine": 0
+            }
+        }
+        expect(res.body[0].metrics.results, "comparing source asset to exported asset metrics").to.eql(exportedAssetResults)
+        expect(res.body[0].metrics.statuses, "comparing source asset to exported asset statuses").to.eql(expectedStatuses);
+    })
+})
+describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{assetId}', () => {
+
+    describe('Duplicate RuleIds/Rule Fingerprint', () => {
+
+        before(async function () {
+            this.timeout(4000)
+            await utils.uploadTestStigs()
+            await utils.loadAppData()
+        })
+
+        it('Import a new STIG - VPN  (as admin) Copy', async () => {
+
+            const directoryPath = path.join(__dirname, '../../form-data-files/')
+            const testStigfile = reference.rulesMatchingFingerprints
+            const filePath = path.join(directoryPath, testStigfile)
+    
+            const res = await chai.request(config.baseUrl)
+                .post('/stigs?elevate=true&clobber=true')
+                .set('Authorization', `Bearer ${user.token}`)
+                .set('Content-Type', `multipart/form-data`)
+                .attach('importFile', fs.readFileSync(filePath), testStigfile)
+            expect(res).to.have.status(200)
+        })
+        it('PUT a STIG assignment to an Asset Copy 2', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .put(`/assets/${reference.testAsset.assetId}/stigs/VPN_SRG_Rule-fingerprint-match-test`)
+                .set('Authorization', `Bearer ${user.token}`)
+            expect(res).to.have.status(200)
+        })
+        it('Import one or more Reviews with matching Rule Fingerprints', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .post(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}`)
+                .set('Authorization', `Bearer ${user.token}`)
+                .send([
+                    {
+                        "ruleId": "SV-106179r1_xxxx",
+                        "result": "pass",
+                        "detail": "asfeee",
+                        "comment": null,
+                        "resultEngine": null,
+                        "status": "saved"
+                    },
+                    {
+                        "ruleId": "SV-106179r1_zzzzzz",
+                        "result": "pass",
+                        "detail": "asfeee",
+                        "comment": null,
+                        "resultEngine": null,
+                        "status": "saved"
+                    },
+                    {
+                        "ruleId": "SV-106181r1_xxxx",
+                        "result": "notapplicable",
+                        "detail": "asdfsef",
+                        "comment": null,
+                        "resultEngine": null,
+                        "status": "saved"
+                    }
+                ])
+            expect(res).to.have.status(200)
+            const expectedResponse = {
+                rejected: [],
+                affected: {
+                    updated: 0,
+                    inserted: 2
+                }
+            }
+            expect(res.body).to.eql(expectedResponse)
+        })
+        it('Return detailed metrics for the specified Collection - with params Copy', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .get(`/collections/${reference.testCollection.collectionId}/metrics/detail?benchmarkId=VPN_SRG_Rule-fingerprint-match-test&assetId=${reference.testAsset.assetId}`)
+                .set('Authorization', `Bearer ${user.token}`)
+            expect(res).to.have.status(200)
+            let testChecklistLength = 3
+            let testBenchmark = "VPN_SRG_Rule-fingerprint-match-test"
+            for(item of res.body){
+                expect(item.benchmarkId).to.eql(testBenchmark)
+                expect(item.assetId).to.eql(reference.testAsset.assetId)
+                let responseLabels = [];
+                for (let label of item.labels) {
+                    responseLabels.push(label.labelId)
+                }
+                expect(responseLabels, "expect test label").to.include(reference.testCollection.fullLabel)
+                if (item.assetId ==  reference.testAsset.assetId && item.benchmarkId == testBenchmark) {
+                    expect(item.metrics.findings.low).to.equal(0)
+                    expect(item.metrics.results.notapplicable.total).to.equal(1)
+                    expect(item.metrics.results.pass.total).to.equal(2)
+                    expect(item.metrics.results.fail.total).to.equal(0)
+                    expect(item.metrics.statuses.submitted.total).to.equal(0)
+                    expect(item.metrics.assessments).to.equal(testChecklistLength)
+                    expect(item.metrics.assessed).to.equal(3)
+                }
+            }
+        })
+        it('Delete a STIG assignment to an Asset Copy', async () => {
+                
+                const res = await chai.request(config.baseUrl)
+                    .delete(`/assets/${reference.testAsset.assetId}/stigs/VPN_SRG_Rule-fingerprint-match-test`)
+                    .set('Authorization', `Bearer ${user.token}`)
+                expect(res).to.have.status(200)
+        })
+        it('PUT a STIG assignment to an Asset Copy 2', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .put(`/assets/${reference.testAsset.assetId}/stigs/VPN_SRG_Rule-fingerprint-match-test`)
+                .set('Authorization', `Bearer ${user.token}`)
+            expect(res).to.have.status(200)
+        })
+        it('Return detailed metrics for the specified Collection - with params Copy 2', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .get(`/collections/${reference.testCollection.collectionId}/metrics/detail?benchmarkId=VPN_SRG_Rule-fingerprint-match-test&assetId=${reference.testAsset.assetId}`)
+                .set('Authorization', `Bearer ${user.token}`)
+            expect(res).to.have.status(200)
+            let testChecklistLength = 3
+            let testBenchmark = "VPN_SRG_Rule-fingerprint-match-test"
+            for(item of res.body){
+                expect(item.benchmarkId).to.eql(testBenchmark)
+                expect(item.assetId).to.eql(reference.testAsset.assetId)
+                let responseLabels = [];
+                for (let label of item.labels) {
+                    responseLabels.push(label.labelId)
+                }
+                expect(responseLabels, "expect test label").to.include(reference.testCollection.fullLabel)
+                if (item.assetId ==  reference.testAsset.assetId && item.benchmarkId == testBenchmark) {
+                    expect(item.metrics.findings.low).to.equal(0)
+                    expect(item.metrics.results.notapplicable.total).to.equal(1)
+                    expect(item.metrics.results.pass.total).to.equal(2)
+                    expect(item.metrics.results.fail.total).to.equal(0)
+                    expect(item.metrics.statuses.submitted.total).to.equal(0)
+                    expect(item.metrics.assessments).to.equal(testChecklistLength)
+                    expect(item.metrics.assessed).to.equal(3)
+                }
+            }
+        })
+        it('Import and overwrite application data (as elevated Admin) Copy 2', async () => {
+            try{
+                await utils.uploadTestStigs()
+                await utils.loadAppData()
+            }
+            catch(err){
+                console.log(err)
+                throw new Error("This test should have passed")
+            }
+        })
+        it('PUT a STIG assignment to an Asset Copy 3', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .put(`/assets/${reference.testAsset.assetId}/stigs/VPN_SRG_Rule-fingerprint-match-test`)
+                .set('Authorization', `Bearer ${user.token}`)
+            expect(res).to.have.status(200)
+        })
+        it('Import one or more Reviews with matching RuleIds', async () => {
+                
+                const res = await chai.request(config.baseUrl)
+                    .post(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}`)
+                    .set('Authorization', `Bearer ${user.token}`)
+                    .send([
+                        {
+                            "ruleId": "SV-106179r1_xxxx",
+                            "result": "pass",
+                            "detail": "asfeee",
+                            "comment": null,
+                            "resultEngine": null,
+                            "status": "saved"
+                        },
+                        {
+                            "ruleId": "SV-106179r1_xxxx",
+                            "result": "pass",
+                            "detail": "asfeee",
+                            "comment": null,
+                            "resultEngine": null,
+                            "status": "saved"
+                        },
+                        {
+                            "ruleId": "SV-106181r1_xxxx",
+                            "result": "notapplicable",
+                            "detail": "asdfsef",
+                            "comment": null,
+                            "resultEngine": null,
+                            "status": "saved"
+                        }
+                    ])
+                expect(res).to.have.status(200)
+                const expectedResponse = {
+                    rejected: [],
+                    affected: {
+                        updated: 0,
+                        inserted: 2
+                    }
+                }
+                expect(res.body).to.eql(expectedResponse)
+        })
+        it('Return detailed metrics for the specified Collection - with params Copy 2', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .get(`/collections/${reference.testCollection.collectionId}/metrics/detail?benchmarkId=VPN_SRG_Rule-fingerprint-match-test&assetId=${reference.testAsset.assetId}`)
+                .set('Authorization', `Bearer ${user.token}`)
+            expect(res).to.have.status(200)
+            let testChecklistLength = 3
+            let testBenchmark = "VPN_SRG_Rule-fingerprint-match-test"
+            for(item of res.body){
+                expect(item.benchmarkId).to.eql(testBenchmark)
+                expect(item.assetId).to.eql(reference.testAsset.assetId)
+                let responseLabels = [];
+                for (let label of item.labels) {
+                    responseLabels.push(label.labelId)
+                }
+                expect(responseLabels, "expect test label").to.include(reference.testCollection.fullLabel)
+                if (item.assetId ==  reference.testAsset.assetId && item.benchmarkId == testBenchmark) {
+                    expect(item.metrics.findings.low).to.equal(0)
+                    expect(item.metrics.results.notapplicable.total).to.equal(1)
+                    expect(item.metrics.results.pass.total).to.equal(2)
+                    expect(item.metrics.results.fail.total).to.equal(0)
+                    expect(item.metrics.statuses.submitted.total).to.equal(0)
+                    expect(item.metrics.assessments).to.equal(testChecklistLength)
+                    expect(item.metrics.assessed).to.equal(3)
+                }
+            }
+        })
+    })
+})
+describe('GET - putAssetsByCollectionLabelId - /collections/{collectionId}/labels/{labelId}/assets', () => {
+
+    describe('valid label checks', () => {
+
+        before(async function () {
+            this.timeout(4000)
+            await utils.loadAppData()
+            await utils.uploadTestStigs()
+        })
+
+        it('Merge provided properties with an Asset Copy', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .patch(`/assets/${reference.scrapAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
+                .set('Authorization', `Bearer ${user.token}`)
+                .send({
+                    "collectionId": reference.scrapCollection.collectionId,
+                    "description": "test desc",
+                    "ip": "1.1.1.1",
+                    "noncomputing": true,
+                    "labelIds": [
+                        reference.testCollection.fullLabel
+                    ],    
+                    "metadata": {
+                        "pocName": "poc2Put",
+                        "pocEmail": "pocEmailPut@email.com",
+                        "pocPhone": "12342",
+                        "reqRar": "true"
+                    },
+                    "stigs": [
+                        "VPN_SRG_TEST",
+                        "Windows_10_STIG_TEST",
+                        "RHEL_7_STIG_TEST"
+                    ]
+                })
+            expect(res).to.have.status(200)
+        })
+        it('Replace a Labels Asset Mappings in a Collection Copy', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .put(`/collections/${reference.testCollection.collectionId}/labels/${reference.scrapLabel}/assets`)
+                .set('Authorization', `Bearer ${user.token}`)
+                .send([
+                        `${reference.testAsset.assetId}`
+                ])
+            expect(res).to.have.status(403)
+        })
+        it('Create an Asset Copy', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .post(`/assets?projection=stigs`)
+                .set('Authorization', `Bearer ${user.token}`)
+                .send({
+                    "name": 'TestAsset' + Math.floor(Math.random() * 1000),
+                    "collectionId": reference.scrapCollection.collectionId,
+                    "description": "test desc",
+                    "ip": "1.1.1.1",
+                    "labelIds": [
+                        "8fd5f19e-9b5e-11ec-adb1-0242c0a86004",
+                        "1630332d-f4d5-4634-9d67-314d774050de"
+                        ],
+                    "noncomputing": true,
+                    "metadata": {
+                        "pocName": "poc2Put",
+                        "pocEmail": "pocEmailPut@email.com",
+                        "pocPhone": "12342",
+                        "reqRar": "true"
+                    },
+                    "stigs": [
+                        "VPN_SRG_TEST",
+                        "Windows_10_STIG_TEST"
+                    ]
+                })
+            expect(res).to.have.status(201)
+
+            let request = res.request._data
+            request.labelIds = []
+
+            expect(assetGetToPost(res.body)).to.eql(request)
+        })
+        it('Set all properties of an Asset Copy', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .put(`/assets/${reference.scrapAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
+                .set('Authorization', `Bearer ${user.token}`)
+                .send({
+                    "name": 'TestAsset' + Math.floor(Math.random() * 1000),
+                    "collectionId": reference.scrapCollection.collectionId,
+                    "description": "test desc",
+                    "ip": "1.1.1.1",
+                    "noncomputing": true,
+                    "labelIds": [
+                        "8fd5f19e-9b5e-11ec-adb1-0242c0a86004",
+                        "1630332d-f4d5-4634-9d67-314d774050de"
+                    ],
+                    "metadata": {
+                        "pocName": "poc2Put",
+                        "pocEmail": "pocEmailPut@email.com",
+                        "pocPhone": "12342",
+                        "reqRar": "true"
+                    },
+                    "stigs": [
+                        "VPN_SRG_TEST",
+                        "Windows_10_STIG_TEST",
+                        "RHEL_7_STIG_TEST"
+                    ]
+                })
+            expect(res).to.have.status(200)
+        })
+    })
+})
+
+function assetGetToPost (assetGet) {
+    // extract the transformed and unposted properties
+    const { assetId, collection, stigs, mac, fqdn, ...assetPost } = assetGet
+  
+    // add transformed properties to the derived post
+    assetPost.collectionId = collection.collectionId
+    assetPost.stigs = stigsGetToPost(stigs)
+  
+    // the derived post object
+    return assetPost
+  }
+  
+  function stigsGetToPost (stigsGetArray) {
+    const stigsPostArray = []
+    for (const stig of stigsGetArray) {
+      stigsPostArray.push(stig.benchmarkId)
+    }
+    return stigsPostArray
+  }

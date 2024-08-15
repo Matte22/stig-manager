@@ -4,9 +4,13 @@
 
 const reference = {
     testStigfile: "U_VPN_SRG_V1R0_Manual-xccdf.xml",
+    rulesMatchingFingerprints: "U_VPN_SRG-OTHER_V1R1_twoRules-matchingFingerprints.xml",
     checklistLength: 81,
     benchmark: "VPN_SRG_TEST",
     ruleId: "SV-106179r1_rule",
+    ruleIdPinnedRev: "SV-106179r123456789_rule",
+    writeStigPropsByCollectionStig: ['62', '42', '154'],
+    scrapLabel: "df4e6836-a003-11ec-b1bc-0242ac110002",
     testCollection: {
       name: "Collection X",
       collectionId: "21",
