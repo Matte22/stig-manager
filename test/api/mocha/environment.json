@@ -47,7 +47,7 @@
         "name": "Collection_X_lvl1_asset-1",
         "assetId": "42",
         "collectionId": "21",
-        "usersWithGrant":["86,85"],
+        "usersWithGrant":["86","85"],
         "benchmark": "VPN_SRG_TEST",
         "validStigs": ["VPN_SRG_TEST","Windows_10_STIG_TEST"],
         "metadataKey": "testkey",
