@@ -10,7 +10,7 @@ const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
 const requestBodies = require('./requestBodies.js')
 
-describe('PATCH - Collection', () => {
+describe('PATCH - Collection', function () {
 
     before(async function () {
         this.timeout(4000)
@@ -21,16 +21,16 @@ describe('PATCH - Collection', () => {
     for(const user of users) {
       const distinct = expectations[user.name]
       if (expectations[user.name] === undefined){
-        it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+        it(`No expectations for this iteration scenario: ${user.name}`,async function () {})
         return
       }
   
 
-      describe(`user:${user.name}`, () => {
+      describe(`user:${user.name}`, function () {
 
-        describe('updateCollection - /collections/{collectionId}', () => {
+        describe('updateCollection - /collections/{collectionId}', function () {
 
-          it('Merge provided properties with a Collection', async () => {
+          it('Merge provided properties with a Collection',async function () {
 
             const patchRequest = requestBodies.updateCollection
             // const patchRequest = {
@@ -98,9 +98,9 @@ describe('PATCH - Collection', () => {
           })
         })
 
-        describe('patchCollectionLabelById - /collections/{collectionId}/labels/{labelId}', () => {
+        describe('patchCollectionLabelById - /collections/{collectionId}/labels/{labelId}', function () {
 
-          it('Merge provided properties with a Collection Label', async () => {
+          it('Merge provided properties with a Collection Label',async function () {
             const body = requestBodies.patchCollectionLabelById
             const res = await chai.request(config.baseUrl)
                 .patch(`/collections/${reference.scrapCollection.collectionId}/labels/${reference.scrapCollection.scrapLabel}`)
@@ -120,9 +120,9 @@ describe('PATCH - Collection', () => {
           })
         })
 
-        describe('patchCollectionMetadata - /collections/{collectionId}/metadata', () => {
+        describe('patchCollectionMetadata - /collections/{collectionId}/metadata', function () {
 
-          it('Merge metadata property/value into a Collection', async () => {
+          it('Merge metadata property/value into a Collection',async function () {
               
               const res = await chai.request(config.baseUrl)
                   .patch(`/collections/${reference.scrapCollection.collectionId}/metadata`)

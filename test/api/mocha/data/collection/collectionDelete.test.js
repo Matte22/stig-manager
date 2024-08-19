@@ -10,7 +10,7 @@ const expectations = require('./expectations')
 const reference = require('./referenceData')
 
 
-describe('DELETE - Collection ', () => {
+describe('DELETE - Collection ', function () {
 
   before(async function () {
     this.timeout(4000)
@@ -25,17 +25,17 @@ describe('DELETE - Collection ', () => {
   for(const user of users){
     
     if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+      it(`No expectations for this iteration scenario: ${user.name}`,async function () {})
       continue
     }
 
-    describe(`user:${user.name}`, () => {
+    describe(`user:${user.name}`, function () {
       const distinct = expectations[user.name]
 
-      describe('deleteCollection - /collections/{collectionId}', () => {
+      describe('deleteCollection - /collections/{collectionId}', function () {
         if (user.name === 'stigmanadmin' ){
 
-          it('Delete a Collection - elevated stigmanadmin only', async () => {
+          it('Delete a Collection - elevated stigmanadmin only',async function () {
               const res = await chai.request(config.baseUrl)
                   .delete(`/collections/${distinct.deleteCollectionId_admin}?elevate=true&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs`)
                   .set('Authorization', `Bearer ${user.token}`)
@@ -74,7 +74,7 @@ describe('DELETE - Collection ', () => {
           })
         }
 
-        it('Delete a Collection no elevate', async () => {
+        it('Delete a Collection no elevate',async function () {
           const res = await chai.request(config.baseUrl)
               .delete(`/collections/${reference.deleteCollection.collectionId}?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs`)
               .set('Authorization', `Bearer ${user.token}`)
@@ -113,9 +113,9 @@ describe('DELETE - Collection ', () => {
         })
       })
 
-      describe('deleteCollectionLabelById - /collections/{collectionId}/labels/{labelId}', () => {
+      describe('deleteCollectionLabelById - /collections/{collectionId}/labels/{labelId}', function () {
 
-        it('Delete a Collection Label', async () => {
+        it('Delete a Collection Label',async function () {
             const res = await chai.request(config.baseUrl)
                 .delete(`/collections/${reference.scrapCollection.collectionId}/labels/${reference.scrapCollection.scrapLabel}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -129,9 +129,9 @@ describe('DELETE - Collection ', () => {
         })
       })
 
-      describe('deleteCollectionMetadataKey - /collections/{collectionId}/metadata/keys/{key}', () => {
+      describe('deleteCollectionMetadataKey - /collections/{collectionId}/metadata/keys/{key}', function () {
 
-        it('Delete a Collection Metadata Key', async () => {
+        it('Delete a Collection Metadata Key',async function () {
             const res = await chai.request(config.baseUrl)
                 .delete(`/collections/${reference.scrapCollection.collectionId}/metadata/keys/${reference.scrapCollection.collectionMetadataKey}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -147,9 +147,9 @@ describe('DELETE - Collection ', () => {
         })
       })
 
-      describe('deleteReviewHistoryByCollection - /collections/{collectionId}/review-history', () => {
+      describe('deleteReviewHistoryByCollection - /collections/{collectionId}/review-history', function () {
 
-        it('History records - date', async () => {
+        it('History records - date',async function () {
             const res = await chai.request(config.baseUrl)
                 .delete(`/collections/${reference.testCollection.collectionId}/review-history?retentionDate=${reference.testCollection.reviewHistory.endDate}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -163,7 +163,7 @@ describe('DELETE - Collection ', () => {
             expect(res.body.HistoryEntriesDeleted).to.be.equal(reference.testCollection.reviewHistory.deletedEntriesByDate)
         })
 
-        it('History records - date and asset', async () => {
+        it('History records - date and asset',async function () {
             const res = await chai.request(config.baseUrl)
                 .delete(`/collections/${reference.testCollection.collectionId}/review-history?retentionDate=${reference.testCollection.reviewHistory.endDate}&assetId=${reference.testCollection.testAssetId}`)
                 .set('Authorization', `Bearer ${user.token}`)

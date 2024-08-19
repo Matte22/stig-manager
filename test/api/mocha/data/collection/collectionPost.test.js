@@ -11,7 +11,7 @@ const reference = require('./referenceData.js')
 const requestBodies = require('./requestBodies.js')
 
 
-describe('POST - Collection - not all tests run for all iterations', () => {
+describe('POST - Collection - not all tests run for all iterations', function () {
   // before(async function () {
   //   this.timeout(4000)
   //   await utils.uploadTestStigs()
@@ -21,10 +21,10 @@ describe('POST - Collection - not all tests run for all iterations', () => {
 
   for(const user of users) {
     if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+      it(`No expectations for this iteration scenario: ${user.name}`,async function () {})
       continue
     }
-    describe(`user:${user.name}`, () => {
+    describe(`user:${user.name}`, function () {
       const distinct = expectations[user.name]
       
       before(async function () {
@@ -34,11 +34,11 @@ describe('POST - Collection - not all tests run for all iterations', () => {
         await utils.createDisabledCollectionsandAssets()
       })
   
-      describe("createCollection - /collections", () => {
+      describe("createCollection - /collections", function () {
 
         // run this test once to validate EOV, I guess???
         if (user.name === "stigmanadmin") {
-          it("Invalid fields.detail.required value", async () => {
+          it("Invalid fields.detail.required value",async function () {
             const res = await chai
               .request(config.baseUrl)
               .post(`/collections`)
@@ -76,7 +76,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
         }
 
       if (user.name === "stigmanadmin") {
-        it("Missing settings", async () => {
+        it("Missing settings",async function () {
           const res = await chai
             .request(config.baseUrl)
             .post(`/collections`)
@@ -96,7 +96,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
         })
       }
 
-        it("Create a Collection and test projections", async () => {
+        it("Create a Collection and test projections",async function () {
           const post = requestBodies.createCollection
            const res = await chai
             .request(config.baseUrl)
@@ -162,13 +162,13 @@ describe('POST - Collection - not all tests run for all iterations', () => {
         })
       })
 
-      describe("cloneCollection - /collections/{collectionId}/clone", () => {
+      describe("cloneCollection - /collections/{collectionId}/clone", function () {
 
         before(async function () {
           // this.timeout(4000)
           await utils.setDefaultRevision(reference.testCollection.collectionId, reference.benchmark, reference.pinRevision)
         })
-        it("clone collection for later Review check and test projections everything matches source ", async () => {
+        it("clone collection for later Review check and test projections everything matches source ",async function () {
 
           const res = await chai
             .request(config.baseUrl)
@@ -257,7 +257,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
       })
 
 
-      describe("exportToCollection - /collections/{collectionId}/export-to/{dstCollectionId}", () => {
+      describe("exportToCollection - /collections/{collectionId}/export-to/{dstCollectionId}", function () {
 
         before(async function () {
           // this.timeout(4000)
@@ -266,7 +266,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
           await utils.createDisabledCollectionsandAssets()
         })
         
-        // it("export results to another collection - entire asset - create asset in destination", async () => {
+        // it("export results to another collection - entire asset - create asset in destination",async function () {
 
         //   const res = await chai
         //     .request(config.baseUrl)
@@ -299,7 +299,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
         //         }
         //     }
         // })
-        // it("export results to another collection - entire asset - asset exists", async () => {
+        // it("export results to another collection - entire asset - asset exists",async function () {
 
         //   const res = await chai
         //     .request(config.baseUrl)
@@ -335,9 +335,9 @@ describe('POST - Collection - not all tests run for all iterations', () => {
       })
 
 
-      describe("createCollectionLabel - /collections/{collectionId}/labels", () => {
+      describe("createCollectionLabel - /collections/{collectionId}/labels", function () {
 
-        it("Create Label in a Collection", async () => {
+        it("Create Label in a Collection",async function () {
 
           const request = {
               "name": "test-label-POST",
@@ -364,7 +364,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
       })
 
 
-      describe("writeStigPropsByCollectionStig - /collections/{collectionId}/stigs/{benchmarkId}", () => {
+      describe("writeStigPropsByCollectionStig - /collections/{collectionId}/stigs/{benchmarkId}", function () {
         before(async function () {
           this.timeout(4000)
           await utils.uploadTestStigs()
@@ -372,7 +372,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
           await utils.createDisabledCollectionsandAssets()
         })
 
-        it("Set the Assets mapped to a STIG - default rev and assets", async () => {
+        it("Set the Assets mapped to a STIG - default rev and assets",async function () {
 
           const post = requestBodies.writeStigPropsByCollectionStig
           // {
@@ -399,7 +399,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
             expect(res.body.assetCount).to.eql(requestBodies.writeStigPropsByCollectionStig.assetIds.length)
         })
 
-        it("Set the Assets mapped to a STIG - default latest and assets", async () => {
+        it("Set the Assets mapped to a STIG - default latest and assets",async function () {
 
           const post = {
             defaultRevisionStr: "latest",
@@ -426,7 +426,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
         })
 
 
-        it("Set the Assets mapped to a STIG - assets only", async () => {
+        it("Set the Assets mapped to a STIG - assets only",async function () {
 
           const post = {
             assetIds: requestBodies.writeStigPropsByCollectionStig.assetIds,
@@ -452,7 +452,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
         })
 
 
-        it("Set the Assets mapped to a STIG - invalid rev - expect 422", async () => {
+        it("Set the Assets mapped to a STIG - invalid rev - expect 422",async function () {
 
           const post = {
           defaultRevisionStr: "V1R5"
@@ -472,7 +472,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
             expect(res).to.have.status(422)
         })
 
-        it("Set the Assets mapped to a STIG - default rev only", async () => {
+        it("Set the Assets mapped to a STIG - default rev only",async function () {
 
           const post = {
           defaultRevisionStr: reference.testCollection.pinRevision
@@ -498,7 +498,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
         })
 
 
-        it("Set the Assets mapped to a STIG - clear assets", async () => {
+        it("Set the Assets mapped to a STIG - clear assets",async function () {
 
           const post = {
           assetIds: []
@@ -519,7 +519,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
         })
 
 
-        it("Set the Assets mapped to a STIG - after pinned delete", async () => {
+        it("Set the Assets mapped to a STIG - after pinned delete",async function () {
 
           const post = {
             assetIds: requestBodies.writeStigPropsByCollectionStig.assetIds,

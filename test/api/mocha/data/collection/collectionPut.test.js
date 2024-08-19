@@ -10,7 +10,7 @@ const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
 const requestBodies = require('./requestBodies.js')
 
-describe('PUT - Collection', () => {
+describe('PUT - Collection', function () {
 
   before(async function () {
       this.timeout(4000)
@@ -21,16 +21,16 @@ describe('PUT - Collection', () => {
 
   for(const user of users){
     if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+      it(`No expectations for this iteration scenario: ${user.name}`,async function () {})
       continue
     }
 
-    describe(`user:${user.name}`, () => {
+    describe(`user:${user.name}`, function () {
       const distinct = expectations[user.name]
     
-      describe('replaceCollection - /collections/{collectionId}', () => {
+      describe('replaceCollection - /collections/{collectionId}', function () {
 
-        it('Set all properties of a Collection', async () => {
+        it('Set all properties of a Collection',async function () {
 
             const putRequest = requestBodies.replaceCollection
             // {
@@ -109,7 +109,7 @@ describe('PUT - Collection', () => {
               expect(res.body.metadata.reqRar).to.equal(putRequest.metadata.reqRar)
         })
 
-        // it('Set all properties of a Collection- with metadata', async () => {
+        // it('Set all properties of a Collection- with metadata',async function () {
 
         //     const putRequest = {
         //         name: "TestPutCollection",
@@ -202,9 +202,9 @@ describe('PUT - Collection', () => {
         // })
       })
 
-      describe('setStigAssetsByCollectionUser - /collections/{collectionId}/grants/{userId}/access', () => {
+      describe('setStigAssetsByCollectionUser - /collections/{collectionId}/grants/{userId}/access', function () {
 
-        it('set stig-asset grants for a lvl1 user in this collection.', async () => {
+        it('set stig-asset grants for a lvl1 user in this collection.',async function () {
 
             const res = await chai.request(config.baseUrl)
                 .put(`/collections/${reference.scrapCollection.collectionId}/grants/${reference.scrapLvl1User.userId}/access`)
@@ -228,9 +228,9 @@ describe('PUT - Collection', () => {
       })
 
 
-      describe('putCollectionMetadata - /collections/{collectionId}/metadata', () => {
+      describe('putCollectionMetadata - /collections/{collectionId}/metadata', function () {
 
-        it('Set all metadata of a Collection', async () => {
+        it('Set all metadata of a Collection',async function () {
 
             const putRequest = {
                 [reference.testCollection.metadataKey]: reference.testCollection.metadataValue
@@ -250,9 +250,9 @@ describe('PUT - Collection', () => {
         })
       })
 
-      describe('putCollectionMetadataValue - /collections/{collectionId}/metadata/keys/{key}', () => {
+      describe('putCollectionMetadataValue - /collections/{collectionId}/metadata/keys/{key}', function () {
 
-        it('Set one metadata key/value of a Collection', async () => {
+        it('Set one metadata key/value of a Collection',async function () {
           const res = await chai.request(config.baseUrl)
             .put(`/collections/${reference.testCollection.collectionId}/metadata/keys/${reference.testCollection.collectionMetadataKey}`)
             .set('Authorization', `Bearer ${user.token}`)
