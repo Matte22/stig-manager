@@ -819,51 +819,6 @@ describe('POST - Review', () => {
                   }
                 }
             })
-            it(`POST batch review: target rules defined by stig (expect pinned rules only)`, async () => {
-                  const postreview = {
-                    source: {
-                      review: {
-                        result: 'fail',
-                        detail: 'tesetsetset'
-                      }
-                    },
-                    assets: {
-                      assetIds: ['62', '42', '154']
-                    },
-                    rules: {
-                      benchmarkIds: ['VPN_SRG_TEST']
-                    }
-                  }
-
-              const res = await chai.request(config.baseUrl)
-                .post(`/collections/${reference.testCollection.collectionId}/reviews`)
-                .set('Authorization', `Bearer ${user.token}`)
-                .send(postreview)
-              if(user.name === 'collectioncreator') {
-                expect(res).to.have.status(403)
-                return
-              }
-              expect(res).to.have.status(200)
-              expect(res.body).to.be.an('object')
-              expect(res.body).to.have.property('failedValidation')
-              expect(res.body).to.have.property('updated')
-              expect(res.body).to.have.property('inserted')
-
-              const reviews = await utils.getCollectionMetricsDetails(reference.testCollection.collectionId)
-            
-              expect(res.body.inserted).to.eql(distinct.postReviews.targetRulesDefinedByStig.inserted)
-              expect(res.body.updated).to.eql(distinct.postReviews.targetRulesDefinedByStig.updated)
-              expect(res.body.failedValidation).to.eql(distinct.postReviews.targetRulesDefinedByStig.failedValidation)
-              expect(res.body.validationErrors).to.have.length(distinct.postReviews.targetRulesDefinedByStig.validationErrors)
-              expect(reviews).to.have.lengthOf(distinct.postReviews.targetRulesDefinedByStig.reviewsLength)
-
-              for(let review of reviews){
-                if(review.assetId == reference.testAsset.assetId && review.benchmarkId == reference.testCollection.benchmarkId){
-                  expect(review.metrics.assessed).to.equal(241);
-                }
-              }
-            
-          })
         })
         describe(`Batch Review Editing - Validation Errors, expect failure. `, () => {
               

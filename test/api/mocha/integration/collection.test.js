@@ -936,317 +936,319 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
 })
 describe('POST - exportToCollection - /collections/{collectionId}/export-to/{dstCollectionId}', () => {
 
-    before(async function () {
-        this.timeout(4000)
-        await utils.loadAppData()
-        await utils.uploadTestStigs()
-    })
+    describe('export-to', () => {
 
-    let exportedAsset = null
-    let exportedAssetResults = null
-    it('Merge provided properties with a Collection Copy', async () => {
-        const res = await chai.request(config.baseUrl)
-            .patch(`/collections/${reference.scrapCollection.collectionId}?elevate=true`)
-            .set('Authorization', `Bearer ${user.token}`)
-            .send({
-                "metadata": {
-                  "pocName": "poc2Patched",
-                  "pocEmail": "pocEmail@email.com",
-                  "pocPhone": "12342",
-                  "reqRar": "true"
-                },
-                  "settings": {
-                      "fields": {
-                          "detail": {
-                              "enabled": "always",
-                              "required": "always"
-                          },
-                          "comment": {
-                              "enabled": "findings",
-                              "required": "findings"
-                          }
-                      },
-                      "status": {
-                          "canAccept": true,
-                          "resetCriteria": "result",
-                          "minAcceptGrant": 3
-                      },
-                      "history": {
-                          "maxReviews": 15
-                      }
-                  },  
-                  "grants": [
-                      {
-                        "userId": "1",
-                        "accessLevel": 4
-                      },
-                      {
-                              "userId": "21",
-                          "accessLevel": 1
-                      },
-                      {
-                              "userId": "44",
-                          "accessLevel": 3
-                      },
-                      {
-                              "userId": "45",
-                          "accessLevel": 4
-                      },
-                      {
-                              "userId": "87",
-                          "accessLevel": 4
-                      }
-                  ]
-              })
-        expect(res).to.have.status(200)
-    })
-    it("export results to another collection - entire asset - create asset in destination", async () => {
-
-        const res = await chai
-          .request(config.baseUrl)
-          .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
-          .set("Authorization", `Bearer ${user.token}`)
-          .send([
-            {
-              assetId: reference.testAsset.assetId,
-            },
-          ])
-         
-          expect(res).to.have.status(200)
-          const response = res.body.toString().split("\n")
-          expect(response).to.be.an('array')
-          expect(response).to.have.lengthOf.at.least(1)
-
-          for(const message of response){ 
-              if(message.length > 0){
-                  let messageObj = JSON.parse(message)
-                  if(messageObj.stage == "result"){
-                    expect(messageObj.counts.assetsCreated).to.eql(1)
-                    expect(messageObj.counts.stigsMapped).to.eql(2)
-                    expect(messageObj.counts.reviewsInserted).to.eql(9)
-                    expect(messageObj.counts.reviewsUpdated).to.eql(0)
-                  }
-              }
-          }
-    })
-    it('get asset created via export-to', async () => {
-        const res = await chai.request(config.baseUrl)
-            .get(`/assets?collectionId=${reference.scrapCollection.collectionId}&name=Collection_X_lvl1_asset-1`)
-            .set('Authorization', `Bearer ${user.token}`)
-        expect(res).to.have.status(200)
-        exportedAsset = res.body[0].assetId
-    })
-    it('Return detail metrics - asset agg - with param assetId SOURCE', async () => {
-
-        const res = await chai.request(config.baseUrl)
-            .get(`/collections/${reference.testCollection.collectionId}/metrics/detail/asset?assetId=${reference.testAsset.assetId}`)
-            .set('Authorization', `Bearer ${user.token}`)
-        expect(res).to.have.status(200)
-        exportedAssetStatuses = res.body[0].metrics.statuses
-        exportedAssetResults = res.body[0].metrics.results
-
-    })
-    it('Return detail metrics - asset agg - with param assetId DEST', async () => {
-
-        const res = await chai.request(config.baseUrl)
-            .get(`/collections/${reference.scrapCollection.collectionId}/metrics/detail/asset?assetId=${exportedAsset}`)
-            .set('Authorization', `Bearer ${user.token}`)
-        expect(res).to.have.status(200)
-        expect(res.body[0].metrics.results, "comparing source asset to exported asset metrics").to.eql(exportedAssetResults)
-
-    })
-    it('PUT Review: stigs and rule projections Copy', async () => {
-
-        const res = await chai.request(config.baseUrl)
-            .put(`/collections/${reference.scrapCollection.collectionId}/reviews/${exportedAsset}/${reference.ruleId}?projection=rule&projection=stigs`)
-            .set('Authorization', `Bearer ${user.token}`)
-            .send({
-                "result": "pass",
-                "detail": "test\nvisible to lvl1",
-                "comment": "",
-                "autoResult": false,
-                "status": "accepted"
-            })
-        expect(res).to.have.status(200)
-
-    })
-    it("export results to another collection - entire asset - asset exists Copy", async () => {
-
-        const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
-            .set("Authorization", `Bearer ${user.token}`)
-            .send([
-            {
-                assetId: reference.testAsset.assetId,
-            },
-            ])
+        before(async function () {
+            this.timeout(4000)
+            await utils.loadAppData()
+            await utils.uploadTestStigs()
+        })
+        let exportedAsset = null
+        let exportedAssetResults = null
+        it('Merge provided properties with a Collection Copy', async () => {
+            const res = await chai.request(config.baseUrl)
+                .patch(`/collections/${reference.scrapCollection.collectionId}?elevate=true`)
+                .set('Authorization', `Bearer ${user.token}`)
+                .send({
+                    "metadata": {
+                    "pocName": "poc2Patched",
+                    "pocEmail": "pocEmail@email.com",
+                    "pocPhone": "12342",
+                    "reqRar": "true"
+                    },
+                    "settings": {
+                        "fields": {
+                            "detail": {
+                                "enabled": "always",
+                                "required": "always"
+                            },
+                            "comment": {
+                                "enabled": "findings",
+                                "required": "findings"
+                            }
+                        },
+                        "status": {
+                            "canAccept": true,
+                            "resetCriteria": "result",
+                            "minAcceptGrant": 3
+                        },
+                        "history": {
+                            "maxReviews": 15
+                        }
+                    },  
+                    "grants": [
+                        {
+                            "userId": "1",
+                            "accessLevel": 4
+                        },
+                        {
+                                "userId": "21",
+                            "accessLevel": 1
+                        },
+                        {
+                                "userId": "44",
+                            "accessLevel": 3
+                        },
+                        {
+                                "userId": "45",
+                            "accessLevel": 4
+                        },
+                        {
+                                "userId": "87",
+                            "accessLevel": 4
+                        }
+                    ]
+                })
             expect(res).to.have.status(200)
-            const response = res.body.toString().split("\n")
-            expect(response).to.be.an('array')
-            expect(response).to.have.lengthOf.at.least(1)
-            for(const message of response){ 
-                if(message.length > 0){
-                    let messageObj = JSON.parse(message)
-                    if(messageObj.stage == "result"){
-                    expect(messageObj.counts.assetsCreated).to.eql(0)
-                    expect(messageObj.counts.stigsMapped).to.eql(0)
-                    expect(messageObj.counts.reviewsInserted).to.eql(0)
-                    expect(messageObj.counts.reviewsUpdated).to.eql(9)
-                    }
-                }
-            }
-    })
-    it('Return detail metrics - asset agg - with param assetId DEST Copy', async () => {
+        })
+        it("export results to another collection - entire asset - create asset in destination", async () => {
 
-        const res = await chai.request(config.baseUrl)
-            .get(`/collections/${reference.scrapCollection.collectionId}/metrics/detail/asset?assetId=${exportedAsset}`)
-            .set('Authorization', `Bearer ${user.token}`)
-        expect(res).to.have.status(200)
-        let expectedStatuses = {
-            "saved": {
-                "total": 8,
-                "resultEngine": 0
-            },
-            "accepted": {
-                "total": 1,
-                "resultEngine": 0
-            },
-            "rejected": {
-                "total": 0,
-                "resultEngine": 0
-            },
-            "submitted": {
-                "total": 0,
-                "resultEngine": 0
-            }
-        }
-        expect(res.body[0].metrics.results, "comparing source asset to exported asset metrics").to.eql(exportedAssetResults)
-        expect(res.body[0].metrics.statuses, "comparing source asset to exported asset statuses").to.eql(expectedStatuses);
-    })
-    it('Merge provided properties with a Collection Copy 2', async () => {
-        const res = await chai.request(config.baseUrl)
-            .patch(`/collections/${reference.scrapCollection.collectionId}?elevate=true`)
-            .set('Authorization', `Bearer ${user.token}`)
-            .send({
-                "metadata": {
-                  "pocName": "poc2Patched",
-                  "pocEmail": "pocEmail@email.com",
-                  "pocPhone": "12342",
-                  "reqRar": "true"
-                },
-                  "settings": {
-                      "fields": {
-                          "detail": {
-                              "enabled": "always",
-                              "required": "always"
-                          },
-                          "comment": {
-                              "enabled": "findings",
-                              "required": "findings"
-                          }
-                      },
-                      "status": {
-                          "canAccept": true,
-                          "resetCriteria": "any",
-                          "minAcceptGrant": 3
-                      },
-                      "history": {
-                          "maxReviews": 15
-                      }
-                  },  
-                  "grants": [
-                      {
-                        "userId": "1",
-                        "accessLevel": 4
-                      },
-                      {
-                              "userId": "21",
-                          "accessLevel": 1
-                      },
-                      {
-                              "userId": "44",
-                          "accessLevel": 3
-                      },
-                      {
-                              "userId": "45",
-                          "accessLevel": 4
-                      },
-                      {
-                              "userId": "87",
-                          "accessLevel": 4
-                      }
-                  ]
-              })
-        expect(res).to.have.status(200)
-    })
-    it('PUT Review: stigs and rule projections Copy 2 ', async () => {
-
-        const res = await chai.request(config.baseUrl)
-            .put(`/collections/${reference.scrapCollection.collectionId}/reviews/${exportedAsset}/${reference.ruleId}?projection=rule&projection=stigs`)
-            .set('Authorization', `Bearer ${user.token}`)
-            .send({
-                "result": "pass",
-                "detail": "test\nvisible to lvl1",
-                "comment": "",
-                "autoResult": false,
-                "status": "accepted"
-            })
-        expect(res).to.have.status(200)
-    })
-    it("export results to another collection - entire asset - asset exists Copy 2", async () => {
-
-        const res = await chai
+            const res = await chai
             .request(config.baseUrl)
             .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
             .set("Authorization", `Bearer ${user.token}`)
             .send([
                 {
-                  "assetId": "42"
-                }
-              ])
+                assetId: reference.testAsset.assetId,
+                },
+            ])
+            
             expect(res).to.have.status(200)
             const response = res.body.toString().split("\n")
             expect(response).to.be.an('array')
             expect(response).to.have.lengthOf.at.least(1)
+
             for(const message of response){ 
                 if(message.length > 0){
                     let messageObj = JSON.parse(message)
                     if(messageObj.stage == "result"){
-                    expect(messageObj.counts.assetsCreated).to.eql(0)
-                    expect(messageObj.counts.stigsMapped).to.eql(0)
-                    expect(messageObj.counts.reviewsInserted).to.eql(0)
-                    expect(messageObj.counts.reviewsUpdated).to.eql(9)
+                        expect(messageObj.counts.assetsCreated).to.eql(1)
+                        expect(messageObj.counts.stigsMapped).to.eql(2)
+                        expect(messageObj.counts.reviewsInserted).to.eql(9)
+                        expect(messageObj.counts.reviewsUpdated).to.eql(0)
                     }
                 }
             }
-    })
-    it('Return detail metrics - asset agg - with param assetId DEST Copy 2', async () => {
+        })
+        it('get asset created via export-to', async () => {
+            const res = await chai.request(config.baseUrl)
+                .get(`/assets?collectionId=${reference.scrapCollection.collectionId}&name=Collection_X_lvl1_asset-1`)
+                .set('Authorization', `Bearer ${user.token}`)
+            expect(res).to.have.status(200)
+            exportedAsset = res.body[0].assetId
+        })
+        it('Return detail metrics - asset agg - with param assetId SOURCE', async () => {
 
-        const res = await chai.request(config.baseUrl)
-            .get(`/collections/${reference.scrapCollection.collectionId}/metrics/detail/asset?assetId=${exportedAsset}`)
-            .set('Authorization', `Bearer ${user.token}`)
-        expect(res).to.have.status(200)
-        let expectedStatuses = {
-            "saved": {
-                "total": 9,
-                "resultEngine": 0
-            },
-            "accepted": {
-                "total": 0,
-                "resultEngine": 0
-            },
-            "rejected": {
-                "total": 0,
-                "resultEngine": 0
-            },
-            "submitted": {
-                "total": 0,
-                "resultEngine": 0
+            const res = await chai.request(config.baseUrl)
+                .get(`/collections/${reference.testCollection.collectionId}/metrics/detail/asset?assetId=${reference.testAsset.assetId}`)
+                .set('Authorization', `Bearer ${user.token}`)
+            expect(res).to.have.status(200)
+            exportedAssetStatuses = res.body[0].metrics.statuses
+            exportedAssetResults = res.body[0].metrics.results
+
+        })
+        it('Return detail metrics - asset agg - with param assetId DEST', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .get(`/collections/${reference.scrapCollection.collectionId}/metrics/detail/asset?assetId=${exportedAsset}`)
+                .set('Authorization', `Bearer ${user.token}`)
+            expect(res).to.have.status(200)
+            expect(res.body[0].metrics.results, "comparing source asset to exported asset metrics").to.eql(exportedAssetResults)
+
+        })
+        it('PUT Review: stigs and rule projections Copy', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .put(`/collections/${reference.scrapCollection.collectionId}/reviews/${exportedAsset}/${reference.ruleId}?projection=rule&projection=stigs`)
+                .set('Authorization', `Bearer ${user.token}`)
+                .send({
+                    "result": "pass",
+                    "detail": "test\nvisible to lvl1",
+                    "comment": "",
+                    "autoResult": false,
+                    "status": "accepted"
+                })
+            expect(res).to.have.status(200)
+
+        })
+        it("export results to another collection - entire asset - asset exists Copy", async () => {
+
+            const res = await chai
+                .request(config.baseUrl)
+                .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
+                .set("Authorization", `Bearer ${user.token}`)
+                .send([
+                {
+                    assetId: reference.testAsset.assetId,
+                },
+                ])
+                expect(res).to.have.status(200)
+                const response = res.body.toString().split("\n")
+                expect(response).to.be.an('array')
+                expect(response).to.have.lengthOf.at.least(1)
+                for(const message of response){ 
+                    if(message.length > 0){
+                        let messageObj = JSON.parse(message)
+                        if(messageObj.stage == "result"){
+                        expect(messageObj.counts.assetsCreated).to.eql(0)
+                        expect(messageObj.counts.stigsMapped).to.eql(0)
+                        expect(messageObj.counts.reviewsInserted).to.eql(0)
+                        expect(messageObj.counts.reviewsUpdated).to.eql(9)
+                        }
+                    }
+                }
+        })
+        it('Return detail metrics - asset agg - with param assetId DEST Copy', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .get(`/collections/${reference.scrapCollection.collectionId}/metrics/detail/asset?assetId=${exportedAsset}`)
+                .set('Authorization', `Bearer ${user.token}`)
+            expect(res).to.have.status(200)
+            let expectedStatuses = {
+                "saved": {
+                    "total": 8,
+                    "resultEngine": 0
+                },
+                "accepted": {
+                    "total": 1,
+                    "resultEngine": 0
+                },
+                "rejected": {
+                    "total": 0,
+                    "resultEngine": 0
+                },
+                "submitted": {
+                    "total": 0,
+                    "resultEngine": 0
+                }
             }
-        }
-        expect(res.body[0].metrics.results, "comparing source asset to exported asset metrics").to.eql(exportedAssetResults)
-        expect(res.body[0].metrics.statuses, "comparing source asset to exported asset statuses").to.eql(expectedStatuses);
+            expect(res.body[0].metrics.results, "comparing source asset to exported asset metrics").to.eql(exportedAssetResults)
+            expect(res.body[0].metrics.statuses, "comparing source asset to exported asset statuses").to.eql(expectedStatuses);
+        })
+        it('Merge provided properties with a Collection Copy 2', async () => {
+            const res = await chai.request(config.baseUrl)
+                .patch(`/collections/${reference.scrapCollection.collectionId}?elevate=true`)
+                .set('Authorization', `Bearer ${user.token}`)
+                .send({
+                    "metadata": {
+                    "pocName": "poc2Patched",
+                    "pocEmail": "pocEmail@email.com",
+                    "pocPhone": "12342",
+                    "reqRar": "true"
+                    },
+                    "settings": {
+                        "fields": {
+                            "detail": {
+                                "enabled": "always",
+                                "required": "always"
+                            },
+                            "comment": {
+                                "enabled": "findings",
+                                "required": "findings"
+                            }
+                        },
+                        "status": {
+                            "canAccept": true,
+                            "resetCriteria": "any",
+                            "minAcceptGrant": 3
+                        },
+                        "history": {
+                            "maxReviews": 15
+                        }
+                    },  
+                    "grants": [
+                        {
+                            "userId": "1",
+                            "accessLevel": 4
+                        },
+                        {
+                                "userId": "21",
+                            "accessLevel": 1
+                        },
+                        {
+                                "userId": "44",
+                            "accessLevel": 3
+                        },
+                        {
+                                "userId": "45",
+                            "accessLevel": 4
+                        },
+                        {
+                                "userId": "87",
+                            "accessLevel": 4
+                        }
+                    ]
+                })
+            expect(res).to.have.status(200)
+        })
+        it('PUT Review: stigs and rule projections Copy 2 ', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .put(`/collections/${reference.scrapCollection.collectionId}/reviews/${exportedAsset}/${reference.ruleId}?projection=rule&projection=stigs`)
+                .set('Authorization', `Bearer ${user.token}`)
+                .send({
+                    "result": "pass",
+                    "detail": "test\nvisible to lvl1",
+                    "comment": "",
+                    "autoResult": false,
+                    "status": "accepted"
+                })
+            expect(res).to.have.status(200)
+        })
+        it("export results to another collection - entire asset - asset exists Copy 2", async () => {
+
+            const res = await chai
+                .request(config.baseUrl)
+                .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
+                .set("Authorization", `Bearer ${user.token}`)
+                .send([
+                    {
+                    "assetId": "42"
+                    }
+                ])
+                expect(res).to.have.status(200)
+                const response = res.body.toString().split("\n")
+                expect(response).to.be.an('array')
+                expect(response).to.have.lengthOf.at.least(1)
+                for(const message of response){ 
+                    if(message.length > 0){
+                        let messageObj = JSON.parse(message)
+                        if(messageObj.stage == "result"){
+                        expect(messageObj.counts.assetsCreated).to.eql(0)
+                        expect(messageObj.counts.stigsMapped).to.eql(0)
+                        expect(messageObj.counts.reviewsInserted).to.eql(0)
+                        expect(messageObj.counts.reviewsUpdated).to.eql(9)
+                        }
+                    }
+                }
+        })
+        it('Return detail metrics - asset agg - with param assetId DEST Copy 2', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .get(`/collections/${reference.scrapCollection.collectionId}/metrics/detail/asset?assetId=${exportedAsset}`)
+                .set('Authorization', `Bearer ${user.token}`)
+            expect(res).to.have.status(200)
+            let expectedStatuses = {
+                "saved": {
+                    "total": 9,
+                    "resultEngine": 0
+                },
+                "accepted": {
+                    "total": 0,
+                    "resultEngine": 0
+                },
+                "rejected": {
+                    "total": 0,
+                    "resultEngine": 0
+                },
+                "submitted": {
+                    "total": 0,
+                    "resultEngine": 0
+                }
+            }
+            expect(res.body[0].metrics.results, "comparing source asset to exported asset metrics").to.eql(exportedAssetResults)
+            expect(res.body[0].metrics.statuses, "comparing source asset to exported asset statuses").to.eql(expectedStatuses);
+        })
     })
 })
 describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{assetId}', () => {
@@ -1586,6 +1588,77 @@ describe('GET - putAssetsByCollectionLabelId - /collections/{collectionId}/label
         })
     })
 })
+describe('PUT - setStigAssetsByCollectionUser - /collections/{collectionId}/grants/{userId}/access', () => {
+
+    describe('restricted grant assignments outside of Collection boundary', () => {
+
+        it('Add restricted user to collection Y', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .patch(`/collections/${83}?elevate=true&projection=grants`)
+                .set('Authorization', `Bearer ${user.token}`)
+                .send({
+                    "metadata": {
+                      "pocName": "poc2Patched",
+                      "pocEmail": "pocEmail@email.com",
+                      "pocPhone": "12342",
+                      "reqRar": "true"
+                    },
+                      "grants": [
+                          {
+                            "userId": "87",
+                            "accessLevel": 4
+                          },
+                          {
+                                  "userId": "1",
+                              "accessLevel": 4
+                          },
+                          {
+                                  "userId": "85",
+                              "accessLevel": 1
+                          }
+                      ]
+                  })
+            expect(res).to.have.status(200)
+            expect(res.body.collectionId).to.eql('83')
+            expect(res.body.grants).to.be.an('array').of.length(3)
+            for(const grant of res.body.grants){
+                if(grant.userId === 85){
+                    expect(grant.accessLevel).to.eql(1)
+                }
+            }
+        })
+        it('set stig-asset grants for a lvl1 user in this collection, with asset from another collection', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .put(`/collections/${reference.testCollection.collectionId}/grants/${reference.lvl1User.userId}/access`)
+                .set('Authorization', `Bearer ${user.token}`)
+                .send([
+                    {
+                        "benchmarkId": reference.benchmark,
+                        "assetId": "240"
+                    },
+                    {
+                        "benchmarkId": reference.benchmark,
+                        "assetId": "62"
+                    },
+                    {
+                        "benchmarkId": reference.benchmark,
+                        "assetId": "42"
+                    }     
+                ])
+            expect(res).to.have.status(200)
+        })
+        it('Return stig-asset grants for a lvl1 user in this collection. Copy', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .get(`/collections/${83}/grants/${reference.lvl1User.userId}/access`)
+                .set('Authorization', `Bearer ${user.token}`)
+            expect(res).to.have.status(200)
+            expect(res.body).to.be.an('array').of.length(0)
+        })
+    })
+})
 
 function assetGetToPost (assetGet) {
     // extract the transformed and unposted properties
@@ -1597,12 +1670,12 @@ function assetGetToPost (assetGet) {
   
     // the derived post object
     return assetPost
-  }
+}
   
-  function stigsGetToPost (stigsGetArray) {
-    const stigsPostArray = []
-    for (const stig of stigsGetArray) {
-      stigsPostArray.push(stig.benchmarkId)
-    }
-    return stigsPostArray
-  }
+function stigsGetToPost (stigsGetArray) {
+const stigsPostArray = []
+for (const stig of stigsGetArray) {
+stigsPostArray.push(stig.benchmarkId)
+}
+return stigsPostArray
+}

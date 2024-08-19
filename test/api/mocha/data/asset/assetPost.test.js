@@ -47,7 +47,7 @@ describe('POST - Asset', () => {
             }
           )
           
-          if(!distinct.canModifyAssets){
+          if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
           }
@@ -85,7 +85,7 @@ describe('POST - Asset', () => {
               stigs: reference.testCollection.validStigs
             })
           
-            if(!distinct.canModifyAssets){
+            if(!distinct.canModifyCollection){
               expect(res).to.have.status(403)
               return
             }
@@ -121,7 +121,7 @@ describe('POST - Asset', () => {
               stigs: reference.testCollection.validStigs
             })
           
-          if(!distinct.canModifyAssets){
+          if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
           }

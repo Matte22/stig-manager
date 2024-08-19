@@ -51,16 +51,7 @@ describe('DELETE - Review', () => {
           }
        
         })
-        it('Delete a Review - freshRuleId - review may or may not exist', async () => {
-          const res = await chai.request(config.baseUrl)
-            .delete(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testAsset.freshRuleId}`)
-            .set('Authorization', `Bearer ${user.token}`)
-          if(user.name === 'collectioncreator') {
-            expect(res).to.have.status(403)
-            return
-          }
-          expect(res).to.have.status(204)
-        })
+      
       })
 
       describe('DELETE - deleteReviewMetadataKey - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {

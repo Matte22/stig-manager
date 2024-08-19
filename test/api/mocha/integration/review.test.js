@@ -6,6 +6,7 @@ const config = require('../testConfig.json')
 const utils = require('../utils/testUtils')
 const environment = require('../environment.json')
 const xml2js = require('xml2js')
+const reference = require('./referenceData.js')
 
 const user =
   {
@@ -26,7 +27,6 @@ describe('PUT - putReviewByAssetRule - /collections/{collectionId}/reviews/{asse
             await utils.uploadTestStigs()
             await utils.createDisabledCollectionsandAssets()
         })
-
         it('Set all properties of a Review - informational + result comment', async () => {
             const putBody = {
                 "result": "informational",
@@ -98,5 +98,52 @@ describe('PUT - putReviewByAssetRule - /collections/{collectionId}/reviews/{asse
     })
 })
 
+describe('PATCH - patchReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId}', () => {
+
+    describe('review status reset check', () => {
+
+        before(async function () {
+            this.timeout(4000)
+            await utils.loadAppData()
+            await utils.uploadTestStigs()
+            await utils.createDisabledCollectionsandAssets()
+        })
+
+        it('PATCH Review with new details, expect status to remain', async () => {
+            const res = await chai.request(config.baseUrl)
+              .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
+              .set('Authorization', `Bearer ${user.token}`)
+              .send({detail:"these details have changed, but the status remains"})
+            expect(res).to.have.status(200)
+            expect(res.body.status).to.have.property('label').that.equals('submitted')
+        })
+        it('PATCH Review with new result, expect status to reset to saved', async () => {
+            const res = await chai.request(config.baseUrl)
+            .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
+            .set('Authorization', `Bearer ${user.token}`)
+            .send({result: "pass"})
+            expect(res).to.have.status(200)
+            expect(res.body.result).to.eql("pass")
+            expect(res.body.status).to.have.property('label').that.equals('saved')
+        })
+        it('PATCH Review to submitted status', async () => {
+            const res = await chai.request(config.baseUrl)
+            .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
+            .set('Authorization', `Bearer ${user.token}`)
+            .send({status: "submitted"})
+            expect(res).to.have.status(200)
+            expect(res.body.status).to.have.property('label').that.equals('submitted')
+        })
+        it('PATCH Review patched and no longer meets Collection Requirements', async () => {
+            const res = await chai.request(config.baseUrl)
+            .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
+            .set('Authorization', `Bearer ${user.token}`)
+            .send({result: "fail"})
+            expect(res).to.have.status(200)
+            expect(res.body.result).to.eql("fail")
+            expect(res.body.status).to.have.property('label').that.equals('saved')
+        })
+    })
+})
 
 

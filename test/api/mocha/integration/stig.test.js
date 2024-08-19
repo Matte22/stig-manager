@@ -7,6 +7,7 @@ const path = require("path")
 const config = require("../testConfig.json")
 const utils = require("../utils/testUtils")
 const environment = require("../environment.json")
+const reference = require("./referenceData.js")
 
 const user = {
   name: "stigmanadmin",
@@ -24,7 +25,14 @@ describe(`POST - importBenchmark - /stigs`, () => {
       this.timeout(4000)
       await utils.loadAppData()
       await utils.uploadTestStigs()
+      await utils.uploadTestStig('U_VPN_SRG_V2R3_Manual-xccdf-reviewKeyChange.xml')
       await utils.createDisabledCollectionsandAssets()
+    })
+
+    after(async function () {
+      this.timeout(4000)
+      await utils.deleteStigByRevision("VPN_SRG_OTHER", "V2R3")
+
     })
     it('Import a new STIG - with new RuleID matching old content', async function () {
       
@@ -173,6 +181,173 @@ describe(`POST - importBenchmark - /stigs`, () => {
         expect(res.body.ruleIds).to.include(environment.testCollection.ruleId)
         const regex = new RegExp(environment.reviewMatchString)
         expect(res.body.detail).to.match(regex)
+    })
+  })
+
+  describe('Checks for other revs, content matches', () => {
+
+    before(async function () {
+      this.timeout(4000)
+      await utils.uploadTestStigs()
+      await utils.deleteStigByRevision("VPN_SRG_OTHER", "V2R2")
+      await utils.loadAppData()
+    })
+
+    after(async function () { 
+      this.timeout(4000)
+      await utils.deleteStig("VPN_SRG_OTHER")
+    })
+
+    it('Import a new STIG - clobber', async () => {
+                
+      const directoryPath = path.join(__dirname, '../../form-data-files/')
+      const testStigfile = 'U_VPN_SRG_V1R1_Manual-xccdf.xml'
+      const filePath = path.join(directoryPath, testStigfile)
+
+      const res = await chai.request(config.baseUrl)
+      .post('/stigs?elevate=true&clobber=true')
+      .set('Authorization', `Bearer ${user.token}`)
+      .set('Content-Type', `multipart/form-data`)
+      .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
+      let expectedRevData = 
+      {
+        "benchmarkId": "VPN_SRG_TEST",
+        "revisionStr": "V1R1",
+        "action": "replaced"
+      }
+      expect(res).to.have.status(200)
+      expect(res.body).to.deep.eql(expectedRevData)
+    })
+    it('Import another stig with check-system collision', async () => {
+                  
+      const directoryPath = path.join(__dirname, '../../form-data-files/')
+      const testStigfile = "U_VPN_SRG-OTHER_V1R1_Manual-xccdf.xml"    
+      const filePath = path.join(directoryPath, testStigfile)
+
+      const res = await chai.request(config.baseUrl)
+        .post('/stigs?elevate=true&clobber=true')
+        .set('Authorization', `Bearer ${user.token}`)
+        .set('Content-Type', `multipart/form-data`)
+        .attach('importFile', fs.readFileSync(filePath), testStigfile)
+      expect(res).to.have.status(200)
+      
+      let expectedRevData = 
+      {
+        "benchmarkId": "VPN_SRG_OTHER",
+        "revisionStr": "V2R2",
+        "action": "inserted"
+    }
+      expect(res.body).to.eql(expectedRevData)
+    })
+    it('Return rule data for the specified revision of a STIG - after import of "other" stig with checkId collision', async () => {
+
+      const res = await chai.request(config.baseUrl)
+        .get(`/stigs/${reference.benchmark}/revisions/${reference.testCollection.defaultRevision}/rules?projection=check`)
+        .set('Authorization', `Bearer ${user.token}`)
+      expect(res).to.have.status(200)
+      expect(res.body).to.be.an('array').of.length(reference.checklistLength)
+
+      let title = "The VPN Gateway must ensure inbound and outbound traffic is configured with a security policy in compliance with information flow control policies."
+
+      for(const rule of res.body){
+        if(rule.ruleId === reference.ruleId){
+          expect(rule.title).to.eql(title)
+          if(rule.check.system === "C-95877r1_chk"){
+            expect(rule.check.content).to.not.eql("This check content has been replaced!")
+          }
+        }
+      }
+    })
+    it("Return rule data for the specified revision of a STIG - expect matches to other rev - requests V2R2", async () => {
+
+      const res = await chai.request(config.baseUrl)
+        .get(`/stigs/${'VPN_SRG_OTHER'}/revisions/V2R2/rules?projection=check`)
+        .set('Authorization', `Bearer ${user.token}`)
+      expect(res).to.have.status(200)
+      
+      expect(res.body).to.be.an('array').of.length(2)
+      let testRuleId = "SV-106179r1_xxxx"
+      let title = "This rule title has been replaced."
+
+      for(const rule of res.body){
+        if(rule.ruleId === testRuleId){
+          expect(rule.title).to.eql(title)
+          if(rule.check.system === "C-95877r1_chk"){
+            expect(rule.check.content).to.eql("This check content has been replaced!")
+          }
+        }
+      }
+    })
+    it("Return rule data for the specified Rule in a revision of a STIG. request specific rule, expect one content match", async () => {
+
+      const res = await chai.request(config.baseUrl)
+        .get(`/stigs/${reference.benchmark}/revisions/${reference.testCollection.defaultRevision}/rules/${reference.ruleId}?projection=check`)
+        .set('Authorization', `Bearer ${user.token}`)
+      expect(res).to.have.status(200)
+      expect(res.body.ruleId).to.eql(reference.ruleId)
+      expect(res.body.check.content).to.not.eql("This check content has been replaced!")
+    })
+  })
+
+  describe('Replacement Tests', () => {
+
+    before(async function () {
+      this.timeout(4000)
+      await utils.loadAppData()
+      await utils.uploadTestStigs()
+    })
+
+    it('Import and replace a STIG revision', async function () {
+      
+      const directoryPath = path.join(__dirname, '../../form-data-files/')
+      const testStigfile = 'U_VPN_SRG_V1R1_Manual-xccdf-replace.xml'
+      const filePath = path.join(directoryPath, testStigfile)
+
+      const res = await chai.request(config.baseUrl)
+      .post('/stigs?elevate=true&clobber=true')
+      .set('Authorization', `Bearer ${user.token}`)
+      .set('Content-Type', `multipart/form-data`)
+      .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
+      let expectedRevData = 
+      {
+          "benchmarkId": "VPN_SRG_TEST",
+          "revisionStr": "V1R1",
+          "action": "replaced"
+      }
+      expect(res).to.have.status(200)
+      expect(res.body).to.deep.eql(expectedRevData)
+    })
+    it('Return a list of revisions for the specified STIG - check for updated revision', async function () {
+      const res = await chai.request(config.baseUrl)
+        .get(`/stigs/${reference.benchmark}/revisions`)
+        .set('Authorization', `Bearer ${user.token}`)
+      expect(res).to.have.status(200)
+      expect(res.body).to.be.an('array').of.length(1)
+      for(const rev of res.body){
+        expect(rev.ruleCount).to.eql(2)
+      }
+    })
+    it('Return rule data for the specified revision of a STIG after update', async function () {
+      const res = await chai.request(config.baseUrl)
+        .get(`/stigs/${reference.benchmark}/revisions/${reference.testCollection.defaultRevision}/rules?projection=detail&projection=ccis&projection=check&projection=fix`)
+        .set('Authorization', `Bearer ${user.token}`)
+      expect(res).to.have.status(200)
+      let title = "This rule title has been replaced."
+      expect(res.body).to.be.an('array').of.length(2)
+      for(const rule of res.body){
+        if (rule.ruleId === reference.ruleId){
+              expect(rule.title).to.eql(title)
+        }
+      }
+    })
+    it('Return rule data for the specified Rule in a revision of a STIG after update', async function () {
+
+      const res = await chai.request(config.baseUrl)
+        .get(`/stigs/${reference.benchmark}/revisions/${reference.testCollection.defaultRevision}/rules/${reference.ruleId}?projection=detail&projection=ccis&projection=check&projection=fix`)
+        .set('Authorization', `Bearer ${user.token}`)
+        expect(res).to.have.status(200)
+        let title = "This rule title has been replaced."
+        expect(res.body.title).to.eql(title)
     })
   })
 })

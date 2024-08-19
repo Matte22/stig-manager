@@ -52,7 +52,7 @@ describe('PUT - Asset', () => {
               ]
           })
 
-          if(!distinct.canModifyAssets){
+          if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
           }
@@ -113,7 +113,7 @@ describe('PUT - Asset', () => {
                   "RHEL_7_STIG_TEST"
               ]
             })
-            if(!distinct.canModifyAssets){
+            if(!distinct.canModifyCollection){
               expect(res).to.have.status(403)
               return
             }
@@ -152,7 +152,7 @@ describe('PUT - Asset', () => {
               ]
           })
 
-          if(!distinct.canModifyAssets){
+          if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
           }
@@ -198,7 +198,7 @@ describe('PUT - Asset', () => {
             .send({
               [reference.scrapAsset.metadataKey]: reference.scrapAsset.metadataValue
             })
-          if(!distinct.canModifyAssets){
+          if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
           }
@@ -220,7 +220,7 @@ describe('PUT - Asset', () => {
             .set('Content-Type', 'application/json') 
             .send(`${JSON.stringify(reference.scrapAsset.metadataValue)}`)
 
-          if(!distinct.canModifyAssets){
+          if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
           }
@@ -236,7 +236,7 @@ describe('PUT - Asset', () => {
           const res = await chai.request(config.baseUrl)
             .put(`/assets/${reference.scrapAsset.assetId}/stigs/${reference.scrapAsset.scrapBenchmark}`)
             .set('Authorization', 'Bearer ' + user.token)
-          if(!distinct.canModifyAssets){
+          if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
           }
@@ -263,7 +263,7 @@ describe('PUT - Asset', () => {
             .put(`/collections/${reference.testCollection.collectionId}/labels/${reference.testCollection.fullLabel}/assets`)
             .set('Authorization', 'Bearer ' + user.token)
             .send([reference.testAsset.assetId])
-          if(!distinct.canModifyAssets){
+          if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
           }

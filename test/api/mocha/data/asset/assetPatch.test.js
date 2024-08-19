@@ -65,7 +65,7 @@ describe('PATCH - Asset', () => {
                   "RHEL_7_STIG_TEST"
               ]
             })
-          if(!distinct.canModifyAssets){
+          if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
           }
@@ -120,7 +120,7 @@ describe('PATCH - Asset', () => {
                   "RHEL_7_STIG_TEST"
               ]
           })
-          if(!distinct.canModifyAssets){
+          if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
           }
@@ -158,7 +158,7 @@ describe('PATCH - Asset', () => {
               "assetIds": ["29","42"]
             })
         
-          if(!distinct.canModifyAssets){
+          if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
           }
@@ -209,7 +209,7 @@ describe('PATCH - Asset', () => {
               "testkey":"poc2Patched"
             })
 
-            if(!distinct.canModifyAssets){
+            if(!distinct.canModifyCollection){
               expect(res).to.have.status(403)
               return
             }

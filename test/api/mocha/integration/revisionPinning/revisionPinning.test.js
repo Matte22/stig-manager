@@ -466,9 +466,10 @@ describe(`POST - writeStigPropsByCollectionStig - /collections/{collectionId}/st
                         }
                         expect(res).to.have.status(201)
                         let pinned = "V1R0"
-                        // if(user.name === "lvl1" || user.name === "lvl2"){
-                        //     pinned = "V1R1"
-                        // }
+                        let pinnedState = true
+                        if(user.name === "lvl1" || user.name === "lvl2"){
+                            pinnedState = false
+                        }
                         const expectedReview = {
                             assetId: "42",
                             assetName: "Collection_X_lvl1_asset-1",
@@ -537,7 +538,6 @@ describe(`POST - writeStigPropsByCollectionStig - /collections/{collectionId}/st
                         let pinned = "V1R0"
                         let pinnedState = true
                         if(user.name === "lvl1" || user.name === "lvl2"){
-                            pinned = "V1R1"
                             pinnedState = false
                         }
                         const expectedReview = {
@@ -590,10 +590,74 @@ describe(`POST - writeStigPropsByCollectionStig - /collections/{collectionId}/st
                     })
                 })
                 describe('batch', () => {
-                
+
+                    it("POST batch review: target rules defined by stig (expect pinned rules only)", async () => {
+
+                        const res = await chai
+                          .request(config.baseUrl)
+                          .post(
+                            `/collections/${reference.testCollection.collectionId}/reviews`
+                          )
+                          .set("Authorization", `Bearer ${user.token}`)
+                          .send({
+                            source: {
+                              review: { result: "fail", detail: "tesetsetset" },
+                            },
+                            assets: { assetIds: ["62", "42", "154"] },
+                            rules: { benchmarkIds: ["VPN_SRG_TEST"] },
+                          })
+                        if(distinct.grant === "none"){
+                            expect(res).to.have.status(403)
+                            return
+                        }
+                        expect(res).to.have.status(200)
+                    })
+
+                    it("Return detailed metrics for the specified Collection - check previously empty asset for 80 assesments (overlap between pin and current)", async () => {
+
+                        const res = await chai.request(config.baseUrl)
+                            .get(`/collections/${reference.testCollection.collectionId}/metrics/detail`)
+                            .set('Authorization', `Bearer ${user.token}`)
+                        if (distinct.grant === "none"){
+                            expect(res).to.have.status(403)
+                            return
+                        }
+                        let testAsset = 154
+                        for(item of res.body){
+                            if (item.assetId ==  reference.testAsset.assetId && item.benchmarkId == reference.benchmark) {
+                                expect(item.metrics.assessed).to.equal(reference.checklistLength)
+                            }
+                        }
+                    })
                 })
                 describe('STIG and Revision deletes', () => {
-                
+
+                    it('Return the STIGs mapped in the specified Collection Copy', async () => {
+                        
+                        const res = await chai.request(config.baseUrl)
+                            .get(`/collections/${reference.testCollection.collectionId}/stigs`)
+                            .set('Authorization', `Bearer ${user.token}`)
+                        if (distinct.grant === "none"){
+                            expect(res).to.have.status(403)
+                            return
+                        }
+                        expect(res).to.have.status(200)
+                        let pinnedState = true;
+                        let testPinnedRevStr = "V1R0"
+                        if (user.name === "lvl1" || user.name === "lvl2" ) {
+                            pinnedState = false
+                            testPinnedRevStr = "V1R1"
+                        }
+                        for(const stig of res.body){
+                            expect(stig.benchmarkId).to.be.oneOf(distinct.validStigs)
+                            if(stig.benchmarkId === reference.testCollection.benchmark){
+                                expect(stig.revisionPinned).to.equal(pinnedState)
+                                expect(stig.revisionStr).to.equal(testPinnedRevStr)
+                            }else{
+                                expect(stig.revisionPinned).to.equal(false)
+                            }
+                        }
+                    })
                 })
             })
         })

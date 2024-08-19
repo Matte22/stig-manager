@@ -266,72 +266,72 @@ describe('POST - Collection - not all tests run for all iterations', () => {
           await utils.createDisabledCollectionsandAssets()
         })
         
-        // it("export results to another collection - entire asset - create asset in destination", async () => {
+        it("export results to another collection - entire asset - create asset in destination", async () => {
 
-        //   const res = await chai
-        //     .request(config.baseUrl)
-        //     .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
-        //     .set("Authorization", `Bearer ${user.token}`)
-        //     .send([
-        //       {
-        //         assetId: reference.testAsset.assetId,
-        //       },
-        //     ])
+          const res = await chai
+            .request(config.baseUrl)
+            .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
+            .set("Authorization", `Bearer ${user.token}`)
+            .send([
+              {
+                assetId: reference.testAsset.assetId,
+              },
+            ])
             
-        //     if(distinct.canModifyCollection === false){
-        //       expect(res).to.have.status(403)
-        //       return
-        //     }
-        //     expect(res).to.have.status(200)
-        //     const response = res.body.toString().split("\n")
-        //     expect(response).to.be.an('array')
-        //     expect(response).to.have.lengthOf.at.least(1)
+            if(distinct.canModifyCollection === false){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res).to.have.status(200)
+            const response = res.body.toString().split("\n")
+            expect(response).to.be.an('array')
+            expect(response).to.have.lengthOf.at.least(1)
 
-        //     for(const message of response){ 
-        //         if(message.length > 0){
-        //             let messageObj = JSON.parse(message)
-        //             if(messageObj.stage == "result"){
-        //               expect(messageObj.counts.assetsCreated).to.eql(1)
-        //               expect(messageObj.counts.stigsMapped).to.eql(2)
-        //               expect(messageObj.counts.reviewsInserted).to.eql(9)
-        //               expect(messageObj.counts.reviewsUpdated).to.eql(0)
-        //             }
-        //         }
-        //     }
-        // })
-        // it("export results to another collection - entire asset - asset exists", async () => {
+            for(const message of response){ 
+                if(message.length > 0){
+                    let messageObj = JSON.parse(message)
+                    if(messageObj.stage == "result"){
+                      expect(messageObj.counts.assetsCreated).to.eql(1)
+                      expect(messageObj.counts.stigsMapped).to.eql(2)
+                      expect(messageObj.counts.reviewsInserted).to.eql(9)
+                      expect(messageObj.counts.reviewsUpdated).to.eql(0)
+                    }
+                }
+            }
+        })
+        it("export results to another collection - entire asset - asset exists", async () => {
 
-        //   const res = await chai
-        //     .request(config.baseUrl)
-        //     .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
-        //     .set("Authorization", `Bearer ${user.token}`)
-        //     .send([
-        //       {
-        //         assetId: reference.testAsset.assetId,
-        //       },
-        //     ])
+          const res = await chai
+            .request(config.baseUrl)
+            .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
+            .set("Authorization", `Bearer ${user.token}`)
+            .send([
+              {
+                assetId: reference.testAsset.assetId,
+              },
+            ])
 
-        //     if(distinct.canModifyCollection === false){
-        //       expect(res).to.have.status(403)
-        //       return
-        //     }
+            if(distinct.canModifyCollection === false){
+              expect(res).to.have.status(403)
+              return
+            }
 
-        //     expect(res).to.have.status(200)
-        //     const response = res.body.toString().split("\n")
-        //     expect(response).to.be.an('array')
-        //     expect(response).to.have.lengthOf.at.least(1)
-        //     for(const message of response){ 
-        //         if(message.length > 0){
-        //             let messageObj = JSON.parse(message)
-        //             if(messageObj.stage == "result"){
-        //               expect(messageObj.counts.assetsCreated).to.eql(0)
-        //               expect(messageObj.counts.stigsMapped).to.eql(0)
-        //               expect(messageObj.counts.reviewsInserted).to.eql(0)
-        //               expect(messageObj.counts.reviewsUpdated).to.eql(9)
-        //             }
-        //         }
-        //     }
-        // })
+            expect(res).to.have.status(200)
+            const response = res.body.toString().split("\n")
+            expect(response).to.be.an('array')
+            expect(response).to.have.lengthOf.at.least(1)
+            for(const message of response){ 
+                if(message.length > 0){
+                    let messageObj = JSON.parse(message)
+                    if(messageObj.stage == "result"){
+                      expect(messageObj.counts.assetsCreated).to.eql(0)
+                      expect(messageObj.counts.stigsMapped).to.eql(0)
+                      expect(messageObj.counts.reviewsInserted).to.eql(0)
+                      expect(messageObj.counts.reviewsUpdated).to.eql(9)
+                    }
+                }
+            }
+        })
       })
 
 
@@ -374,11 +374,11 @@ describe('POST - Collection - not all tests run for all iterations', () => {
 
         it("Set the Assets mapped to a STIG - default rev and assets", async () => {
 
-          const post = requestBodies.writeStigPropsByCollectionStig
-          // {
-          //   defaultRevisionStr: "V1R1",
-          //   assetIds: ["62", "42", "154"],
-          // }
+          const post =
+          {
+            defaultRevisionStr: "V1R1",
+            assetIds: ["62", "42", "154"],
+          }
 
           const res = await chai
             .request(config.baseUrl)
@@ -396,151 +396,6 @@ describe('POST - Collection - not all tests run for all iterations', () => {
             expect(res.body.revisionPinned).to.eql(true)
             expect(res.body.ruleCount).to.eql(reference.checklistLength)
             expect(res.body.benchmarkId).to.eql(reference.testCollection.benchmark)
-            expect(res.body.assetCount).to.eql(requestBodies.writeStigPropsByCollectionStig.assetIds.length)
-        })
-
-        it("Set the Assets mapped to a STIG - default latest and assets", async () => {
-
-          const post = {
-            defaultRevisionStr: "latest",
-            assetIds: requestBodies.writeStigPropsByCollectionStig.assetIds,
-          }
-
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${user.token}`)
-            .send(post)
-
-            if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
-              return
-            }
-
-            expect(res).to.have.status(200)
-            expect(res.body.revisionStr).to.equal(requestBodies.writeStigPropsByCollectionStig.defaultRevisionStr)
-            expect(res.body.revisionPinned).to.equal(false)
-            expect(res.body.ruleCount).to.eql(reference.checklistLength)
-            expect(res.body.benchmarkId).to.equal(reference.testCollection.benchmark)
-            expect(res.body.assetCount).to.eql(requestBodies.writeStigPropsByCollectionStig.assetIds.length)
-        })
-
-
-        it("Set the Assets mapped to a STIG - assets only", async () => {
-
-          const post = {
-            assetIds: requestBodies.writeStigPropsByCollectionStig.assetIds,
-          }
-
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${user.token}`)
-            .send(post)
-
-            if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
-              return
-            }
-
-            expect(res).to.have.status(200)
-            expect(res.body.revisionStr).to.equal(requestBodies.writeStigPropsByCollectionStig.defaultRevisionStr)
-            expect(res.body.revisionPinned).to.equal(false)
-            expect(res.body.ruleCount).to.eql(reference.checklistLength)
-            expect(res.body.benchmarkId).to.equal(reference.testCollection.benchmark)
-            expect(res.body.assetCount).to.eql(requestBodies.writeStigPropsByCollectionStig.assetIds.length)
-        })
-
-
-        it("Set the Assets mapped to a STIG - invalid rev - expect 422", async () => {
-
-          const post = {
-          defaultRevisionStr: "V1R5"
-          }
-
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${user.token}`)
-            .send(post)
-
-            if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
-              return
-            }
-
-            expect(res).to.have.status(422)
-        })
-
-        it("Set the Assets mapped to a STIG - default rev only", async () => {
-
-          const post = {
-          defaultRevisionStr: reference.testCollection.pinRevision
-          }
-
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${user.token}`)
-            .send(post)
-
-            if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
-              return
-            }
-
-            expect(res).to.have.status(200)
-            expect(res.body.revisionStr).to.equal(reference.testCollection.pinRevision)
-            expect(res.body.revisionPinned).to.equal(true)
-            expect(res.body.ruleCount).to.eql(reference.checklistLength)
-            expect(res.body.benchmarkId).to.equal(reference.testCollection.benchmark)
-            expect(res.body.assetCount).to.eql(requestBodies.writeStigPropsByCollectionStig.assetIds.length)
-        })
-
-
-        it("Set the Assets mapped to a STIG - clear assets", async () => {
-
-          const post = {
-          assetIds: []
-          }
-
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${user.token}`)
-            .send(post)
-
-            if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
-              return
-            }
-
-            expect(res).to.have.status(204)
-        })
-
-
-        it("Set the Assets mapped to a STIG - after pinned delete", async () => {
-
-          const post = {
-            assetIds: requestBodies.writeStigPropsByCollectionStig.assetIds,
-          }
-
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${user.token}`)
-            .send(post)
-
-            if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
-              return
-            }
-
-            expect(res).to.have.status(200)
-            expect(res.body.revisionStr).to.equal(reference.testCollection.defaultRevision)
-            expect(res.body.revisionPinned).to.equal(false)
-            expect(res.body.ruleCount).to.eql(reference.checklistLength)
-            expect(res.body.benchmarkId).to.equal(reference.testCollection.benchmark)
             expect(res.body.assetCount).to.eql(requestBodies.writeStigPropsByCollectionStig.assetIds.length)
         })
       })

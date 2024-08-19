@@ -81,71 +81,7 @@ describe('PATCH - Review', () => {
             expect(res.body.result).to.eql("fail")
             expect(res.body.status).to.have.property('label').that.equals('saved')
         })
-        it('resultEngine only - expect fail', async () => {
-            const res = await chai
-              .request(config.baseUrl)
-              .patch(
-                `/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`
-              )
-              .set("Authorization", `Bearer ${user.token}`)
-              .send({
-                resultEngine: {
-                  type: "script",
-                  product: "Evaluate-STIG",
-                  version: "1.2310.1",
-                  time: "2023-12-11T12:56:14.3576272-05:00",
-                  checkContent: {
-                    location: "VPN_Checks:1.2023.7.24",
-                  },
-                  overrides: [
-                    {
-                      authority: "Some_AnswerFile.xml",
-                      oldResult: "unknown",
-                      newResult: "pass",
-                      remark: "Evaluate-STIG Answer File",
-                    },
-                  ],
-                },
-              })
-            
-            expect(res).to.have.status(422)
-        })
-        it('resultEngine only - expect success', async () => {
-          const res = await chai
-            .request(config.baseUrl)
-            .patch(
-              `/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`
-            )
-            .set("Authorization", `Bearer ${user.token}`)
-            .send({
-              result: "pass",
-              resultEngine: {
-                type: "script",
-                product: "Evaluate-STIG",
-                version: "1.2310.1",
-                time: "2023-12-11T12:56:14.3576272-05:00",
-                checkContent: {
-                  location: "VPN_Checks:1.2023.7.24",
-                },
-                overrides: [
-                  {
-                    authority: "Some_AnswerFile.xml",
-                    oldResult: "unknown",
-                    newResult: "pass",
-                    remark: "Evaluate-STIG Answer File",
-                  },
-                ],
-              },
-            })
-          if(user.name === 'collectioncreator') {
-            expect(res).to.have.status(403)
-            return
-          }
-          expect(res).to.have.status(200)
-          expect(res.body.result).to.eql("pass")
-          expect(res.body.touchTs).to.eql(res.body.ts)
-          expect(res.body.status).to.have.property("ts").to.not.eql(res.body.ts)
-        })
+     
         it('PATCH Review to Accepted', async () => {
           const res = await chai.request(config.baseUrl)
             .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`)

@@ -8,7 +8,7 @@ const users = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
 
-describe('DELETE - Collection', () => {
+describe('DELETE - Asset', () => {
 
   before(async function () {
     this.timeout(4000)
@@ -34,7 +34,7 @@ describe('DELETE - Collection', () => {
             .set('Authorization', 'Bearer ' + user.token)
             .send(`${JSON.stringify(reference.scrapAsset.metadataValue)}`)
 
-          if(!distinct.canModifyAssets){
+          if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
           }
@@ -50,7 +50,7 @@ describe('DELETE - Collection', () => {
             .request(config.baseUrl)
             .delete(`/assets/${reference.scrapAsset.assetId}/stigs`)
             .set('Authorization', 'Bearer ' + user.token)
-          if(!distinct.canModifyAssets){
+          if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
           }
@@ -67,7 +67,7 @@ describe('DELETE - Collection', () => {
             .request(config.baseUrl)
             .delete(`/assets/${reference.scrapAsset.assetId}/stigs/${reference.scrapAsset.scrapBenchmark}`)
             .set('Authorization', 'Bearer ' + user.token)
-          if(!distinct.canModifyAssets){
+          if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
           }
@@ -110,7 +110,7 @@ describe('DELETE - Collection', () => {
             .request(config.baseUrl)
             .delete(`/assets/${assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token)
-        if(!distinct.canModifyAssets){
+        if(!distinct.canModifyCollection){
           expect(res).to.have.status(403)
           return
         }
@@ -124,7 +124,7 @@ describe('DELETE - Collection', () => {
             .request(config.baseUrl)
             .delete(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token) 
-          if(!distinct.canModifyAssets){
+          if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
           }

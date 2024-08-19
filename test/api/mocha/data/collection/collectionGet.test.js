@@ -156,57 +156,57 @@ describe('GET - Collection', () => {
         })
       })
 
-    describe('getCollection - /collections/{collectionId}', () => {
-      it('Return a Collection', async () => {
-        const res = await chai.request(config.baseUrl)
-          .get(`/collections/${reference.testCollection.collectionId}?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`)
-          .set('Authorization', `Bearer ${user.token}`)
-          if (distinct.grant === "none"){
-            expect(res).to.have.status(403)
-            return
-          }
-          expect(res).to.have.status(200)
-          expect(res.body.collectionId).to.equal(reference.testCollection.collectionId)
-          const regex  = new RegExp(reference.testCollection.name)
-          expect(res.body.name).to.match(regex)
+      describe('getCollection - /collections/{collectionId}', () => {
+        it('Return a Collection', async () => {
+          const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.testCollection.collectionId}?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`)
+            .set('Authorization', `Bearer ${user.token}`)
+            if (distinct.grant === "none"){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res).to.have.status(200)
+            expect(res.body.collectionId).to.equal(reference.testCollection.collectionId)
+            const regex  = new RegExp(reference.testCollection.name)
+            expect(res.body.name).to.match(regex)
 
-          // assets projection
-          expect(res.body.statistics.assetCount).to.eql(distinct.assetIds.length)
-          
-          // grants projection
-          // todo: lvl1 user seems to be getting all grants
-          expect(res.body.grants).to.be.an('array').of.length(distinct.grantCnt_testCollection)
+            // assets projection
+            expect(res.body.statistics.assetCount).to.eql(distinct.assetIds.length)
+            
+            // grants projection
+            // todo: lvl1 user seems to be getting all grants
+            expect(res.body.grants).to.be.an('array').of.length(distinct.grantCnt_testCollection)
 
-          const testCollectionOwnerArray = res.body.owners.map(owner => owner.userId)
-          expect(testCollectionOwnerArray, "proper owners").to.have.members(reference.testCollection.owners)
-          
+            const testCollectionOwnerArray = res.body.owners.map(owner => owner.userId)
+            expect(testCollectionOwnerArray, "proper owners").to.have.members(reference.testCollection.owners)
+            
+        })
       })
-    })
 
-    describe('getChecklistByCollectionStig - /collections/{collectionId}/checklists/{benchmarkId}/{revisionStr}', () => {
-      it('Return the Checklist for the supplied Collection and STIG-latest', async () => {
-        const res = await chai.request(config.baseUrl)
-          .get(`/collections/${reference.testCollection.collectionId}/checklists/${reference.benchmark}/${'latest'}`)
-          .set('Authorization', `Bearer ${user.token}`)
-          if (distinct.grant === "none"){
-            expect(res).to.have.status(403)
-            return
-          }
-          expect(res).to.have.status(200)
-          expect(res.body).to.be.an('array').of.length(reference.checklistLength)
+      describe('getChecklistByCollectionStig - /collections/{collectionId}/checklists/{benchmarkId}/{revisionStr}', () => {
+        it('Return the Checklist for the supplied Collection and STIG-latest', async () => {
+          const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.testCollection.collectionId}/checklists/${reference.benchmark}/${'latest'}`)
+            .set('Authorization', `Bearer ${user.token}`)
+            if (distinct.grant === "none"){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res).to.have.status(200)
+            expect(res.body).to.be.an('array').of.length(reference.checklistLength)
+        })
+        it('Return the Checklist for the supplied Collection and STIG-revStr', async () => {
+          const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.testCollection.collectionId}/checklists/${reference.benchmark}/${reference.revisionStr}`)
+            .set('Authorization', `Bearer ${user.token}`)
+            if (distinct.grant === "none"){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res).to.have.status(200)
+            expect(res.body).to.be.an('array').of.length(reference.checklistLength)
+        })
       })
-      it('Return the Checklist for the supplied Collection and STIG-revStr', async () => {
-        const res = await chai.request(config.baseUrl)
-          .get(`/collections/${reference.testCollection.collectionId}/checklists/${reference.benchmark}/${reference.revisionStr}`)
-          .set('Authorization', `Bearer ${user.token}`)
-          if (distinct.grant === "none"){
-            expect(res).to.have.status(403)
-            return
-          }
-          expect(res).to.have.status(200)
-          expect(res.body).to.be.an('array').of.length(reference.checklistLength)
-      })
-    })
 
 
     describe('getFindingsByCollection - /collections/{collectionId}/findings', () => {

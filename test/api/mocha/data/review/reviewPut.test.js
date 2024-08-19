@@ -30,58 +30,7 @@ describe('PUT - Review', () => {
             const distinct = expectations[user.name]
             describe('PUT - putReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId}', () => {
 
-                it('PUT Review: no resultEngine - check response does not include "resultEngine": 0', async () => {
-
-                    const putBody = {
-                        result: 'pass',
-                        detail: 'test',
-                        comment: null,
-                        status: 'saved'
-                    }
-
-                    const res = await chai.request(config.baseUrl)
-                        .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testAsset.freshRuleId}`)
-                        .set('Authorization', `Bearer ${user.token}`)
-                        .send(putBody)
-                    if(user.name === 'collectioncreator') {
-                        expect(res).to.have.status(403)
-                        return
-                    }
-                    expect(res).to.have.status(201)
-                    const expectedResponse = {  
-                        assetId: "42",
-                        assetName: "Collection_X_lvl1_asset-1",
-                        assetLabelIds: [
-                        "755b8a28-9a68-11ec-b1bc-0242ac110002",
-                        "5130dc84-9a68-11ec-b1bc-0242ac110002"
-                        ],
-                        ruleId: reference.testAsset.freshRuleId,
-                    ruleIds: [
-                        reference.testAsset.freshRuleId
-                        ],  
-                        result: putBody.result,
-                        resultEngine: null,
-                        detail: putBody.detail,
-                        autoResult: false,
-                        comment: "",
-                        userId: user.userId,
-                        username: user.name,
-                        ts: res.body.ts,
-                        touchTs: res.body.touchTs,
-                        status: {
-                            ts: res.body.status.ts,
-                            text: null,
-                            user: {
-                                userId: user.userId,
-                                username: user.name
-                            },
-                            label: putBody.status
-                        }
-                    }
-                
-                    expect(res.body).to.be.an('object')
-                    expect(res.body).to.eql(expectedResponse)
-                })
+       
                 it('PUT Review: accepted, pass, no detail', async () => {
 
                     const putBody = {

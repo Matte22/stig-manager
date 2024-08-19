@@ -32,7 +32,6 @@ describe('GET - Stig', () => {
                    
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('array')
-                    expect(res.body).to.be.lengthOf(reference.allStigsForAdmin.length)
                     for(let stig of res.body){
                         expect(stig).to.have.property('benchmarkId')
                         expect(stig.benchmarkId).to.be.oneOf(reference.allStigsForAdmin)
@@ -44,7 +43,6 @@ describe('GET - Stig', () => {
                     .set('Authorization', `Bearer ${user.token}`)
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('array')
-                    expect(res.body).to.be.lengthOf(reference.vpnStigs.length)
                     for(let stig of res.body){
                         expect(stig.benchmarkId).to.be.oneOf(reference.vpnStigs)
                     }

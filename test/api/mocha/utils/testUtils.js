@@ -249,16 +249,43 @@ const setStigGrants = async (collectionId, userId, assetId) => {
   }
 }
 
+const uploadTestStig = async (filename) => {
+
+  const directoryPath = path.join(__dirname, '../../form-data-files/')
+  const filePath = path.join(directoryPath, filename)
+  const formData = new FormData()
+  formData.append('importFile', fs.createReadStream(filePath), {
+    filename,
+    contentType: 'text/xml'
+  })
+
+  const axiosConfig = {
+    method: 'post', 
+    url: `${config.baseUrl}/stigs?elevate=true&clobber=true`,
+    headers: {
+      ...formData.getHeaders(),
+      Authorization: `Bearer ${adminToken}`
+    },
+    data: formData
+  }
+
+  try {
+    const response = await axios(axiosConfig)
+  } catch (error) {
+    console.error(`Failed to upload ${filename}:`, error)
+  }
+}
+
 const uploadTestStigs = async () => {
   const testFilenames = [
     'U_MS_Windows_10_STIG_V1R23_Manual-xccdf.xml',
     'U_RHEL_7_STIG_V3R0-3_Manual-xccdf.xml',
-    // 'U_VPN_SRG_V1R1_Manual-xccdf-replace.xml',
+    'U_VPN_SRG_V1R1_Manual-xccdf-replace.xml',
     'U_VPN_SRG_V1R1_Manual-xccdf.xml',
-    // 'U_VPN_SRG_V2R3_Manual-xccdf-reviewKeyChange.xml',
-    // 'U_VPN_SRG-OTHER_V1R1_Manual-xccdf.xml',
-    // 'U_VPN_SRG_V1R0_Manual-xccdf.xml',
-    // 'U_VPN_SRG-OTHER_V1R1_twoRules-matchingFingerprints.xml'
+   // 'U_VPN_SRG_V2R3_Manual-xccdf-reviewKeyChange.xml',
+    'U_VPN_SRG-OTHER_V1R1_Manual-xccdf.xml',
+  //  'U_VPN_SRG_V1R0_Manual-xccdf.xml',
+    'U_VPN_SRG-OTHER_V1R1_twoRules-matchingFingerprints.xml'
   ]
   const directoryPath = path.join(__dirname, '../../form-data-files/')
 
@@ -316,6 +343,22 @@ const replaceStigRevision = async (stigFile = "U_VPN_SRG_V1R1_Manual-xccdf-repla
   }
 }
 
+const deleteStigByRevision = async (benchmarkId, revisionStr) => {
+  try {
+    const res = await axios.delete(
+      `${config.baseUrl}/stigs/${benchmarkId}/revisions/${revisionStr}?elevate=true&force=true`,
+      {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+    return res
+  } catch (e) {
+    throw e
+  }
+}
 const deleteStig = async (benchmarkId) => {
   try {
 
@@ -534,5 +577,7 @@ module.exports = {
   replaceStigRevision,
   deleteStig,
   getStigByBenchmarkId,
-  getCollection
+  getCollection,
+  uploadTestStig,
+  deleteStigByRevision
 }
