@@ -2,9 +2,10 @@ const chai = require('chai')
 const chaiHttp = require('chai-http')
 chai.use(chaiHttp)
 const expect = chai.expect
+const deepEqualInAnyOrder = require('deep-equal-in-any-order')
+chai.use(deepEqualInAnyOrder)
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const environment = require('../../environment.json')
 const users = require("../../iterations.js")
 const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
@@ -33,58 +34,9 @@ describe('PUT - Collection', function () {
         it('Set all properties of a Collection',async function () {
 
             const putRequest = requestBodies.replaceCollection
-            // {
-              // name: "SetAllProperties",
-              // description: "test",
-              // settings: {
-              //   fields: {
-              //     detail: {
-              //       enabled: "always",
-              //       required: "findings",
-              //     },
-              //     comment: {
-              //       enabled: "always",
-              //       required: "findings",
-              //     },
-              //   },
-              //   status: {
-              //     canAccept: true,
-              //     minAcceptGrant: 2,
-              //     resetCriteria: "result",
-              //   },
-              // },
-              // metadata: {
-              //   pocName: "poc2Patched",
-              //   pocEmail: "pocEmail@email.com",
-              //   pocPhone: "12342",
-              //   reqRar: "true",
-              // },
-              // grants: [
-              //   {
-              //     userId: "1",
-              //     accessLevel: 4,
-              //   },
-              //   {
-              //     userId: "21",
-              //     accessLevel: 2,
-              //   },
-              //   {
-              //     userId: "44",
-              //     accessLevel: 3,
-              //   },
-              //   {
-              //     userId: "45",
-              //     accessLevel: 4,
-              //   },
-              //   {
-              //     userId: "87",
-              //     accessLevel: 4,
-              //   },
-              // ],
-            // }
-
             const res = await chai.request(config.baseUrl)
-                .put(`/collections/${reference.testCollection.collectionId}`)
+                // .put(`/collections/${reference.testCollection.collectionId}`)
+                .put(`/collections/${reference.testCollection.collectionId}?projection=grants&projection=owners&projection=statistics&projection=stigs&projection=assets`)
                 .set('Authorization', `Bearer ${user.token}`)
                 .send(putRequest)
 
@@ -107,6 +59,26 @@ describe('PUT - Collection', function () {
               expect(res.body.metadata.pocEmail).to.equal(putRequest.metadata.pocEmail)
               expect(res.body.metadata.pocPhone).to.equal(putRequest.metadata.pocPhone)
               expect(res.body.metadata.reqRar).to.equal(putRequest.metadata.reqRar)
+              
+            // grants projection
+            expect(res.body.grants).to.have.lengthOf(putRequest.grants.length)
+            for(const grant of res.body.grants){
+              expect(grant.user.userId).to.be.oneOf(putRequest.grants.map(g => g.userId))
+            }
+        
+            // assets projection
+            expect(res.body.assets).to.deep.equalInAnyOrder(reference.testCollection.assetsProjected)
+
+            // owners projection
+            expect(res.body.owners).to.have.lengthOf(reference.testCollection.owners.length)
+
+            // statistics projection
+            expect(res.body.statistics.assetCount).to.equal(reference.testCollection.assetIds.length)
+            expect(res.body.statistics.checklistCount).to.equal(reference.testCollection.statisticsProjected.checklistCount)
+            expect(res.body.statistics.grantCount).to.equal(putRequest.grants.length)
+        
+            // stigs projection
+            expect(res.body.stigs).to.have.lengthOf(reference.testCollection.validStigs.length)              
         })
 
         // it('Set all properties of a Collection- with metadata',async function () {
@@ -200,6 +172,7 @@ describe('PUT - Collection', function () {
         //     expect(res.body.stigs).to.have.lengthOf(2)
 
         // })
+
       })
 
       describe('setStigAssetsByCollectionUser - /collections/{collectionId}/grants/{userId}/access', function () {

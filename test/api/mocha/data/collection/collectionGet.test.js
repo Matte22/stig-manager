@@ -2,6 +2,8 @@ const chai = require('chai')
 const chaiHttp = require('chai-http')
 chai.use(chaiHttp)
 const expect = chai.expect
+const deepEqualInAnyOrder = require('deep-equal-in-any-order')
+chai.use(deepEqualInAnyOrder)
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 // const environment = require('../../environment.json')
@@ -17,6 +19,7 @@ describe('GET - Collection', function () {
     await utils.loadAppData()
     await utils.createDisabledCollectionsandAssets()
   })
+
 
   for(const user of users){
     if (expectations[user.name] === undefined){
@@ -46,8 +49,8 @@ describe('GET - Collection', function () {
 
             expect(testCollectionOwnerArray, "proper owners").to.have.members(reference.testCollection.owners)
             expect(testCollection.statistics.assetCount, "asset count").to.equal(distinct.assetIds.length)
-            expect(testCollection.statistics.checklistCount, "checklist count").to.equal(distinct.checklistCnt_testCollection)
-            expect(testCollection.statistics.grantCount, "grant count").to.equal(distinct.grantCnt_testCollection)
+            expect(testCollection.statistics.checklistCount, "checklist count").to.equal(distinct.checklistCnt)
+            expect(testCollection.statistics.grantCount, "grant count").to.equal(distinct.grantCnt)
           })
         }
 
@@ -68,8 +71,8 @@ describe('GET - Collection', function () {
               .set('Authorization', `Bearer ${user.token}`)
             expect(res).to.have.status(200)
             expect(res.body).to.be.an('array')
-            expect(res.body).to.have.lengthOf(distinct.collectionMetadataMatchCnt)
-            if (distinct.collectionContainsMatchCnt == 0) {
+            expect(res.body).to.have.lengthOf(distinct.collectionMatch.collectionMetadataMatchCnt)
+            if (distinct.collectionMatch.collectionContainsMatchCnt == 0) {
               return
             }
             const regex  = new RegExp(reference.testCollection.name)
@@ -84,8 +87,8 @@ describe('GET - Collection', function () {
             .set('Authorization', `Bearer ${user.token}`)
         expect(res).to.have.status(200)
         expect(res.body).to.be.an('array')
-        expect(res.body).to.have.lengthOf(distinct.collectionExactMatchCnt)
-        if (distinct.collectionExactMatchCnt == 0) {
+        expect(res.body).to.have.lengthOf(distinct.collectionMatch.collectionExactMatchCnt)
+        if (distinct.collectionMatch.collectionExactMatchCnt == 0) {
           return
         }
         const regex  = new RegExp(reference.testCollection.name)
@@ -99,8 +102,8 @@ describe('GET - Collection', function () {
             .set('Authorization', `Bearer ${user.token}`)
         expect(res).to.have.status(200)
         
-        expect(res.body).to.have.lengthOf(distinct.collectionStartMatchCnt)
-        if (distinct.collectionContainsMatchCnt == 0) {
+        expect(res.body).to.have.lengthOf(distinct.collectionMatch.collectionStartMatchCnt)
+        if (distinct.collectionMatch.collectionContainsMatchCnt == 0) {
           return
         }
 
@@ -115,8 +118,8 @@ describe('GET - Collection', function () {
             .set('Authorization', `Bearer ${user.token}`)
         expect(res).to.have.status(200)
         expect(res.body).to.be.an('array')
-        expect(res.body).to.have.lengthOf(distinct.collectionEndMatchCnt)
-        if (distinct.collectionContainsMatchCnt == 0) {
+        expect(res.body).to.have.lengthOf(distinct.collectionMatch.collectionEndMatchCnt)
+        if (distinct.collectionMatch.collectionContainsMatchCnt == 0) {
           return
         }
         expect(res.body[0].name).to.have.string('X')
@@ -132,7 +135,7 @@ describe('GET - Collection', function () {
         } 
         expect(res).to.have.status(200)
         expect(res.body).to.be.an('array')
-        expect(res.body).to.have.lengthOf(distinct.collectionDeleteMatchCntElevated)
+        expect(res.body).to.have.lengthOf(distinct.collectionMatch.collectionDeleteMatchCntElevated)
         expect(res.body[0].name).to.have.string('delete')
         })
 
@@ -141,8 +144,8 @@ describe('GET - Collection', function () {
               .get(`/collections?name=${'delete'}&name-match=contains`)
               .set('Authorization', `Bearer ${user.token}`)
           expect(res).to.have.status(200)
-          expect(res.body).to.have.lengthOf(distinct.collectionDeleteMatchCnt)
-          if (distinct.collectionDeleteMatchCnt > 0){
+          expect(res.body).to.have.lengthOf(distinct.collectionMatch.collectionDeleteMatchCnt)
+          if (distinct.collectionMatch.collectionDeleteMatchCnt > 0){
             expect(res.body[0].name).to.have.string('delete')
           }
         })
@@ -167,7 +170,7 @@ describe('GET - Collection', function () {
           
           // grants projection
           // todo: lvl1 user seems to be getting all grants, but should only see owners and themselves (or grants projection is invalid for lvl1 users)
-          expect(res.body.grants).to.be.an('array').of.length(distinct.grantCnt_testCollection)
+          expect(res.body.grants).to.be.an('array').of.length(distinct.grantCnt)
 
           const testCollectionOwnerArray = res.body.owners.map(owner => owner.userId)
           expect(testCollectionOwnerArray, "proper owners").to.have.members(reference.testCollection.owners)
@@ -213,7 +216,7 @@ describe('GET - Collection', function () {
           }
           expect(res).to.have.status(200)
 
-          expect(res.body).to.have.lengthOf(distinct.findingsCnt)
+          expect(res.body).to.have.lengthOf(distinct.findings.findingsCnt)
 
           // assets projection
           for(const finding of res.body){
@@ -248,7 +251,7 @@ describe('GET - Collection', function () {
           }
           expect(res).to.have.status(200)
 
-          expect(res.body).to.have.lengthOf(distinct.findingsByGroupCnt)
+          expect(res.body).to.have.lengthOf(distinct.findings.findingsByGroupCnt)
 
           for(const finding of res.body){
             expect(finding.assetCount).to.equal(finding.assets.length)
@@ -268,7 +271,7 @@ describe('GET - Collection', function () {
           }
           expect(res).to.have.status(200)
 
-          expect(res.body).to.have.lengthOf(distinct.findingsByCciCnt)
+          expect(res.body).to.have.lengthOf(distinct.findings.findingsByCciCnt)
 
           for(const finding of res.body){
             expect(finding.assetCount).to.equal(finding.assets.length)
@@ -288,7 +291,7 @@ describe('GET - Collection', function () {
           }
           expect(res).to.have.status(200)
 
-          expect(res.body).to.be.an('array').of.length(3)
+          expect(res.body).to.be.an('array').of.length(distinct.findings.findingsByRuleForBenchmarkCnt)
 
           for(const finding of res.body){
             expect(finding.assetCount).to.equal(finding.assets.length)
@@ -308,7 +311,7 @@ describe('GET - Collection', function () {
           }
           expect(res).to.have.status(200)
 
-          expect(res.body).to.have.lengthOf(distinct.findingsByRuleAndAssetCnt)
+          expect(res.body).to.have.lengthOf(distinct.findings.findingsByRuleForAssetCnt)
 
           for(const finding of res.body){
             expect(finding.assetCount).to.equal(1)
@@ -489,10 +492,10 @@ describe('GET - Collection', function () {
 
                 for(asset of res.body){
                   if(asset.assetId === reference.testCollection.reviewHistory.assetId){
-                    expect(asset.reviewHistories).to.be.an('array').of.length(reference.testCollection.reviewHistoryRuleCnt)
+                    expect(asset.reviewHistories).to.be.an('array').of.length(reference.testCollection.reviewHistory.reviewHistoryRuleCnt)
                     for(const history of asset.reviewHistories){
                       if(history.ruleId === reference.testCollection.reviewHistory.ruleId){
-                        expect(history.history).to.be.an('array').of.length(reference.testCollection.reviewHistoryRuleCnt)
+                        expect(history.history).to.be.an('array').of.length(reference.testCollection.reviewHistory.reviewHistoryRuleCnt)
                         for(const record of history.history){
                           expect(record.result).to.be.equal('pass')
                         }
@@ -515,10 +518,10 @@ describe('GET - Collection', function () {
                 expect(res.body).to.be.an('array').of.length(1)
                 for(asset of res.body){
                   expect(asset.assetId).to.equal(reference.testCollection.reviewHistory.assetId)
-                  expect(asset.reviewHistories).to.be.an('array').of.length(reference.testCollection.rulesWithHistoryCnt)
+                  expect(asset.reviewHistories).to.be.an('array').of.length(reference.testCollection.reviewHistory.rulesWithHistoryCnt)
                   for(const history of asset.reviewHistories){
                     if(history.ruleId === reference.testCollection.reviewHistory.ruleId){
-                      expect(history.history).to.be.an('array').of.length(reference.testCollection.reviewHistoryRuleCnt)
+                      expect(history.history).to.be.an('array').of.length(reference.testCollection.reviewHistory.reviewHistoryRuleCnt)
                       for(const record of history.history){
                         expect(record.result).to.be.equal('pass')
                       }
@@ -659,7 +662,7 @@ describe('GET - Collection', function () {
                 if (res.status !== 200){
                   return
                 }
-                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistoryTotalCnt)
+                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory.reviewHistoryTotalEntryCnt)
                 expect(Date.parse(res.body.oldestHistoryEntryDate)).to.equal(Date.parse("2020-08-11T22:26:50.000Z"))
             })
 
@@ -672,7 +675,7 @@ describe('GET - Collection', function () {
                 if (res.status !== 200){
                   return
                 }
-                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistoryTotalCnt)
+                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory.reviewHistoryTotalEntryCnt)
                 expect(Date.parse(res.body.oldestHistoryEntryDate)).to.equal(Date.parse("2020-08-11T22:26:50.000Z"))
             })
 
@@ -686,15 +689,15 @@ describe('GET - Collection', function () {
                   return
                 }
 
-                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistoryTotalCnt)
+                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory.reviewHistoryTotalEntryCnt)
                 expect(Date.parse(res.body.oldestHistoryEntryDate)).to.equal(Date.parse("2020-08-11T22:26:50.000Z"))
-                expect(res.body.assetHistoryEntryCounts.length).to.eql(reference.testCollection.reviewHistory_startDateCnt)
+                expect(res.body.assetHistoryEntryCounts.length).to.eql(reference.testCollection.reviewHistory.reviewHistory_startDateCnt)
                 let totalHistoryEntries = 0
                 for(const asset of res.body.assetHistoryEntryCounts){
                   expect(distinct.assetIds).to.include(asset.assetId)
                   totalHistoryEntries += asset.historyEntryCount
                 }
-                expect(reference.testCollection.reviewHistoryTotalCnt).to.equal(res.body.collectionHistoryEntryCount)
+                expect(reference.testCollection.reviewHistory.reviewHistoryTotalEntryCnt).to.equal(res.body.collectionHistoryEntryCount)
             })
 
             it('History stats - endDate only',async function () {
@@ -706,7 +709,7 @@ describe('GET - Collection', function () {
                 if (res.status !== 200){
                   return
                 }
-                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory_endDateCnt)
+                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory.reviewHistory_endDateCnt)
                 expect(Date.parse(res.body.oldestHistoryEntryDate)).to.equal(Date.parse("2020-08-11T22:26:50.000Z"))
             })
 
@@ -719,7 +722,7 @@ describe('GET - Collection', function () {
                 if (res.status !== 200){
                   return
                 }
-                expect(res.body.collectionHistoryEntryCount).to.equal(6)
+                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory.reviewHistory_startAndEndDateCnt)
                 expect(Date.parse(res.body.oldestHistoryEntryDate)).to.equal(Date.parse("2020-08-11T22:26:50.000Z"))
             })
 
@@ -732,7 +735,7 @@ describe('GET - Collection', function () {
                 if (res.status !== 200){
                   return
                 }
-                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory_testAssetCnt)
+                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory.reviewHistory_testAssetCnt)
             })
             it('History stats - rule only',async function () {
               const res = await chai.request(config.baseUrl)
@@ -743,7 +746,7 @@ describe('GET - Collection', function () {
                 if (res.status !== 200){
                   return
                 }
-                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory_ruleIdCnt)
+                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory.reviewHistory_entriesByRuleIdCnt)
                 expect(Date.parse(res.body.oldestHistoryEntryDate)).to.equal(Date.parse("2020-08-11T22:30:38.000Z"))
             })
 
@@ -757,7 +760,7 @@ describe('GET - Collection', function () {
                   return
                 }
 
-                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory_byStatusCnt)
+                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory.reviewHistory_byStatusCnt)
                 expect(Date.parse(res.body.oldestHistoryEntryDate)).to.equal(Date.parse("2020-08-11T22:26:50.000Z"))
             })
 

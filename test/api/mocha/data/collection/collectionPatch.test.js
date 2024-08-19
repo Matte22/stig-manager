@@ -32,38 +32,7 @@ describe('PATCH - Collection', function () {
 
           it('Merge provided properties with a Collection',async function () {
 
-            const patchRequest = requestBodies.updateCollection
-            // const patchRequest = {
-            //     metadata: {
-            //         pocName: "poc2Patched",
-            //         pocEmail: "pocEmail@email.com",
-            //         pocPhone: "12342",
-            //         reqRar: "true",
-            //     },
-            //     grants: [
-            //         {
-            //         userId: "1",
-            //         accessLevel: 4,
-            //         },
-            //         {
-            //         userId: "21",
-            //         accessLevel: 1,
-            //         },
-            //         {
-            //         userId: "44",
-            //         accessLevel: 3,
-            //         },
-            //         {
-            //         userId: "45",
-            //         accessLevel: 4,
-            //         },
-            //         {
-            //         userId: "87",
-            //         accessLevel: 4,
-            //         },
-            //     ],
-            //     }
-            
+            const patchRequest = requestBodies.updateCollection            
             const res = await chai.request(config.baseUrl)
                   .patch(`/collections/${reference.scrapCollection.collectionId}?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs`)
                   .set('Authorization', `Bearer ${user.token}`)

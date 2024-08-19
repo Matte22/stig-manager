@@ -2,6 +2,8 @@ const chai = require("chai")
 const chaiHttp = require("chai-http")
 chai.use(chaiHttp)
 const expect = chai.expect
+const deepEqualInAnyOrder = require('deep-equal-in-any-order')
+chai.use(deepEqualInAnyOrder)
 const config = require("../../testConfig.json")
 const utils = require("../../utils/testUtils")
 // const environment = require("../../environment.json")
@@ -166,7 +168,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
 
         before(async function () {
           // this.timeout(4000)
-          await utils.setDefaultRevision(reference.testCollection.collectionId, reference.benchmark, reference.pinRevision)
+          await utils.setDefaultRevision(reference.testCollection.collectionId, reference.benchmark, reference.testCollection.pinRevision)
         })
         it("clone collection for later Review check and test projections everything matches source ",async function () {
 
@@ -214,7 +216,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
                         expect(messageObj.collection.statistics.grantCount).to.eql(reference.testCollection.statisticsProjected.grantCount);
                         expect(messageObj.collection.statistics.checklistCount).to.eql(reference.testCollection.statisticsProjected.checklistCount);
                         // // stigs 
-                        expect(messageObj.collection.stigs).to.eql(reference.testCollection.stigsProjected)
+                        expect(messageObj.collection.stigs).to.deep.equalInAnyOrder(reference.testCollection.stigsProjected)
                         // labels
                         expect(messageObj.collection.labels).to.have.lengthOf(reference.testCollection.labelsProjected.length)
                         for(const label of messageObj.collection.labels){
@@ -266,72 +268,74 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           await utils.createDisabledCollectionsandAssets()
         })
         
-        // it("export results to another collection - entire asset - create asset in destination",async function () {
+        it("export results to another collection - entire asset - create asset in destination",async function () {
 
-        //   const res = await chai
-        //     .request(config.baseUrl)
-        //     .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
-        //     .set("Authorization", `Bearer ${user.token}`)
-        //     .send([
-        //       {
-        //         assetId: reference.testAsset.assetId,
-        //       },
-        //     ])
+          const res = await chai
+            .request(config.baseUrl)
+            .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
+            .set("Authorization", `Bearer ${user.token}`)
+            .send([
+              {
+                assetId: reference.testAsset.assetId,
+              },
+            ])
             
-        //     if(distinct.canModifyCollection === false){
-        //       expect(res).to.have.status(403)
-        //       return
-        //     }
-        //     expect(res).to.have.status(200)
-        //     const response = res.body.toString().split("\n")
-        //     expect(response).to.be.an('array')
-        //     expect(response).to.have.lengthOf.at.least(1)
+            if(distinct.canModifyCollection === false){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res).to.have.status(200)
+            const response = res.body.toString().split("\n")
+            expect(response).to.be.an('array')
+            expect(response).to.have.lengthOf.at.least(1)
 
-        //     for(const message of response){ 
-        //         if(message.length > 0){
-        //             let messageObj = JSON.parse(message)
-        //             if(messageObj.stage == "result"){
-        //               expect(messageObj.counts.assetsCreated).to.eql(1)
-        //               expect(messageObj.counts.stigsMapped).to.eql(2)
-        //               expect(messageObj.counts.reviewsInserted).to.eql(9)
-        //               expect(messageObj.counts.reviewsUpdated).to.eql(0)
-        //             }
-        //         }
-        //     }
-        // })
-        // it("export results to another collection - entire asset - asset exists",async function () {
+            for(const message of response){ 
+                if(message.length > 0){
+                    let messageObj = JSON.parse(message)
+                    if(messageObj.stage == "result"){
+                      expect(messageObj.counts.assetsCreated).to.eql(1)
+                      expect(messageObj.counts.stigsMapped).to.eql(reference.testAsset.validStigs.length)
+                      expect(messageObj.counts.reviewsInserted).to.eql(reference.testAsset.reviewCnt)
+                      expect(messageObj.counts.reviewsUpdated).to.eql(0)
+                    }
+                }
+            }
+        })
 
-        //   const res = await chai
-        //     .request(config.baseUrl)
-        //     .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
-        //     .set("Authorization", `Bearer ${user.token}`)
-        //     .send([
-        //       {
-        //         assetId: reference.testAsset.assetId,
-        //       },
-        //     ])
 
-        //     if(distinct.canModifyCollection === false){
-        //       expect(res).to.have.status(403)
-        //       return
-        //     }
+        it("export results to another collection - entire asset - asset exists",async function () {
 
-        //     expect(res).to.have.status(200)
-        //     const response = res.body.toString().split("\n")
-        //     expect(response).to.be.an('array')
-        //     expect(response).to.have.lengthOf.at.least(1)
-        //     for(const message of response){ 
-        //         if(message.length > 0){
-        //             let messageObj = JSON.parse(message)
-        //             if(messageObj.stage == "result"){
-        //               expect(messageObj.counts.assetsCreated).to.eql(0)
-        //               expect(messageObj.counts.stigsMapped).to.eql(0)
-        //               expect(messageObj.counts.reviewsInserted).to.eql(0)
-        //               expect(messageObj.counts.reviewsUpdated).to.eql(9)
-        //             }
-        //         }
-        //     }
-        // })
+          const res = await chai
+            .request(config.baseUrl)
+            .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
+            .set("Authorization", `Bearer ${user.token}`)
+            .send([
+              {
+                assetId: reference.testAsset.assetId,
+              },
+            ])
+
+            if(distinct.canModifyCollection === false){
+              expect(res).to.have.status(403)
+              return
+            }
+
+            expect(res).to.have.status(200)
+            const response = res.body.toString().split("\n")
+            expect(response).to.be.an('array')
+            expect(response).to.have.lengthOf.at.least(1)
+            for(const message of response){ 
+                if(message.length > 0){
+                    let messageObj = JSON.parse(message)
+                    if(messageObj.stage == "result"){
+                      expect(messageObj.counts.assetsCreated).to.eql(0)
+                      expect(messageObj.counts.stigsMapped).to.eql(0)
+                      expect(messageObj.counts.reviewsInserted).to.eql(0)
+                      expect(messageObj.counts.reviewsUpdated).to.eql(9)
+                    }
+                }
+            }
+        })
       })
 
 
@@ -516,6 +520,8 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             }
 
             expect(res).to.have.status(204)
+            expect(res.body).to.eql({})
+            
         })
 
 

@@ -37,39 +37,15 @@ describe('DELETE - Collection ', function () {
 
           it('Delete a Collection - elevated stigmanadmin only',async function () {
               const res = await chai.request(config.baseUrl)
-                  .delete(`/collections/${distinct.deleteCollectionId_admin}?elevate=true&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs`)
+                  .delete(`/collections/${reference.deleteCollection.collectionId_adminOnly}?elevate=true&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs`)
                   .set('Authorization', `Bearer ${user.token}`)
 
-              // if(user.name !== "stigmanadmin" ){
-              //     expect(res).to.have.status(403)
-              //     return
-              // }
               expect(res).to.have.status(200)
 
-              expect(res.body.collectionId).to.equal(distinct.deleteCollectionId_admin)
-
-              // //assets
-              // for(const asset of res.body.assets){
-              //     expect(asset.assetId).to.be.oneOf(reference.testCollection.assetIDsInCollection)
-              // }
-
-              // //grants
-              // for(const grant of res.body.grants){
-              //     expect(grant.user.userId).to.be.oneOf(reference.testCollection.userIdsWithGrant)
-              // }
-
-              // // owners
-              // for(const owner of res.body.owners){
-              //     expect(owner.userId).to.be.oneOf(reference.testCollection.owners)
-              // }
-
-              // //stigs
-              // for(const stig of res.body.stigs){
-              //     expect(stig.benchmarkId).to.be.oneOf(reference.testCollection.validStigs)
-              // }
+              expect(res.body.collectionId).to.equal(reference.deleteCollection.collectionId_adminOnly)
 
               //confirm that it is deleted
-              const deletedCollection = await utils.getCollection(distinct.deleteCollectionId_admin)
+              const deletedCollection = await utils.getCollection(reference.deleteCollection.collectionId_adminOnly)
               expect(deletedCollection).to.be.undefined
           })
         }
@@ -86,26 +62,6 @@ describe('DELETE - Collection ', function () {
           expect(res).to.have.status(200)
 
           expect(res.body.collectionId).to.equal(reference.deleteCollection.collectionId)
-
-          //assets
-          // for(const asset of res.body.assets){
-          //     expect(asset.assetId).to.be.oneOf(reference.testCollection.assetIDsInCollection)
-          // }
-
-          // //grants
-          // for(const grant of res.body.grants){
-          //     expect(grant.user.userId).to.be.oneOf(reference.testCollection.userIdsWithGrant)
-          // }
-
-          // // owners
-          // for(const owner of res.body.owners){
-          //     expect(owner.userId).to.be.oneOf(reference.testCollection.owners)
-          // }
-
-          // //stigs
-          // for(const stig of res.body.stigs){
-          //     expect(stig.benchmarkId).to.be.oneOf(reference.testCollection.validStigs)
-          // }
 
           //confirm that it is deleted
           const deletedCollection = await utils.getCollection(reference.deleteCollection.collectionId)
