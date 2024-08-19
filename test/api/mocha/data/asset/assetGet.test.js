@@ -22,7 +22,7 @@ describe('GET - Asset', () => {
   for(const user of users){
     if (expectations[user.name] === undefined){
       it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
-      return
+      continue
     }
 
     describe(`user:${user.name}`, () => {
@@ -36,7 +36,7 @@ describe('GET - Asset', () => {
             .get(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator"){
+          if(distinct.canModifyCollection === false){
             expect(res).to.have.status(403)
             return
           }
@@ -77,7 +77,7 @@ describe('GET - Asset', () => {
             .get(`/assets/${reference.testAssetNoStigs.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator"){
+          if(distinct.canModifyCollection === false){
             expect(res).to.have.status(403)
             return
           }
@@ -225,7 +225,7 @@ describe('GET - Asset', () => {
           const res = await chai
             .request(config.baseUrl).get(`/assets?collectionId=${reference.testCollection.collectionId}&benchmarkId=${reference.benchmark}&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token)
-          if(user.name === "collectioncreator" || user.name === "lvl1" || user.name === "lvl2"){
+          if(distinct.canModifyCollection === false){
             expect(res).to.have.status(403)
             return
           }
@@ -247,7 +247,7 @@ describe('GET - Asset', () => {
             .request(config.baseUrl).get(`/assets?collectionId=${environment.testCollection.collectionId}&projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator"){
+          if(distinct.canModifyCollection === false){
             expect(res).to.have.status(403)
             return
           }

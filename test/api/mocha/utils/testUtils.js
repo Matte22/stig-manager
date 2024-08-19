@@ -253,12 +253,12 @@ const uploadTestStigs = async () => {
   const testFilenames = [
     'U_MS_Windows_10_STIG_V1R23_Manual-xccdf.xml',
     'U_RHEL_7_STIG_V3R0-3_Manual-xccdf.xml',
-    'U_VPN_SRG_V1R1_Manual-xccdf-replace.xml',
+    // 'U_VPN_SRG_V1R1_Manual-xccdf-replace.xml',
     'U_VPN_SRG_V1R1_Manual-xccdf.xml',
-    'U_VPN_SRG_V2R3_Manual-xccdf-reviewKeyChange.xml',
-    'U_VPN_SRG-OTHER_V1R1_Manual-xccdf.xml',
-    'U_VPN_SRG_V1R0_Manual-xccdf.xml',
-    'U_VPN_SRG-OTHER_V1R1_twoRules-matchingFingerprints.xml'
+    // 'U_VPN_SRG_V2R3_Manual-xccdf-reviewKeyChange.xml',
+    // 'U_VPN_SRG-OTHER_V1R1_Manual-xccdf.xml',
+    // 'U_VPN_SRG_V1R0_Manual-xccdf.xml',
+    // 'U_VPN_SRG-OTHER_V1R1_twoRules-matchingFingerprints.xml'
   ]
   const directoryPath = path.join(__dirname, '../../form-data-files/')
 

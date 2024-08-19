@@ -11,9 +11,6 @@ usage() {
   exit 
 }
 
-
-
-
 DEFAULT_COMMAND="npx mocha --reporter mochawesome --no-timeouts --showFailed --exit './mocha/**/*.test.js'"
 COMMAND="npx mocha --reporter mochawesome --no-timeouts --showFailed --exit"
 

@@ -4,11 +4,9 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const environment = require('../../environment.json')
+const reference = require('./referenceData.js')
 const users = require('../../iterations.js')
 const expectations = require('./expectations.js')
-const reference = require('./referenceData.js')
-
 
 describe('PATCH - Review', () => {
 
@@ -21,9 +19,10 @@ describe('PATCH - Review', () => {
   for(const user of users) {
     if (expectations[user.name] === undefined){
       it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
-      return
+      continue
     }
     describe(`user:${user.name}`, () => {
+      const distinct = expectations[user.name]
       describe('PATCH - patchReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId}', () => {
 
         beforeEach(async function () {
@@ -34,7 +33,7 @@ describe('PATCH - Review', () => {
         
         it('PATCH Review with new details, expect status to remain', async () => {
           const res = await chai.request(config.baseUrl)
-            .patch(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${'SV-106181r1_rule'}`)
+            .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
             .set('Authorization', `Bearer ${user.token}`)
             .send({detail:"these details have changed, but the status remains"})
           if(user.name === 'collectioncreator') {
@@ -46,7 +45,7 @@ describe('PATCH - Review', () => {
         })
         it('PATCH Review with new result, expect status to reset to saved', async () => {
             const res = await chai.request(config.baseUrl)
-              .patch(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${'SV-106181r1_rule'}`)
+              .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
               .set('Authorization', `Bearer ${user.token}`)
               .send({result: "pass"})
             if(user.name === 'collectioncreator') {
@@ -59,7 +58,7 @@ describe('PATCH - Review', () => {
         })
         it('PATCH Review to submitted status', async () => {
             const res = await chai.request(config.baseUrl)
-              .patch(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${'SV-106181r1_rule'}`)
+              .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
               .set('Authorization', `Bearer ${user.token}`)
               .send({status: "submitted"})
             if(user.name === 'collectioncreator') {
@@ -71,7 +70,7 @@ describe('PATCH - Review', () => {
         })
         it('PATCH Review patched and no longer meets Collection Requirements', async () => {
             const res = await chai.request(config.baseUrl)
-              .patch(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${'SV-106181r1_rule'}`)
+              .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
               .set('Authorization', `Bearer ${user.token}`)
               .send({result: "fail"})
             if(user.name === 'collectioncreator') {
@@ -86,7 +85,7 @@ describe('PATCH - Review', () => {
             const res = await chai
               .request(config.baseUrl)
               .patch(
-                `/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${environment.testCollection.ruleId}`
+                `/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`
               )
               .set("Authorization", `Bearer ${user.token}`)
               .send({
@@ -115,7 +114,7 @@ describe('PATCH - Review', () => {
           const res = await chai
             .request(config.baseUrl)
             .patch(
-              `/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${environment.testCollection.ruleId}`
+              `/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`
             )
             .set("Authorization", `Bearer ${user.token}`)
             .send({
@@ -149,7 +148,7 @@ describe('PATCH - Review', () => {
         })
         it('PATCH Review to Accepted', async () => {
           const res = await chai.request(config.baseUrl)
-            .patch(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${environment.testCollection.ruleId}`)
+            .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`)
             .set('Authorization', `Bearer ${user.token}`)
             .send({status: "accepted"})
           
@@ -165,7 +164,7 @@ describe('PATCH - Review', () => {
           const res = await chai
             .request(config.baseUrl)
             .patch(
-              `/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${environment.testCollection.ruleId}`)
+              `/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`)
             .set("Authorization", `Bearer ${user.token}`)
             .send({
               result: "pass",
@@ -196,15 +195,15 @@ describe('PATCH - Review', () => {
 
         it('Merge metadata property/value into a Review', async () => {
           const res = await chai.request(config.baseUrl)
-            .patch(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${environment.testCollection.ruleId}/metadata`)
+            .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata`)
             .set('Authorization', `Bearer ${user.token}`)
-            .send({[environment.testCollection.metadataKey]: environment.testCollection.metadataValue})
+            .send({[reference.testCollection.metadataKey]: reference.testCollection.metadataValue})
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
             return
           }
           expect(res).to.have.status(200)
-          expect(res.body).to.eql({[environment.testCollection.metadataKey]: environment.testCollection.metadataValue})
+          expect(res.body).to.eql({[reference.testCollection.metadataKey]: reference.testCollection.metadataValue})
         
         })
       })

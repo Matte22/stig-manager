@@ -4,19 +4,18 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const environment = require('../../environment.json')
 const users = require("../../iterations.js")
-const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
-
+const expectations = require('./expectations.js')
 describe('DELETE - Stig', () => {
 
     for(const user of users){
         if (expectations[user.name] === undefined){
             it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
-            return
+            continue
         }
         describe(`user:${user.name}`, () => {
+            const distinct = expectations[user.name]
             describe('DELETE - deleteStigById - /stigs/{benchmarkId}', () => {
 
                 beforeEach(async function () {
@@ -27,7 +26,7 @@ describe('DELETE - Stig', () => {
 
                 it('Deletes a STIG (*** and all revisions ***) - expect fail, stig is assigned', async () => {
                     const res = await chai.request(config.baseUrl)
-                    .delete(`/stigs/${environment.testCollection.benchmark}?elevate=true`)
+                    .delete(`/stigs/${reference.benchmark}?elevate=true`)
                     .set('Authorization', `Bearer ${user.token}`)
                     if(user.name !== "stigmanadmin"){
                         expect(res).to.have.status(403)
@@ -37,7 +36,7 @@ describe('DELETE - Stig', () => {
                 })
                 it('Deletes a STIG (*** and all revisions ***)', async () => {
                     const res = await chai.request(config.baseUrl)
-                    .delete(`/stigs/${environment.scrapBenchmark}?elevate=true&force=true`)
+                    .delete(`/stigs/${reference.scrapBenchmark}?elevate=true&force=true`)
                     .set('Authorization', `Bearer ${user.token}`)
                     if(user.name !== "stigmanadmin"){
                         expect(res).to.have.status(403)
@@ -45,7 +44,7 @@ describe('DELETE - Stig', () => {
                     }
                     expect(res).to.have.status(200)
 
-                    const response = await utils.getStigByBenchmarkId(environment.scrapBenchmark)
+                    const response = await utils.getStigByBenchmarkId(reference.scrapBenchmark)
                     expect(response).to.be.empty
 
                 })
@@ -60,26 +59,25 @@ describe('DELETE - Stig', () => {
 
                 it('Deletes the specified revision of a STIG latest', async () => {
                     const res = await chai.request(config.baseUrl)
-                    .delete(`/stigs/${environment.testCollection.benchmark}/revisions/latest?elevate=true&force=true`)
+                    .delete(`/stigs/${reference.benchmark}/revisions/latest?elevate=true&force=true`)
                     .set('Authorization', `Bearer ${user.token}`)
                     if(user.name !== "stigmanadmin"){
                         expect(res).to.have.status(403)
                         return
                     }
                     expect(res).to.have.status(400)
-                
                 })
                 it('Deletes the specified revision of a STIG', async () => {
                 
                     const res = await chai.request(config.baseUrl)
-                    .delete(`/stigs/${environment.testCollection.benchmark}/revisions/${environment.testCollection.revisionStr}?elevate=true&force=true`)
+                    .delete(`/stigs/${reference.benchmark}/revisions/${reference.revisionStr}?elevate=true&force=true`)
                     .set('Authorization', `Bearer ${user.token}`)
                     if(user.name !== "stigmanadmin"){
                         expect(res).to.have.status(403)
                         return
                     }
                     expect(res).to.have.status(200)
-                    const response = await utils.getStigByBenchmarkId(environment.testCollection.benchmark)
+                    const response = await utils.getStigByBenchmarkId(reference.benchmark)
                     expect(response).to.not.be.empty
                 })
         

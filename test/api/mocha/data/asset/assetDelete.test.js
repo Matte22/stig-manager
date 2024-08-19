@@ -4,12 +4,9 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const environment = require('../../environment.json')
 const users = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
-const distinct = require('./expectations.js')
-
 
 describe('DELETE - Collection', () => {
 
@@ -23,19 +20,19 @@ describe('DELETE - Collection', () => {
   for(const user of users){
     if (expectations[user.name] === undefined){
       it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
-      return
+      continue
     }
 
     describe(`user:${user.name}`, () => {
-        const distinct = expectations[user.name]
+      const distinct = expectations[user.name]
       describe(`deleteAssetMetadataKey - /assets/{assetId}/metadata/keys/{key}`, () => {
         it('Delete one metadata key/value of an Asset', async () => {
           const res = await chai
             .request(config.baseUrl)
-            .delete(`/assets/${environment.scrapAsset.assetId}/metadata/keys/${environment.scrapAsset.metadataKey}`)
+            .delete(`/assets/${reference.scrapAsset.assetId}/metadata/keys/${reference.scrapAsset.metadataKey}`)
             .set('Content-Type', 'application/json') 
             .set('Authorization', 'Bearer ' + user.token)
-            .send(`${JSON.stringify(environment.scrapAsset.metadataValue)}`)
+            .send(`${JSON.stringify(reference.scrapAsset.metadataValue)}`)
 
           if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
@@ -43,15 +40,15 @@ describe('DELETE - Collection', () => {
           }
           expect(res).to.have.status(204)
           
-          const asset = await utils.getAsset(environment.scrapAsset.assetId)
-          expect(asset.metadata).to.not.have.property(environment.scrapAsset.metadataKey)
+          const asset = await utils.getAsset(reference.scrapAsset.assetId)
+          expect(asset.metadata).to.not.have.property(reference.scrapAsset.metadataKey)
         })
       })
       describe(`removeStigsFromAsset -/assets/{assetId}/stigs`, () => {
         it('Delete all STIG assignments to an Asset', async () => {
           const res = await chai
             .request(config.baseUrl)
-            .delete(`/assets/${environment.scrapAsset.assetId}/stigs`)
+            .delete(`/assets/${reference.scrapAsset.assetId}/stigs`)
             .set('Authorization', 'Bearer ' + user.token)
           if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
@@ -59,7 +56,7 @@ describe('DELETE - Collection', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array')
-          const asset = await utils.getAsset(environment.scrapAsset.assetId)
+          const asset = await utils.getAsset(reference.scrapAsset.assetId)
           expect(asset.stigs).to.be.an('array').that.is.empty
           
         })
@@ -68,7 +65,7 @@ describe('DELETE - Collection', () => {
         it('Delete a STIG assignment to an Asset', async () => {
           const res = await chai
             .request(config.baseUrl)
-            .delete(`/assets/${environment.scrapAsset.assetId}/stigs/${environment.scrapAsset.scrapBenchmark}`)
+            .delete(`/assets/${reference.scrapAsset.assetId}/stigs/${reference.scrapAsset.scrapBenchmark}`)
             .set('Authorization', 'Bearer ' + user.token)
           if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
@@ -76,8 +73,8 @@ describe('DELETE - Collection', () => {
           }
           expect(res).to.have.status(200)
 
-          const asset = await utils.getAsset(environment.scrapAsset.assetId)
-          expect(asset.stigs).to.not.include(environment.scrapAsset.scrapBenchmark)
+          const asset = await utils.getAsset(reference.scrapAsset.assetId)
+          expect(asset.stigs).to.not.include(reference.scrapAsset.scrapBenchmark)
         })
       })
       describe(`deleteAsset - /assets/{assetId}`, () => {
@@ -94,7 +91,7 @@ describe('DELETE - Collection', () => {
           // this might need preivledges? 
           const tempAsset = await utils.createTempAsset({
               name: 'tempAsset',
-              collectionId: environment.scrapCollection.collectionId,
+              collectionId: reference.scrapCollection.collectionId,
               description: 'temp',
               ip: '1.1.1.1',
               noncomputing: true,
@@ -108,8 +105,8 @@ describe('DELETE - Collection', () => {
               stigs: ['VPN_SRG_TEST', 'Windows_10_STIG_TEST']
             })
 
-          const assetId = tempAsset.data.assetId
-          const res = await chai
+        const assetId = tempAsset.data.assetId
+        const res = await chai
             .request(config.baseUrl)
             .delete(`/assets/${assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token)
@@ -120,22 +117,19 @@ describe('DELETE - Collection', () => {
         expect(res).to.have.status(200)
         expect(res.body).to.have.property('assetId')
         expect(res.body.assetId).to.equal(assetId)
-
-        
         })
 
         it('Delete test Asset', async () => {
           const res = await chai
             .request(config.baseUrl)
-            .delete(`/assets/${environment.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
+            .delete(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token) 
           if(!distinct.canModifyAssets){
             expect(res).to.have.status(403)
             return
           }
           expect(res).to.have.status(200)
-          expect(res.body).to.have.property('assetId')
-          expect(res.body.assetId).to.equal(environment.testAsset.assetId)
+          expect(res.body.assetId).to.equal(reference.testAsset.assetId)
         })
       })
     })

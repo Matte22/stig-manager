@@ -4,7 +4,6 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const environment = require('../../environment.json')
 const users = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
@@ -20,7 +19,7 @@ describe('POST - Asset', () => {
   for (const user of users) {
     if (expectations[user.name] === undefined){
       it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
-      return
+      continue
     }
     describe(`user:${user.name}`, () => {
       const distinct = expectations[user.name]

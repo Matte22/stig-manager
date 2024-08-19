@@ -5,6 +5,7 @@ const expect = chai.expect
 const config = require("../testConfig.json")
 const utils = require("../utils/testUtils")
 const environment = require("../environment.json")
+const reference = require("./referenceData")
 
 const user = {
   name: "admin",
@@ -46,6 +47,62 @@ describe(`PUT - attachAssetsToStig - /collections/{collectionId}/stigs/{benchmar
             returnedStigs.push(stig.benchmarkId)
         }
         expect(returnedStigs).to.include(environment.testCollection.benchmark);
+    })
+  })
+})
+
+describe(`GET - getChecklistByAssetStig - /assets/{assetId}/checklists/{benchmarkId}/{revisionStr}`, () => { 
+
+  describe('valid filename from Asset with reserved chars', () => {
+
+    before(async function () {
+      this.timeout(4000)
+      await utils.uploadTestStigs()
+      await utils.loadAppData()
+    })
+    
+    let createdAssetId = null
+    it('Create an Asset in collection to be deleted Copy', async function () {
+      const res = await chai.request(config.baseUrl)
+      .post(`/assets?projection=stigs`)
+      .set('Authorization', 'Bearer ' + user.token)
+      .send({
+        "name": "TxxxxxEST_\\slash:colon..x2",
+        "collectionId": reference.scrapCollection.collectionId,
+        "description": "test desc",
+        "ip": "1.1.1.1",
+        "noncomputing": true,
+        "metadata": {
+            "pocName": "poc2Put",
+            "pocEmail": "pocEmailPut@email.com",
+            "pocPhone": "12342",
+            "reqRar": "true"
+        },
+        "stigs": [
+            reference.benchmark,
+            "Windows_10_STIG_TEST"
+        ]
+    })
+      expect(res).to.have.status(201)
+      createdAssetId = res.body.assetId
+    })
+    it('Return the ckl for Asset with reserved chars', async function () {
+      const res = await chai.request(config.baseUrl)
+      .get(`/assets/${createdAssetId}/checklists/${reference.benchmark}/${reference.testCollection.defaultRevision}?format=ckl`)
+      .set('Authorization', 'Bearer ' + user.token)
+      expect(res).to.have.status(200)
+    })
+    it('Return the cklB for Asset with reserved chars', async function () {
+      const res = await chai.request(config.baseUrl)
+      .get(`/assets/${createdAssetId}/checklists/${reference.benchmark}/${reference.testCollection.defaultRevision}?format=cklb`)
+      .set('Authorization', 'Bearer ' + user.token)
+      expect(res).to.have.status(200)
+    })
+    it('Return the xccdf for Asset with reserved chars', async function () {
+      const res = await chai.request(config.baseUrl)
+      .get(`/assets/${createdAssetId}/checklists/${reference.benchmark}/${reference.testCollection.defaultRevision}?format=xccdf`)
+      .set('Authorization', 'Bearer ' + user.token)
+      expect(res).to.have.status(200)
     })
   })
 })

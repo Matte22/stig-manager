@@ -14,9 +14,10 @@ describe('DELETE - Review', () => {
   for(const user of users) {
     if (expectations[user.name] === undefined){
       it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
-      return
+      continue
     }
     describe(`user:${user.name}`, () => {
+      const distinct = expectations[user.name]
       describe('DELETE - deleteReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId}', () => {
 
         beforeEach(async function () {
@@ -27,7 +28,7 @@ describe('DELETE - Review', () => {
         
         it('Delete a Review', async () => {
           const res = await chai.request(config.baseUrl)
-            .delete(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${environment.testCollection.ruleId}?projection=rule&projection=history&projection=stigs`)
+            .delete(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testAsset.testRuleId}?projection=rule&projection=history&projection=stigs`)
             .set('Authorization', `Bearer ${user.token}`)
 
           if(user.name === 'collectioncreator') {
@@ -35,13 +36,24 @@ describe('DELETE - Review', () => {
             return
           }
           expect(res).to.have.status(200)
-          expect(res.body).to.have.property('rule')
-          expect(res.body).to.have.property('history')
-          expect(res.body).to.have.property('stigs')
+
+          expect(res.body.assetId).to.equal(reference.testAsset.assetId)
+          expect(res.body.rule.ruleId).to.equal(reference.testAsset.testRuleId)
+          expect(res.body.history).to.be.an('array').of.length(reference.testAsset.testRuleIdHistoryCount)
+          expect(res.body.stigs).to.be.an('array').of.length(reference.testAsset.testRuleIdStigCount)
+
+          for(const history of res.body.history) {
+            expect(history.ruleId).to.equal(reference.testAsset.testRuleId)
+          }
+
+          for(const stig of res.body.stigs) { 
+            expect(reference.testAsset.validStigs).to.include(stig.benchmarkId)
+          }
+       
         })
         it('Delete a Review - freshRuleId - review may or may not exist', async () => {
           const res = await chai.request(config.baseUrl)
-            .delete(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${environment.freshRuleId}?projection=rule&projection=history&projection=stigs`)
+            .delete(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testAsset.freshRuleId}`)
             .set('Authorization', `Bearer ${user.token}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
@@ -62,9 +74,9 @@ describe('DELETE - Review', () => {
 
         it('Delete one metadata key/value of a Review', async () => {
           const res = await chai.request(config.baseUrl)
-            .delete(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${environment.testCollection.ruleId}/metadata/keys/${environment.testCollection.metadataKey}`)
+            .delete(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testAsset.testRuleId}/metadata/keys/${reference.testCollection.collectionMetadataKey}`)
             .set('Authorization', `Bearer ${user.token}`)
-            .send(`${JSON.stringify(environment.testCollection.metadataValue)}`)
+            .send(`${JSON.stringify(reference.testCollection.collectionMetadataValue)}`)
           if(user.name === 'collectioncreator') {
             expect(res).to.have.status(403)
             return

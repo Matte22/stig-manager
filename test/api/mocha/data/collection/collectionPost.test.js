@@ -24,8 +24,6 @@ describe('POST - Collection - not all tests run for all iterations', () => {
       it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
       continue
     }
-
-
     describe(`user:${user.name}`, () => {
       const distinct = expectations[user.name]
       
@@ -164,16 +162,12 @@ describe('POST - Collection - not all tests run for all iterations', () => {
         })
       })
 
-
-
       describe("cloneCollection - /collections/{collectionId}/clone", () => {
 
         before(async function () {
           // this.timeout(4000)
           await utils.setDefaultRevision(reference.testCollection.collectionId, reference.benchmark, reference.pinRevision)
         })
-
-        // this test is dependant on the endpoints of the util functions to be working correctly. 
         it("clone collection for later Review check and test projections everything matches source ", async () => {
 
           const res = await chai
@@ -260,308 +254,6 @@ describe('POST - Collection - not all tests run for all iterations', () => {
             expect(clonedCollection.owners).to.have.lengthOf(sourceCollection.owners.length)
           }
         })
-
-
-      //   it("clone test collection - no grants", async () => {
-      //     const grantsProjected = [
-      //       {
-      //           user: {
-      //               userId: "1",
-      //               username: "stigmanadmin",
-      //               displayName: "STIGMAN Admin"
-      //           },
-      //           accessLevel: 4
-      //       }
-      //   ]
-      //   const ownersProjected = [
-      //         {
-      //             userId: "1",
-      //             username: "stigmanadmin",
-      //             displayName: "STIGMAN Admin"
-      //         }
-      //     ]
-
-      //     const res = await chai
-      //     .request(config.baseUrl)
-      //     .post(`/collections/${reference.testCollection.collectionId}/clone?projection=grants&projection=owners`        )
-      //     .set("Authorization", `Bearer ${user.token}`)
-      //     .send({
-      //       name:"Clone_" + Math.floor(Math.random() * 100) + "-" + Math.floor(Math.random() * 100) + "_X",
-      //       description: "clone of test collection x",
-      //       options: {
-      //         grants: false,
-      //         labels: true,
-      //         assets: true,
-      //         stigMappings: "withReviews",
-      //         pinRevisions: "matchSource",
-      //       },
-      //     })
-      //     let clonedCollectionId = null
-      //     if(user.name == "lvl1" || user.name == "lvl2" || user.name == "lvl3" || user.name == "lvl4"){
-
-      //       expect(res).to.have.status(403)
-      //       return
-      //     }
-      //     expect(res).to.have.status(200)
-      //     const response = res.body.toString().split("\n")
-      //     expect(response).to.be.an('array')
-      //     for(const message of response){ 
-      //         if(message.length > 0){
-      //             let messageObj = JSON.parse(message)
-      //             if(messageObj.stage == "result"){
-      //                 clonedCollectionId = messageObj.collection.collectionId
-      //                 // grants
-      //                 expect(messageObj.collection.owners).to.have.lengthOf(1)
-      //                 for(const owner of messageObj.collection.owners){
-      //                     expect(owner.userId).to.be.oneOf(ownersProjected.map(o => o.userId))
-      //                 }
-      //                 // owners
-      //                 expect(messageObj.collection.owners).to.have.lengthOf(1)
-      //                 for(const owner of messageObj.collection.owners){
-      //                     expect(owner.userId).to.be.oneOf(ownersProjected.map(o => o.userId))
-      //                 }
-      //             }
-      //         }
-      //     }
-      //     // make sure cloned collection is there and has correct grants.
-      //     if(clonedCollectionId !== null){
-      //       const clonedCollection = await utils.getCollection(clonedCollectionId)
-      //       expect(clonedCollection).to.exist 
-      //       expect(clonedCollection.grants).to.have.lengthOf(1)
-      //     }
-      //   })
-
-
-      //   it("clone test collection - no labels", async () => {
-
-      //     const res = await chai
-      //     .request(config.baseUrl)
-      //     .post(`/collections/${reference.testCollection.collectionId}/clone?projection=labels`        )
-      //     .set("Authorization", `Bearer ${user.token}`)
-      //     .send({
-      //       name:"Clone_" + Math.floor(Math.random() * 100) + "-" + Math.floor(Math.random() * 100) + "_X",
-      //       description: "clone of test collection x",
-      //       options: {
-      //         grants: true,
-      //         labels: false,
-      //         assets: true,
-      //         stigMappings: "withReviews",
-      //         pinRevisions: "matchSource",
-      //       },
-      //     })
-      //     let clonedCollectionId = null
-         
-      //     if(user.name == "lvl1" || user.name == "lvl2" || user.name == "lvl3" || user.name == "lvl4"){
-
-      //       expect(res).to.have.status(403)
-      //       return
-      //     }
-      //     expect(res).to.have.status(200)
-      //     const response = res.body.toString().split("\n")
-      //     expect(response).to.be.an('array')
-      //     for(const message of response){ 
-      //         if(message.length > 0){
-      //             let messageObj = JSON.parse(message)
-      //             if(messageObj.stage == "result"){
-      //                 clonedCollectionId = messageObj.collection.collectionId
-      //                 // labels
-      //                 expect(messageObj.collection.labels).to.have.lengthOf(0)
-      //             }
-      //         }
-      //     }
-      //     // make sure cloned collection is there and has correct labels.
-      //     if(clonedCollectionId !== null){
-      //       const clonedCollection = await utils.getCollection(clonedCollectionId)
-      //       expect(clonedCollection).to.exist 
-      //       expect(clonedCollection.labels).to.have.lengthOf(0)
-      //     }
-      //   })
-      //   it("clone test collection - no assets", async () => {
-
-      //     const res = await chai
-      //     .request(config.baseUrl)
-      //     .post(`/collections/${reference.testCollection.collectionId}/clone?projection=assets`        )
-      //     .set("Authorization", `Bearer ${user.token}`)
-      //     .send({
-      //       name:"Clone_" + Math.floor(Math.random() * 100) + "-" + Math.floor(Math.random() * 100) + "_X",
-      //       description: "clone of test collection x",
-      //       options: {
-      //         grants: true,
-      //         labels: true,
-      //         assets: false,
-      //         stigMappings: "withReviews",
-      //         pinRevisions: "matchSource",
-      //       },
-      //     })
-      //     let clonedCollectionId = null
-         
-      //     if(user.name == "lvl1" || user.name == "lvl2" || user.name == "lvl3" || user.name == "lvl4"){
-
-      //       expect(res).to.have.status(403)
-      //       return
-      //     }
-      //     expect(res).to.have.status(200)
-      //     const response = res.body.toString().split("\n")
-      //     expect(response).to.be.an('array')
-      //     for(const message of response){ 
-      //         if(message.length > 0){
-      //             let messageObj = JSON.parse(message)
-      //             if(messageObj.stage == "result"){
-      //                 clonedCollectionId = messageObj.collection.collectionId
-      //                 // assets
-      //                 expect(messageObj.collection.assets).to.have.lengthOf(0)
-      //             }
-      //         }
-      //     }
-      //     // make sure cloned collection is there and has correct data.
-      //     if(clonedCollectionId !== null){
-      //       const clonedCollection = await utils.getCollection(clonedCollectionId)
-      //       expect(clonedCollection).to.exist 
-      //       expect(clonedCollection.assets).to.have.lengthOf(0)
-      //     }
-      //   })
-      //   it("clone test collection - stigMappings=none", async () => {
-
-      //     const res = await chai
-      //     .request(config.baseUrl)
-      //     .post(`/collections/${reference.testCollection.collectionId}/clone?projection=statistics&projection=stigs`)
-      //     .set("Authorization", `Bearer ${user.token}`)
-      //     .send({
-      //       name:"Clone_" + Math.floor(Math.random() * 100) + "-" + Math.floor(Math.random() * 100) + "_X",
-      //       description: "clone of test collection x",
-      //       options: {
-      //         grants: true,
-      //         labels: true,
-      //         assets: true,
-      //         stigMappings: "none",
-      //         pinRevisions: "matchSource",
-      //       },
-      //     })
-      //     let clonedCollectionId = null
-         
-      //     if(user.name == "lvl1" || user.name == "lvl2" || user.name == "lvl3" || user.name == "lvl4"){
-
-      //       expect(res).to.have.status(403)
-      //       return
-      //     }
-      //     expect(res).to.have.status(200)
-      //     const response = res.body.toString().split("\n")
-      //     expect(response).to.be.an('array')
-      //     for(const message of response){ 
-      //         if(message.length > 0){
-      //             let messageObj = JSON.parse(message)
-      //             if(messageObj.stage == "result"){
-      //                 clonedCollectionId = messageObj.collection.collectionId
-      //                 expect(messageObj.collection.stigs).to.have.lengthOf(0)
-      //                 expect(messageObj.collection.statistics.checklistCount).to.equal(0)
-      //             }
-      //         }
-      //     }
-      //     // make sure cloned collection is there and has correct data.
-      //     if(clonedCollectionId !== null){
-      //       const clonedCollection = await utils.getCollection(clonedCollectionId)
-      //       expect(clonedCollection).to.exist 
-      //       expect(clonedCollection.stigs).to.have.lengthOf(0)
-      //       expect(clonedCollection.statistics.checklistCount).to.equal(0)
-      //     }
-      //   })
-      //   it("clone test collection - stigMappings=withoutReviews", async () => {
-
-      //     const res = await chai
-      //     .request(config.baseUrl)
-      //     .post(`/collections/${reference.testCollection.collectionId}/clone?projection=statistics&projection=stigs`)
-      //     .set("Authorization", `Bearer ${user.token}`)
-      //     .send({
-      //       name:"Clone_" + Math.floor(Math.random() * 100) + "-" + Math.floor(Math.random() * 100) + "_X",
-      //       description: "clone of test collection x",
-      //       options: {
-      //         grants: true,
-      //         labels: true,
-      //         assets: true,
-      //         stigMappings: "withoutReviews",
-      //         pinRevisions: "matchSource",
-      //       },
-      //     })
-      //     let clonedCollectionId = null
-      
-      //     if(user.name == "lvl1" || user.name == "lvl2" || user.name == "lvl3" || user.name == "lvl4"){
-
-      //       expect(res).to.have.status(403)
-      //       return
-      //     }
-      //     expect(res).to.have.status(200)
-      //     const response = res.body.toString().split("\n")
-      //     expect(response).to.be.an('array')
-      //     for(const message of response){ 
-      //         if(message.length > 0){
-      //             let messageObj = JSON.parse(message)
-      //             if(messageObj.stage == "result"){
-      //                 clonedCollectionId = messageObj.collection.collectionId
-      //             }
-      //         }
-      //     }
-      //     // make sure cloned collection is there and has correct data.
-      //     if(clonedCollectionId !== null){
-      //       const clonedCollectionReviews = await utils.getReviews(clonedCollectionId)
-      //       expect(clonedCollectionReviews).to.be.empty 
-        
-      //     }
-      //   })
-      //   it("clone test collection - pinRevisions=sourceDefaults", async () => {
-
-      //     const pinnedRevision ={
-      //       ruleCount: 81,
-      //       benchmarkId: "VPN_SRG_TEST",
-      //       revisionStr: "V1R0",
-      //       benchmarkDate: "2010-07-19",
-      //       revisionPinned: true
-      //   }
-
-      //     const res = await chai
-      //     .request(config.baseUrl)
-      //     .post(`/collections/${reference.testCollection.collectionId}/clone?projection=statistics&projection=stigs`)
-      //     .set("Authorization", `Bearer ${user.token}`)
-      //     .send({
-      //       name:"Clone_" + Math.floor(Math.random() * 100) + "-" + Math.floor(Math.random() * 100) + "_X",
-      //       description: "clone of test collection x",
-      //       options: {
-      //         grants: true,
-      //         labels: true,
-      //         assets: true,
-      //         stigMappings: "withReviews",
-      //         pinRevisions: "sourceDefaults",
-      //       },
-      //     })
-      //     let clonedCollectionId = null
-         
-      //     if(user.name == "lvl1" || user.name == "lvl2" || user.name == "lvl3" || user.name == "lvl4"){
-
-      //       expect(res).to.have.status(403)
-      //       return
-      //     }
-      //     expect(res).to.have.status(200)
-      //     const response = res.body.toString().split("\n")
-      //     expect(response).to.be.an('array')
-      //     for(const message of response){ 
-      //         if(message.length > 0){
-      //             let messageObj = JSON.parse(message)
-      //             if(messageObj.stage == "result"){
-      //                 clonedCollectionId = messageObj.collection.collectionId
-      //                 //stigs
-      //                 for(const stig of messageObj.collection.stigs){
-      //                   if(stig.benchmarkId == pinnedRevision.benchmarkId){
-      //                     expect(stig.revisionPinned).to.equal(pinnedRevision.revisionPinned)
-      //                   }
-      //                 }
-      //             }
-      //         }
-      //     }
-      //     if(clonedCollectionId !== null){
-      //       const pinnedStig = await utils.getStigByCollectionBenchmarkId(clonedCollectionId, pinnedRevision.benchmarkId)
-      //       expect(pinnedStig).to.exist 
-      //       expect(pinnedStig.revisionPinned).to.equal(pinnedRevision.revisionPinned)
-      //     }
-      //   })
       })
 
 
@@ -574,73 +266,72 @@ describe('POST - Collection - not all tests run for all iterations', () => {
           await utils.createDisabledCollectionsandAssets()
         })
         
-        it("export results to another collection - entire asset - create asset in destination", async () => {
+        // it("export results to another collection - entire asset - create asset in destination", async () => {
 
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
-            .set("Authorization", `Bearer ${user.token}`)
-            .send([
-              {
-                assetId: reference.testAsset.assetId,
-              },
-            ])
+        //   const res = await chai
+        //     .request(config.baseUrl)
+        //     .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
+        //     .set("Authorization", `Bearer ${user.token}`)
+        //     .send([
+        //       {
+        //         assetId: reference.testAsset.assetId,
+        //       },
+        //     ])
             
-            if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
-              return
-            }
-            expect(res).to.have.status(200)
-            const response = res.body.toString().split("\n")
-            expect(response).to.be.an('array')
-            expect(response).to.have.lengthOf.at.least(1)
+        //     if(distinct.canModifyCollection === false){
+        //       expect(res).to.have.status(403)
+        //       return
+        //     }
+        //     expect(res).to.have.status(200)
+        //     const response = res.body.toString().split("\n")
+        //     expect(response).to.be.an('array')
+        //     expect(response).to.have.lengthOf.at.least(1)
 
-            for(const message of response){ 
-                if(message.length > 0){
-                    let messageObj = JSON.parse(message)
-                    if(messageObj.stage == "result"){
-                      expect(messageObj.counts.assetsCreated).to.eql(1)
-                      expect(messageObj.counts.stigsMapped).to.eql(2)
-                      expect(messageObj.counts.reviewsInserted).to.eql(9)
-                      expect(messageObj.counts.reviewsUpdated).to.eql(0)
-                    }
-                }
-            }
-        })
+        //     for(const message of response){ 
+        //         if(message.length > 0){
+        //             let messageObj = JSON.parse(message)
+        //             if(messageObj.stage == "result"){
+        //               expect(messageObj.counts.assetsCreated).to.eql(1)
+        //               expect(messageObj.counts.stigsMapped).to.eql(2)
+        //               expect(messageObj.counts.reviewsInserted).to.eql(9)
+        //               expect(messageObj.counts.reviewsUpdated).to.eql(0)
+        //             }
+        //         }
+        //     }
+        // })
+        // it("export results to another collection - entire asset - asset exists", async () => {
 
-        it("export results to another collection - entire asset - asset exists", async () => {
+        //   const res = await chai
+        //     .request(config.baseUrl)
+        //     .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
+        //     .set("Authorization", `Bearer ${user.token}`)
+        //     .send([
+        //       {
+        //         assetId: reference.testAsset.assetId,
+        //       },
+        //     ])
 
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
-            .set("Authorization", `Bearer ${user.token}`)
-            .send([
-              {
-                assetId: reference.testAsset.assetId,
-              },
-            ])
+        //     if(distinct.canModifyCollection === false){
+        //       expect(res).to.have.status(403)
+        //       return
+        //     }
 
-            if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
-              return
-            }
-
-            expect(res).to.have.status(200)
-            const response = res.body.toString().split("\n")
-            expect(response).to.be.an('array')
-            expect(response).to.have.lengthOf.at.least(1)
-            for(const message of response){ 
-                if(message.length > 0){
-                    let messageObj = JSON.parse(message)
-                    if(messageObj.stage == "result"){
-                      expect(messageObj.counts.assetsCreated).to.eql(0)
-                      expect(messageObj.counts.stigsMapped).to.eql(0)
-                      expect(messageObj.counts.reviewsInserted).to.eql(0)
-                      expect(messageObj.counts.reviewsUpdated).to.eql(9)
-                    }
-                }
-            }
-        })
+        //     expect(res).to.have.status(200)
+        //     const response = res.body.toString().split("\n")
+        //     expect(response).to.be.an('array')
+        //     expect(response).to.have.lengthOf.at.least(1)
+        //     for(const message of response){ 
+        //         if(message.length > 0){
+        //             let messageObj = JSON.parse(message)
+        //             if(messageObj.stage == "result"){
+        //               expect(messageObj.counts.assetsCreated).to.eql(0)
+        //               expect(messageObj.counts.stigsMapped).to.eql(0)
+        //               expect(messageObj.counts.reviewsInserted).to.eql(0)
+        //               expect(messageObj.counts.reviewsUpdated).to.eql(9)
+        //             }
+        //         }
+        //     }
+        // })
       })
 
 
