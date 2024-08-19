@@ -7,6 +7,7 @@ const utils = require('../utils/testUtils')
 const environment = require('../environment.json')
 const xml2js = require('xml2js')
 const reference = require('./referenceData.js')
+const users = require('./users.js')
 
 const user =
   {
@@ -144,6 +145,97 @@ describe('PATCH - patchReviewByAssetRule - /collections/{collectionId}/reviews/{
             expect(res.body.status).to.have.property('label').that.equals('saved')
         })
     })
+})
+
+describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{assetId}', () => {
+
+    for(const user of users){
+        describe(`user:${user.name}`, () => {
+            describe('test history prune', () => {
+
+                before(async function () {
+                    this.timeout(4000)
+                    await utils.loadAppData()
+                    await utils.uploadTestStigs()
+                })
+
+                it('Set collection history max reviews to 2', async () => {
+
+                    const res = await chai
+                    .request(config.baseUrl)
+                    .put(
+                        `/collections/${reference.testCollection.collectionId}?elevate=true&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs`
+                    )
+                    .set("Authorization", `Bearer ${user.token}`)
+                    .send({
+                        metadata: {
+                            pocName: "poc2Patched",
+                            pocEmail: "pocEmail@email.com",
+                            pocPhone: "12342",
+                            reqRar: "true",
+                        },
+                        settings: {
+                            history: {
+                                maxReviews: 2,
+                            },
+                        },
+                    })
+
+                    if(user.name  == "lvl1" || user.name  == "lvl2" || user.name  == "collectioncreator" ){
+                        expect(res).to.have.status(403)
+                        return
+                    }
+                    expect(res).to.have.status(200)
+                })
+                it('Post review, triggering history prune.', async () => {
+
+                    const res = await chai
+                      .request(config.baseUrl)
+                      .post(
+                        `/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}`
+                      )
+                      .set("Authorization", `Bearer ${user.token}`)
+                      .send([
+                        {
+                          ruleId: "{{testRuleId}}",
+                          result: "pass",
+                          detail: "test\nvisible to lvl1",
+                          comment: "sure",
+                          autoResult: false,
+                          status: "submitted",
+                        },
+                      ])
+
+                    if(user.name  == "collectioncreator" ){
+                        expect(res).to.have.status(403)
+                        return
+                    }
+                    expect(res).to.have.status(200)
+                })
+                it('History stats - rule-asset - check history is pruned to 2', async () => {
+
+                    const res = await chai.request(config.baseUrl)
+                        .get(`/collections/${reference.testCollection.collectionId}/review-history/stats?assetId=${reference.testAsset.assetId}&ruleId=${reference.ruleId}`)
+                        .set("Authorization", `Bearer ${user.token}`)
+
+                    if(user.name  == "lvl1" ||  user.name  == "collectioncreator" ){
+                        expect(res).to.have.status(403)
+                        return
+                    }
+                    expect(res).to.have.status(200)
+                    
+                    if (user.name == "lvl2" ) {
+                        //lvl2 could not change collection settings, so history incremented
+                        expect(res.body.collectionHistoryEntryCount).to.eql(3)
+                    }
+                    else {
+                        //other users that made it this far could change collection settings, so history was pruned
+                        expect(res.body.collectionHistoryEntryCount).to.eql(2)
+                    }
+                })
+            })
+        })
+    }
 })
 
 
