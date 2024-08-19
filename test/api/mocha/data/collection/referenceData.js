@@ -3,13 +3,12 @@
 // The standard "testCollection" includes users named after the roles they have for that specific Collection, is used in most "GET" tests or tests not expected to change data that could alter expectations for subsequent tests. "scrapCollection" is used for tests that alter Collection data in some way.
 
 const reference = {
-  collectionId: "21",
-  collectionName: "Test Collection",
-  collectionDescription: "This is a test collection",
-  collectionOwner: "admin",
-  collectionOwnerID: "87",
+  // collectionId: "21",
+  // collectionName: "Test Collection",
+  // collectionDescription: "This is a test collection",
+  // collectionOwner: "admin",
+  // collectionOwnerID: "87",
   benchmark: "VPN_SRG_TEST",
-  pinRevision: "V1R0",
   checklistLength: 81,
   revisionStr: "V1R1",
   grantCheckUserId: "85",
@@ -29,8 +28,8 @@ const reference = {
     labelCount: 2,
     lvl1LabelName: "test-label-lvl1",
     lvl1Label: "5130dc84-9a68-11ec-b1bc-0242ac110002",
-    fullLabel: "755b8a28-9a68-11ec-b1bc-0242ac110002",
     fullLabelName: "test-label-full",
+    fullLabel: "755b8a28-9a68-11ec-b1bc-0242ac110002",
     labels: [
       "755b8a28-9a68-11ec-b1bc-0242ac110002",
       "5130dc84-9a68-11ec-b1bc-0242ac110002"
@@ -60,33 +59,33 @@ const reference = {
       deletedEntriesByDate: 6,
       deletedEntriesByDateAsset: 4,
       ruleId: "SV-106179r1_rule",
-      status: "submitted"
+      status: "submitted",
+      rulesWithHistoryCnt: 2,
+      reviewHistoryRuleCnt: 2,
+      reviewHistoryTotalEntryCnt: 7,
+      reviewHistory_endDateCnt: 6,
+      reviewHistory_startAndEndDateCnt: 6,
+      reviewHistory_startDateCnt: 2,
+      reviewHistory_byStatusCnt: 3,
+      reviewHistory_testAssetCnt: 5,
+      reviewHistory_entriesByRuleIdCnt: 4,
     },
-    rulesWithHistoryCnt: 2,
-    reviewHistoryRuleCnt: 2,
-    reviewHistoryTotalCnt: 7,
-    reviewHistory_endDateCnt: 6,
-    reviewHistory_startAndEndDateCnt: 2,
-    reviewHistory_startDateCnt: 2,
-    reviewHistory_byStatusCnt: 3,
-    reviewHistory_testAssetCnt: 5,
-    reviewHistory_ruleIdCnt: 4,
     assetsProjected: [
       {
         name: "ACHERNAR_Collection_X_asset",
-        assetId: "403",
+        assetId: "29",
       },
       {
         name: "Collection_X_asset",
-        assetId: "405",
+        assetId: "62",
       },
       {
         name: "Collection_X_lvl1_asset-1",
-        assetId: "404",
+        assetId: "42",
       },
       {
         name: "Collection_X_lvl1_asset-2",
-        assetId: "406",
+        assetId: "154",
       },
     ],
     grantsProjected: [
@@ -231,6 +230,7 @@ const reference = {
     usersWithGrant: ["86,85"],
     benchmark: "VPN_SRG_TEST",
     validStigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST"],
+    reviewCnt: 9,
     metadataKey: "testkey",
     metadataValue: "testvalue",
     labels: [

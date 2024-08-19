@@ -10,7 +10,7 @@ const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
 const requestBodies = require('./requestBodies.js')
 
-describe('PATCH - Collection', () => {
+describe('PATCH - Collection', function () {
 
     before(async function () {
         this.timeout(4000)
@@ -21,49 +21,18 @@ describe('PATCH - Collection', () => {
     for(const user of users) {
       const distinct = expectations[user.name]
       if (expectations[user.name] === undefined){
-        it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+        it(`No expectations for this iteration scenario: ${user.name}`,async function () {})
         return
       }
   
 
-      describe(`user:${user.name}`, () => {
+      describe(`user:${user.name}`, function () {
 
-        describe('updateCollection - /collections/{collectionId}', () => {
+        describe('updateCollection - /collections/{collectionId}', function () {
 
-          it('Merge provided properties with a Collection', async () => {
+          it('Merge provided properties with a Collection',async function () {
 
-            const patchRequest = requestBodies.updateCollection
-            // const patchRequest = {
-            //     metadata: {
-            //         pocName: "poc2Patched",
-            //         pocEmail: "pocEmail@email.com",
-            //         pocPhone: "12342",
-            //         reqRar: "true",
-            //     },
-            //     grants: [
-            //         {
-            //         userId: "1",
-            //         accessLevel: 4,
-            //         },
-            //         {
-            //         userId: "21",
-            //         accessLevel: 1,
-            //         },
-            //         {
-            //         userId: "44",
-            //         accessLevel: 3,
-            //         },
-            //         {
-            //         userId: "45",
-            //         accessLevel: 4,
-            //         },
-            //         {
-            //         userId: "87",
-            //         accessLevel: 4,
-            //         },
-            //     ],
-            //     }
-            
+            const patchRequest = requestBodies.updateCollection            
             const res = await chai.request(config.baseUrl)
                   .patch(`/collections/${reference.scrapCollection.collectionId}?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs`)
                   .set('Authorization', `Bearer ${user.token}`)
@@ -87,20 +56,20 @@ describe('PATCH - Collection', () => {
                 expect(grant.user.userId).to.be.oneOf(patchRequest.grants.map(g => g.userId))
             }
 
-            // projections  --- TODO:  these responses call the GET service, so do we need to double-check it here?
+            // projections  --- TODO:  these responses call the GET service, which is tested elsewhere, so do we need to double-check it here?
             // expect(res.body.assets).to.have.lengthOf(3)
             // expect(res.body.owners).to.have.lengthOf(3)
             expect(res.body.statistics).to.have.property("assetCount").to.equal(res.body.assets.length)
 
-            for(stig of res.body.stigs) {
+            for(let stig of res.body.stigs) {
                 expect(stig.benchmarkId).to.be.oneOf(reference.scrapCollection.validStigs)
             }
           })
         })
 
-        describe('patchCollectionLabelById - /collections/{collectionId}/labels/{labelId}', () => {
+        describe('patchCollectionLabelById - /collections/{collectionId}/labels/{labelId}', function () {
 
-          it('Merge provided properties with a Collection Label', async () => {
+          it('Merge provided properties with a Collection Label',async function () {
             const body = requestBodies.patchCollectionLabelById
             const res = await chai.request(config.baseUrl)
                 .patch(`/collections/${reference.scrapCollection.collectionId}/labels/${reference.scrapCollection.scrapLabel}`)
@@ -120,9 +89,9 @@ describe('PATCH - Collection', () => {
           })
         })
 
-        describe('patchCollectionMetadata - /collections/{collectionId}/metadata', () => {
+        describe('patchCollectionMetadata - /collections/{collectionId}/metadata', function () {
 
-          it('Merge metadata property/value into a Collection', async () => {
+          it('Merge metadata property/value into a Collection',async function () {
               
               const res = await chai.request(config.baseUrl)
                   .patch(`/collections/${reference.scrapCollection.collectionId}/metadata`)

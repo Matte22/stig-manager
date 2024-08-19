@@ -2,6 +2,8 @@ const chai = require('chai')
 const chaiHttp = require('chai-http')
 chai.use(chaiHttp)
 const expect = chai.expect
+const deepEqualInAnyOrder = require('deep-equal-in-any-order')
+chai.use(deepEqualInAnyOrder)
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 // const environment = require('../../environment.json')
@@ -9,7 +11,7 @@ const users = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
 
-describe('GET - Collection', () => {
+describe('GET - Collection', function () {
 
   before(async function () {
     this.timeout(4000)
@@ -18,20 +20,21 @@ describe('GET - Collection', () => {
     await utils.createDisabledCollectionsandAssets()
   })
 
+
   for(const user of users){
     if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
-      return
+      it(`No expectations for this iteration scenario: ${user.name}`,async function () {})
+      continue
     }
 
     
-    describe(`user: ${user.name}`, () => {
+    describe(`user: ${user.name}`, function () {
       const distinct = expectations[user.name]
     
-      describe('getCollections - /collections', () => {
+      describe('getCollections - /collections', function () {
         if (user.name === 'stigmanadmin' ){
 
-          it('Return Collections accessible to the requester No Filters - elevated stigmanadmin only', async () => {
+          it('Return Collections accessible to the requester No Filters - elevated stigmanadmin only',async function () {
 
             const res = await chai.request(config.baseUrl)
               .get('/collections?projection=owners&projection=statistics&elevate=true')
@@ -46,12 +49,12 @@ describe('GET - Collection', () => {
 
             expect(testCollectionOwnerArray, "proper owners").to.have.members(reference.testCollection.owners)
             expect(testCollection.statistics.assetCount, "asset count").to.equal(distinct.assetIds.length)
-            expect(testCollection.statistics.checklistCount, "checklist count").to.equal(distinct.checklistCnt_testCollection)
-            expect(testCollection.statistics.grantCount, "grant count").to.equal(distinct.grantCnt_testCollection)
+            expect(testCollection.statistics.checklistCount, "checklist count").to.equal(distinct.checklistCnt)
+            expect(testCollection.statistics.grantCount, "grant count").to.equal(distinct.grantCnt)
           })
         }
 
-        it('Return a list of Collections accessible to the requester No Filters no elevate!', async () => {
+        it('Return a list of Collections accessible to the requester No Filters no elevate!',async function () {
             const res = await chai.request(config.baseUrl)
               .get('/collections?projection=owners&projection=statistics')
               .set('Authorization', `Bearer ${user.token}`)
@@ -62,14 +65,14 @@ describe('GET - Collection', () => {
 
         })
 
-        it('Return a list of Collections accessible to the requester METADATA', async () => {
+        it('Return a list of Collections accessible to the requester METADATA',async function () {
             const res = await chai.request(config.baseUrl)
               .get(`/collections?metadata=${reference.testCollection.collectionMetadataKey}%3A${reference.testCollection.collectionMetadataValue}`)
               .set('Authorization', `Bearer ${user.token}`)
             expect(res).to.have.status(200)
             expect(res.body).to.be.an('array')
-            expect(res.body).to.have.lengthOf(distinct.collectionMetadataMatchCnt)
-            if (distinct.collectionContainsMatchCnt == 0) {
+            expect(res.body).to.have.lengthOf(distinct.collectionMatch.collectionMetadataMatchCnt)
+            if (distinct.collectionMatch.collectionContainsMatchCnt == 0) {
               return
             }
             const regex  = new RegExp(reference.testCollection.name)
@@ -78,14 +81,14 @@ describe('GET - Collection', () => {
             expect(res.body[0].metadata[reference.testCollection.collectionMetadataKey]).to.equal(reference.testCollection.collectionMetadataValue)
 
         })
-        it('Return a list of Collections accessible to the requester NAME exact', async () => {
+        it('Return a list of Collections accessible to the requester NAME exact',async function () {
         const res = await chai.request(config.baseUrl)
             .get(`/collections?name=${reference.testCollection.name}&name-match=exact`)
             .set('Authorization', `Bearer ${user.token}`)
         expect(res).to.have.status(200)
         expect(res.body).to.be.an('array')
-        expect(res.body).to.have.lengthOf(distinct.collectionExactMatchCnt)
-        if (distinct.collectionExactMatchCnt == 0) {
+        expect(res.body).to.have.lengthOf(distinct.collectionMatch.collectionExactMatchCnt)
+        if (distinct.collectionMatch.collectionExactMatchCnt == 0) {
           return
         }
         const regex  = new RegExp(reference.testCollection.name)
@@ -93,14 +96,14 @@ describe('GET - Collection', () => {
         expect(res.body[0].collectionId).to.equal(reference.testCollection.collectionId)
         })
 
-        it('Return a list of Collections accessible to the requester NAME starts With', async () => {
+        it('Return a list of Collections accessible to the requester NAME starts With',async function () {
         const res = await chai.request(config.baseUrl)
             .get(`/collections?name=${'Collection'}&name-match=startsWith`)
             .set('Authorization', `Bearer ${user.token}`)
         expect(res).to.have.status(200)
         
-        expect(res.body).to.have.lengthOf(distinct.collectionStartMatchCnt)
-        if (distinct.collectionContainsMatchCnt == 0) {
+        expect(res.body).to.have.lengthOf(distinct.collectionMatch.collectionStartMatchCnt)
+        if (distinct.collectionMatch.collectionContainsMatchCnt == 0) {
           return
         }
 
@@ -109,20 +112,20 @@ describe('GET - Collection', () => {
         }
         })
 
-        it('Return a list of Collections accessible to the requester NAME ends With', async () => {
+        it('Return a list of Collections accessible to the requester NAME ends With',async function () {
         const res = await chai.request(config.baseUrl)
             .get(`/collections?name=${'X'}&name-match=endsWith`)
             .set('Authorization', `Bearer ${user.token}`)
         expect(res).to.have.status(200)
         expect(res.body).to.be.an('array')
-        expect(res.body).to.have.lengthOf(distinct.collectionEndMatchCnt)
-        if (distinct.collectionContainsMatchCnt == 0) {
+        expect(res.body).to.have.lengthOf(distinct.collectionMatch.collectionEndMatchCnt)
+        if (distinct.collectionMatch.collectionContainsMatchCnt == 0) {
           return
         }
         expect(res.body[0].name).to.have.string('X')
         })
 
-        it('Return a list of Collections accessible to the requester NAME contains elevated', async () => {
+        it('Return a list of Collections accessible to the requester NAME contains elevated',async function () {
         const res = await chai.request(config.baseUrl)
             .get(`/collections?name=${'delete'}&name-match=contains&elevate=true`)
             .set('Authorization', `Bearer ${user.token}`)
@@ -132,50 +135,42 @@ describe('GET - Collection', () => {
         } 
         expect(res).to.have.status(200)
         expect(res.body).to.be.an('array')
-        expect(res.body).to.have.lengthOf(distinct.collectionDeleteMatchCntElevated)
+        expect(res.body).to.have.lengthOf(distinct.collectionMatch.collectionDeleteMatchCntElevated)
         expect(res.body[0].name).to.have.string('delete')
         })
 
-        it('Return a list of Collections accessible to the requester NAME contains no elevate', async () => {
+        it('Return a list of Collections accessible to the requester NAME contains no elevate',async function () {
           const res = await chai.request(config.baseUrl)
               .get(`/collections?name=${'delete'}&name-match=contains`)
               .set('Authorization', `Bearer ${user.token}`)
           expect(res).to.have.status(200)
-          // if(user.name === 'stigmanadmin'){
-          expect(res.body).to.have.lengthOf(distinct.collectionDeleteMatchCnt)
-          if (distinct.collectionDeleteMatchCnt > 0){
+          expect(res.body).to.have.lengthOf(distinct.collectionMatch.collectionDeleteMatchCnt)
+          if (distinct.collectionMatch.collectionDeleteMatchCnt > 0){
             expect(res.body[0].name).to.have.string('delete')
           }
-          // // if(user.name === 'lvl1' || user.name === 'lvl2' || user.name === 'lvl3'){
-          //   expect(res.body).to.have.lengthOf(0)
-          // // }
-          // if(user.name === 'lvl4'){
-          //   expect(res.body).to.have.lengthOf(1)
-          //   expect(res.body[0].name).to.have.string('delete')
-          // }
         })
       })
 
-      describe('getCollection - /collections/{collectionId}', () => {
-        it('Return a Collection', async () => {
-          const res = await chai.request(config.baseUrl)
-            .get(`/collections/${reference.testCollection.collectionId}?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`)
-            .set('Authorization', `Bearer ${user.token}`)
-            if (distinct.grant === "none"){
-              expect(res).to.have.status(403)
-              return
-            }
-            expect(res).to.have.status(200)
-            expect(res.body.collectionId).to.equal(reference.testCollection.collectionId)
-            const regex  = new RegExp(reference.testCollection.name)
-            expect(res.body.name).to.match(regex)
+    describe('getCollection - /collections/{collectionId}', function () {
+      it('Return a Collection',async function () {
+        const res = await chai.request(config.baseUrl)
+          .get(`/collections/${reference.testCollection.collectionId}?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`)
+          .set('Authorization', `Bearer ${user.token}`)
+          if (distinct.grant === "none"){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200)
+          expect(res.body.collectionId).to.equal(reference.testCollection.collectionId)
+          const regex  = new RegExp(reference.testCollection.name)
+          expect(res.body.name).to.match(regex)
 
-            // assets projection
-            expect(res.body.statistics.assetCount).to.eql(distinct.assetIds.length)
-            
-            // grants projection
-            // todo: lvl1 user seems to be getting all grants
-            expect(res.body.grants).to.be.an('array').of.length(distinct.grantCnt_testCollection)
+          // assets projection
+          expect(res.body.statistics.assetCount).to.eql(distinct.assetIds.length)
+          
+          // grants projection
+          // todo: lvl1 user seems to be getting all grants, but should only see owners and themselves (or grants projection is invalid for lvl1 users)
+          expect(res.body.grants).to.be.an('array').of.length(distinct.grantCnt)
 
             const testCollectionOwnerArray = res.body.owners.map(owner => owner.userId)
             expect(testCollectionOwnerArray, "proper owners").to.have.members(reference.testCollection.owners)
@@ -183,35 +178,35 @@ describe('GET - Collection', () => {
         })
       })
 
-      describe('getChecklistByCollectionStig - /collections/{collectionId}/checklists/{benchmarkId}/{revisionStr}', () => {
-        it('Return the Checklist for the supplied Collection and STIG-latest', async () => {
-          const res = await chai.request(config.baseUrl)
-            .get(`/collections/${reference.testCollection.collectionId}/checklists/${reference.benchmark}/${'latest'}`)
-            .set('Authorization', `Bearer ${user.token}`)
-            if (distinct.grant === "none"){
-              expect(res).to.have.status(403)
-              return
-            }
-            expect(res).to.have.status(200)
-            expect(res.body).to.be.an('array').of.length(reference.checklistLength)
-        })
-        it('Return the Checklist for the supplied Collection and STIG-revStr', async () => {
-          const res = await chai.request(config.baseUrl)
-            .get(`/collections/${reference.testCollection.collectionId}/checklists/${reference.benchmark}/${reference.revisionStr}`)
-            .set('Authorization', `Bearer ${user.token}`)
-            if (distinct.grant === "none"){
-              expect(res).to.have.status(403)
-              return
-            }
-            expect(res).to.have.status(200)
-            expect(res.body).to.be.an('array').of.length(reference.checklistLength)
-        })
+    describe('getChecklistByCollectionStig - /collections/{collectionId}/checklists/{benchmarkId}/{revisionStr}', function () {
+      it('Return the Checklist for the supplied Collection and STIG-latest',async function () {
+        const res = await chai.request(config.baseUrl)
+          .get(`/collections/${reference.testCollection.collectionId}/checklists/${reference.benchmark}/${'latest'}`)
+          .set('Authorization', `Bearer ${user.token}`)
+          if (distinct.grant === "none"){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array').of.length(reference.checklistLength)
       })
+      it('Return the Checklist for the supplied Collection and STIG-revStr',async function () {
+        const res = await chai.request(config.baseUrl)
+          .get(`/collections/${reference.testCollection.collectionId}/checklists/${reference.benchmark}/${reference.revisionStr}`)
+          .set('Authorization', `Bearer ${user.token}`)
+          if (distinct.grant === "none"){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array').of.length(reference.checklistLength)
+      })
+    })
 
 
-    describe('getFindingsByCollection - /collections/{collectionId}/findings', () => {
+    describe('getFindingsByCollection - /collections/{collectionId}/findings', function () {
       
-      it('Return the Findings for the specified Collection by ruleId', async () => {
+      it('Return the Findings for the specified Collection by ruleId',async function () {
         const res = await chai.request(config.baseUrl)
           .get(`/collections/${reference.testCollection.collectionId}/findings?aggregator=cci&acceptedOnly=false&projection=assets&projection=groups&projection=rules&projection=stigs&projection=ccis`)
           .set('Authorization', `Bearer ${user.token}`)
@@ -221,7 +216,7 @@ describe('GET - Collection', () => {
           }
           expect(res).to.have.status(200)
 
-          expect(res.body).to.have.lengthOf(distinct.findingsCnt)
+          expect(res.body).to.have.lengthOf(distinct.findings.findingsCnt)
 
           // assets projection
           for(const finding of res.body){
@@ -246,7 +241,7 @@ describe('GET - Collection', () => {
           expect(res.body[0].ccis).to.be.an('array').of.length(1)
       })
 
-      it('Return the Findings for the specified Collection by groupId', async () => {
+      it('Return the Findings for the specified Collection by groupId',async function () {
         const res = await chai.request(config.baseUrl)
           .get(`/collections/${reference.testCollection.collectionId}/findings?aggregator=groupId&acceptedOnly=false&projection=assets`)
           .set('Authorization', `Bearer ${user.token}`)
@@ -256,7 +251,7 @@ describe('GET - Collection', () => {
           }
           expect(res).to.have.status(200)
 
-          expect(res.body).to.have.lengthOf(distinct.findingsByGroupCnt)
+          expect(res.body).to.have.lengthOf(distinct.findings.findingsByGroupCnt)
 
           for(const finding of res.body){
             expect(finding.assetCount).to.equal(finding.assets.length)
@@ -266,7 +261,7 @@ describe('GET - Collection', () => {
           }
       })
 
-      it('Return the Findings for the specified Collection by cci', async () => {
+      it('Return the Findings for the specified Collection by cci',async function () {
         const res = await chai.request(config.baseUrl)
           .get(`/collections/${reference.testCollection.collectionId}/findings?aggregator=cci&acceptedOnly=false&projection=assets`)
           .set('Authorization', `Bearer ${user.token}`)
@@ -276,7 +271,7 @@ describe('GET - Collection', () => {
           }
           expect(res).to.have.status(200)
 
-          expect(res.body).to.have.lengthOf(distinct.findingsByCciCnt)
+          expect(res.body).to.have.lengthOf(distinct.findings.findingsByCciCnt)
 
           for(const finding of res.body){
             expect(finding.assetCount).to.equal(finding.assets.length)
@@ -286,7 +281,7 @@ describe('GET - Collection', () => {
           }
       })
 
-      it('Return the Findings for the specified Collection for benchmarkId x ruleId', async () => {
+      it('Return the Findings for the specified Collection for benchmarkId x ruleId',async function () {
         const res = await chai.request(config.baseUrl)
           .get(`/collections/${reference.testCollection.collectionId}/findings?aggregator=ruleId&acceptedOnly=false&benchmarkId=${reference.benchmark}&projection=assets`)
           .set('Authorization', `Bearer ${user.token}`)
@@ -296,7 +291,7 @@ describe('GET - Collection', () => {
           }
           expect(res).to.have.status(200)
 
-          expect(res.body).to.be.an('array').of.length(3)
+          expect(res.body).to.be.an('array').of.length(distinct.findings.findingsByRuleForBenchmarkCnt)
 
           for(const finding of res.body){
             expect(finding.assetCount).to.equal(finding.assets.length)
@@ -306,7 +301,7 @@ describe('GET - Collection', () => {
           }
       })
 
-      it('Return the Findings for the specified Collection for asset x ruleId Copy', async () => {
+      it('Return the Findings for the specified Collection for asset x ruleId Copy',async function () {
         const res = await chai.request(config.baseUrl)
           .get(`/collections/${reference.testCollection.collectionId}/findings?aggregator=ruleId&acceptedOnly=false&assetId=${reference.testAsset.assetId}&projection=assets`)
           .set('Authorization', `Bearer ${user.token}`)
@@ -316,7 +311,7 @@ describe('GET - Collection', () => {
           }
           expect(res).to.have.status(200)
 
-          expect(res.body).to.have.lengthOf(distinct.findingsByRuleAndAssetCnt)
+          expect(res.body).to.have.lengthOf(distinct.findings.findingsByRuleForAssetCnt)
 
           for(const finding of res.body){
             expect(finding.assetCount).to.equal(1)
@@ -324,9 +319,9 @@ describe('GET - Collection', () => {
           }
       })
     })
-    describe('getStigAssetsByCollectionUser - /collections/{collectionId}/grants/{userId}/access', () => {
+    describe('getStigAssetsByCollectionUser - /collections/{collectionId}/grants/{userId}/access', function () {
 
-      it('Return stig-asset grants for a lvl1 user in this collection.', async () => {
+      it('Return stig-asset grants for a lvl1 user in this collection.',async function () {
         const res = await chai.request(config.baseUrl)
           .get(`/collections/${reference.testCollection.collectionId}/grants/${reference.grantCheckUserId}/access`)
           .set('Authorization', `Bearer ${user.token}`)
@@ -334,11 +329,10 @@ describe('GET - Collection', () => {
             expect(res).to.have.status(403)
             return
           }
-          if(user.name === 'lvl1' || user.name === 'lvl2'){
+          if(distinct.canModifyCollection === false){
             expect(res).to.have.status(403)
-            // this.skip()
             return
-          }
+        }
 
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array').of.length(2)
@@ -351,9 +345,9 @@ describe('GET - Collection', () => {
       })
     })
     
-      describe('getCollectionLabels - /collections/{collectionId}/labels', () => {
+      describe('getCollectionLabels - /collections/{collectionId}/labels', function () {
 
-        it('Labels for the specified Collection', async () => {
+        it('Labels for the specified Collection',async function () {
           const res = await chai.request(config.baseUrl)
             .get(`/collections/${reference.testCollection.collectionId}/labels`)
             .set('Authorization', `Bearer ${user.token}`)
@@ -376,8 +370,8 @@ describe('GET - Collection', () => {
 
         })
       })
-        describe('getCollectionLabelById - /collections/{collectionId}/labels/{labelId}', () => {
-          it('Collection label', async () => {
+        describe('getCollectionLabelById - /collections/{collectionId}/labels/{labelId}', function () {
+          it('Collection label',async function () {
             const res = await chai.request(config.baseUrl)
               .get(`/collections/${reference.testCollection.collectionId}/labels/${reference.testCollection.fullLabel}`)
               .set('Authorization', `Bearer ${user.token}`)
@@ -393,8 +387,8 @@ describe('GET - Collection', () => {
           })
         })
 
-          describe('getCollectionMetadata - /collections/{collectionId}/metadata', () => {
-            it('Metadata for the specified Collection', async () => {
+          describe('getCollectionMetadata - /collections/{collectionId}/metadata', function () {
+            it('Metadata for the specified Collection',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/metadata`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -402,19 +396,19 @@ describe('GET - Collection', () => {
                   expect(res).to.have.status(403)
                   return
                 }                
-                if(user.name === 'lvl1' || user.name === 'lvl2'){
+                if(distinct.canModifyCollection === false){
                   expect(res).to.have.status(403)
                   return
-                }
+              }
                 expect(res).to.have.status(200)
                 expect(res.body).to.be.an('object')
                 expect(res.body[reference.testCollection.collectionMetadataKey]).to.equal(reference.testCollection.collectionMetadataValue)
             })
           })
 
-          describe('getCollectionMetadataKeys - /collections/{collectionId}/metadata/keys', () => {
+          describe('getCollectionMetadataKeys - /collections/{collectionId}/metadata/keys', function () {
 
-            it('Return the Metadata KEYS for a Collection', async () => {
+            it('Return the Metadata KEYS for a Collection',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/metadata/keys?`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -422,7 +416,7 @@ describe('GET - Collection', () => {
                   expect(res).to.have.status(403)
                   return
                 }
-                if(user.name === 'lvl1' || user.name === 'lvl2'){
+                if(distinct.canModifyCollection === false){
                   expect(res).to.have.status(403)
                   return
                 }
@@ -435,9 +429,9 @@ describe('GET - Collection', () => {
             })
           })
 
-          describe('getCollectionMetadataValue - /collections/{collectionId}/metadata/keys/{key}', () => {
+          describe('getCollectionMetadataValue - /collections/{collectionId}/metadata/keys/{key}', function () {
 
-            it('Return the Metadata VALUE for a Collection metadata KEY', async () => {
+            it('Return the Metadata VALUE for a Collection metadata KEY',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/metadata/keys/${reference.testCollection.collectionMetadataKey}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -445,7 +439,7 @@ describe('GET - Collection', () => {
                   expect(res).to.have.status(403)
                   return
                 }
-                if(user.name === 'lvl1' || user.name === 'lvl2'){
+                if(distinct.canModifyCollection === false){
                   expect(res).to.have.status(403)
                   return
                 }
@@ -454,9 +448,9 @@ describe('GET - Collection', () => {
             })
           })
 
-          describe('getPoamByCollection - /collections/{collectionId}/poam', () => {
+          describe('getPoamByCollection - /collections/{collectionId}/poam', function () {
 
-            it('Return a POAM-like spreadsheet aggregated by groupId', async () => {
+            it('Return a POAM-like spreadsheet aggregated by groupId',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/poam?aggregator=groupId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing&acceptedOnly=true`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -467,7 +461,7 @@ describe('GET - Collection', () => {
                 expect(res).to.have.status(200)
             })
 
-            it('Return a POAM-like spreadsheet aggregated by ruleId', async () => {
+            it('Return a POAM-like spreadsheet aggregated by ruleId',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/poam?aggregator=ruleId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing&acceptedOnly=true`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -479,9 +473,9 @@ describe('GET - Collection', () => {
             })
           })
 
-          describe('getReviewHistoryByCollection - /collections/{collectionId}/review-history', () => {
+          describe('getReviewHistoryByCollection - /collections/{collectionId}/review-history', function () {
 
-            it('History records - no query params', async () => {
+            it('History records - no query params',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/review-history`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -498,10 +492,10 @@ describe('GET - Collection', () => {
 
                 for(asset of res.body){
                   if(asset.assetId === reference.testCollection.reviewHistory.assetId){
-                    expect(asset.reviewHistories).to.be.an('array').of.length(reference.testCollection.reviewHistoryRuleCnt)
+                    expect(asset.reviewHistories).to.be.an('array').of.length(reference.testCollection.reviewHistory.reviewHistoryRuleCnt)
                     for(const history of asset.reviewHistories){
                       if(history.ruleId === reference.testCollection.reviewHistory.ruleId){
-                        expect(history.history).to.be.an('array').of.length(reference.testCollection.reviewHistoryRuleCnt)
+                        expect(history.history).to.be.an('array').of.length(reference.testCollection.reviewHistory.reviewHistoryRuleCnt)
                         for(const record of history.history){
                           expect(record.result).to.be.equal('pass')
                         }
@@ -511,7 +505,7 @@ describe('GET - Collection', () => {
                 }
             })
 
-            it('History records - asset only', async () => {
+            it('History records - asset only',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/review-history?assetId=${reference.testCollection.reviewHistory.assetId}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -524,10 +518,10 @@ describe('GET - Collection', () => {
                 expect(res.body).to.be.an('array').of.length(1)
                 for(asset of res.body){
                   expect(asset.assetId).to.equal(reference.testCollection.reviewHistory.assetId)
-                  expect(asset.reviewHistories).to.be.an('array').of.length(reference.testCollection.rulesWithHistoryCnt)
+                  expect(asset.reviewHistories).to.be.an('array').of.length(reference.testCollection.reviewHistory.rulesWithHistoryCnt)
                   for(const history of asset.reviewHistories){
                     if(history.ruleId === reference.testCollection.reviewHistory.ruleId){
-                      expect(history.history).to.be.an('array').of.length(reference.testCollection.reviewHistoryRuleCnt)
+                      expect(history.history).to.be.an('array').of.length(reference.testCollection.reviewHistory.reviewHistoryRuleCnt)
                       for(const record of history.history){
                         expect(record.result).to.be.equal('pass')
                       }
@@ -536,7 +530,7 @@ describe('GET - Collection', () => {
               }
             })
 
-            it('History records - endDate only', async () => {
+            it('History records - endDate only',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/review-history?endDate=${reference.testCollection.reviewHistory.endDate}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -556,7 +550,7 @@ describe('GET - Collection', () => {
                 }
             })
 
-            it('History records - startDate only', async () => {
+            it('History records - startDate only',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/review-history?startDate=${reference.testCollection.reviewHistory.startDate}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -575,7 +569,7 @@ describe('GET - Collection', () => {
                 }
             })
 
-            it('History records - rule only', async () => {
+            it('History records - rule only',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/review-history?ruleId=${reference.testCollection.reviewHistory.ruleId}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -592,7 +586,7 @@ describe('GET - Collection', () => {
                 }
             })
 
-            it('History records - start and end dates', async () => {
+            it('History records - start and end dates',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/review-history?startDate=${reference.testCollection.reviewHistory.startDate}&endDate=${reference.testCollection.reviewHistory.endDate}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -612,7 +606,7 @@ describe('GET - Collection', () => {
                 }
             })
 
-            it('History records - status only', async () => {
+            it('History records - status only',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/review-history?status=${reference.testCollection.reviewHistory.status}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -631,7 +625,7 @@ describe('GET - Collection', () => {
                 }
             })
 
-            it('History records - all params', async () => {
+            it('History records - all params',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/review-history?status=${reference.testCollection.reviewHistory.status}&assetId=${reference.testCollection.reviewHistory.assetId}&ruleId=${reference.testCollection.reviewHistory.ruleId}&startDate=${reference.testCollection.reviewHistory.startDate}&endDate=${reference.testCollection.reviewHistory.endDate}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -657,9 +651,9 @@ describe('GET - Collection', () => {
                 }
             })
           })
-          describe('getReviewHistoryStatsByCollection - /collections/{collectionId}/review-history/stats', () => {
+          describe('getReviewHistoryStatsByCollection - /collections/{collectionId}/review-history/stats', function () {
 
-            it('History stats - no query params', async () => {
+            it('History stats - no query params',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/review-history/stats`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -668,11 +662,11 @@ describe('GET - Collection', () => {
                 if (res.status !== 200){
                   return
                 }
-                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistoryTotalCnt)
+                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory.reviewHistoryTotalEntryCnt)
                 expect(Date.parse(res.body.oldestHistoryEntryDate)).to.equal(Date.parse("2020-08-11T22:26:50.000Z"))
             })
 
-            it('History stats - startDate only', async () => {
+            it('History stats - startDate only',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/review-history/stats?startDate=${reference.testCollection.reviewHistory.startDate}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -681,11 +675,11 @@ describe('GET - Collection', () => {
                 if (res.status !== 200){
                   return
                 }
-                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistoryTotalCnt)
+                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory.reviewHistoryTotalEntryCnt)
                 expect(Date.parse(res.body.oldestHistoryEntryDate)).to.equal(Date.parse("2020-08-11T22:26:50.000Z"))
             })
 
-            it('History stats - startDate - Asset Projection', async () => {
+            it('History stats - startDate - Asset Projection',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/review-history/stats?startDate=${reference.testCollection.reviewHistory.startDate}&projection=asset`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -695,18 +689,18 @@ describe('GET - Collection', () => {
                   return
                 }
 
-                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistoryTotalCnt)
+                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory.reviewHistoryTotalEntryCnt)
                 expect(Date.parse(res.body.oldestHistoryEntryDate)).to.equal(Date.parse("2020-08-11T22:26:50.000Z"))
-                expect(res.body.assetHistoryEntryCounts.length).to.eql(reference.testCollection.reviewHistory_startDateCnt)
+                expect(res.body.assetHistoryEntryCounts.length).to.eql(reference.testCollection.reviewHistory.reviewHistory_startDateCnt)
                 let totalHistoryEntries = 0
                 for(const asset of res.body.assetHistoryEntryCounts){
                   expect(distinct.assetIds).to.include(asset.assetId)
                   totalHistoryEntries += asset.historyEntryCount
                 }
-                expect(reference.testCollection.reviewHistoryTotalCnt).to.equal(res.body.collectionHistoryEntryCount)
+                expect(reference.testCollection.reviewHistory.reviewHistoryTotalEntryCnt).to.equal(res.body.collectionHistoryEntryCount)
             })
 
-            it('History stats - endDate only', async () => {
+            it('History stats - endDate only',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/review-history/stats?endDate=${reference.testCollection.reviewHistory.endDate}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -715,11 +709,11 @@ describe('GET - Collection', () => {
                 if (res.status !== 200){
                   return
                 }
-                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory_endDateCnt)
+                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory.reviewHistory_endDateCnt)
                 expect(Date.parse(res.body.oldestHistoryEntryDate)).to.equal(Date.parse("2020-08-11T22:26:50.000Z"))
             })
 
-            it('History stats - start and end dates', async () => {
+            it('History stats - start and end dates',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/review-history/stats?endDate=${reference.testCollection.reviewHistory.endDate}&startDate=${reference.testCollection.reviewHistory.startDate}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -728,11 +722,11 @@ describe('GET - Collection', () => {
                 if (res.status !== 200){
                   return
                 }
-                expect(res.body.collectionHistoryEntryCount).to.equal(6)
+                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory.reviewHistory_startAndEndDateCnt)
                 expect(Date.parse(res.body.oldestHistoryEntryDate)).to.equal(Date.parse("2020-08-11T22:26:50.000Z"))
             })
 
-            it('History stats - asset only', async () => {
+            it('History stats - asset only',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/review-history/stats?assetId=${reference.testCollection.reviewHistory.assetId}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -741,9 +735,9 @@ describe('GET - Collection', () => {
                 if (res.status !== 200){
                   return
                 }
-                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory_testAssetCnt)
+                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory.reviewHistory_testAssetCnt)
             })
-            it('History stats - rule only', async () => {
+            it('History stats - rule only',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/review-history/stats?ruleId=${reference.testCollection.reviewHistory.ruleId}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -752,11 +746,11 @@ describe('GET - Collection', () => {
                 if (res.status !== 200){
                   return
                 }
-                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory_ruleIdCnt)
+                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory.reviewHistory_entriesByRuleIdCnt)
                 expect(Date.parse(res.body.oldestHistoryEntryDate)).to.equal(Date.parse("2020-08-11T22:30:38.000Z"))
             })
 
-            it('History stats - status only', async () => {
+            it('History stats - status only',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/review-history/stats?status=${reference.testCollection.reviewHistory.status}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -766,11 +760,11 @@ describe('GET - Collection', () => {
                   return
                 }
 
-                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory_byStatusCnt)
+                expect(res.body.collectionHistoryEntryCount).to.equal(reference.testCollection.reviewHistory.reviewHistory_byStatusCnt)
                 expect(Date.parse(res.body.oldestHistoryEntryDate)).to.equal(Date.parse("2020-08-11T22:26:50.000Z"))
             })
 
-            it('History stats - all params', async () => {
+            it('History stats - all params',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/review-history/stats?endDate=${reference.testCollection.reviewHistory.endDate}&startDate=${reference.testCollection.reviewHistory.startDate}&assetId=${reference.testCollection.reviewHistory.assetId}&status=${reference.testCollection.reviewHistory.status}&ruleId=${reference.testCollection.reviewHistory.ruleId}&projection=asset`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -786,9 +780,9 @@ describe('GET - Collection', () => {
             })
           })
 
-          describe('getStigsByCollection - /collections/{collectionId}/stigs', () => {
+          describe('getStigsByCollection - /collections/{collectionId}/stigs', function () {
 
-            it('Return the STIGs mapped in the specified Collection', async () => {
+            it('Return the STIGs mapped in the specified Collection',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/stigs`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -797,18 +791,14 @@ describe('GET - Collection', () => {
                   return
                 }
                 expect(res).to.have.status(200)
-                // if(user.name === 'lvl1'){
-                //   expect(res.body).to.be.an('array').of.length(1)
-                // }else{
-                  expect(res.body).to.be.an('array').of.length(distinct.validStigs.length)
-                // }
+                expect(res.body).to.be.an('array').of.length(distinct.validStigs.length)
                 for(const stig of res.body){
                   expect(distinct.validStigs).to.include(stig.benchmarkId)
                   expect(stig.revisionPinned).to.equal(false)
                 }
             })
 
-            it('Return the STIGs mapped in the specified Collection - label', async () => {
+            it('Return the STIGs mapped in the specified Collection - label',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/stigs?labelId=${reference.testCollection.fullLabel}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -827,7 +817,7 @@ describe('GET - Collection', () => {
                 }
             })
 
-            it('Return the STIGs mapped in the specified Collection - asset projection', async () => {
+            it('Return the STIGs mapped in the specified Collection - asset projection',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/stigs?projection=assets`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -836,11 +826,7 @@ describe('GET - Collection', () => {
                   return
                 }
                 expect(res).to.have.status(200)
-                // if(user.name === 'lvl1'){
-                //   expect(res.body).to.be.an('array').of.length(1)
-                // }else{
-                  expect(res.body).to.be.an('array').of.length(distinct.validStigs.length)
-                // }
+                expect(res.body).to.be.an('array').of.length(distinct.validStigs.length)
                 for(const stig of res.body){
                   expect(distinct.validStigs).to.include(stig.benchmarkId)
                   const regex = new RegExp("asset")
@@ -852,9 +838,9 @@ describe('GET - Collection', () => {
             })
           })
 
-          describe('getStigByCollection - /collections/{collectionId}/stigs/{benchmarkId}', () => {
+          describe('getStigByCollection - /collections/{collectionId}/stigs/{benchmarkId}', function () {
 
-            it('Return Pinned Revision for this STIG', async () => {
+            it('Return Pinned Revision for this STIG',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/stigs/${reference.benchmark}`)
                 .set('Authorization', `Bearer ${user.token}`)
@@ -870,7 +856,7 @@ describe('GET - Collection', () => {
 
             })
 
-            it('Return the info about the specified STIG from the specified Collection - asset projection', async () => {
+            it('Return the info about the specified STIG from the specified Collection - asset projection',async function () {
               const res = await chai.request(config.baseUrl)
                 .get(`/collections/${reference.testCollection.collectionId}/stigs/${reference.benchmark}?projection=assets`)
                 .set('Authorization', `Bearer ${user.token}`)

@@ -2,6 +2,8 @@ const chai = require("chai")
 const chaiHttp = require("chai-http")
 chai.use(chaiHttp)
 const expect = chai.expect
+const deepEqualInAnyOrder = require('deep-equal-in-any-order')
+chai.use(deepEqualInAnyOrder)
 const config = require("../../testConfig.json")
 const utils = require("../../utils/testUtils")
 // const environment = require("../../environment.json")
@@ -11,7 +13,7 @@ const reference = require('./referenceData.js')
 const requestBodies = require('./requestBodies.js')
 
 
-describe('POST - Collection - not all tests run for all iterations', () => {
+describe('POST - Collection - not all tests run for all iterations', function () {
   // before(async function () {
   //   this.timeout(4000)
   //   await utils.uploadTestStigs()
@@ -21,10 +23,10 @@ describe('POST - Collection - not all tests run for all iterations', () => {
 
   for(const user of users) {
     if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
-      return
+      it(`No expectations for this iteration scenario: ${user.name}`,async function () {})
+      continue
     }
-    describe(`user:${user.name}`, () => {
+    describe(`user:${user.name}`, function () {
       const distinct = expectations[user.name]
       
       before(async function () {
@@ -34,11 +36,11 @@ describe('POST - Collection - not all tests run for all iterations', () => {
         await utils.createDisabledCollectionsandAssets()
       })
   
-      describe("createCollection - /collections", () => {
+      describe("createCollection - /collections", function () {
 
         // run this test once to validate EOV, I guess???
         if (user.name === "stigmanadmin") {
-          it("Invalid fields.detail.required value", async () => {
+          it("Invalid fields.detail.required value",async function () {
             const res = await chai
               .request(config.baseUrl)
               .post(`/collections`)
@@ -76,7 +78,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
         }
 
       if (user.name === "stigmanadmin") {
-        it("Missing settings", async () => {
+        it("Missing settings",async function () {
           const res = await chai
             .request(config.baseUrl)
             .post(`/collections`)
@@ -96,7 +98,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
         })
       }
 
-        it("Create a Collection and test projections", async () => {
+        it("Create a Collection and test projections",async function () {
           const post = requestBodies.createCollection
            const res = await chai
             .request(config.baseUrl)
@@ -162,13 +164,13 @@ describe('POST - Collection - not all tests run for all iterations', () => {
         })
       })
 
-      describe("cloneCollection - /collections/{collectionId}/clone", () => {
+      describe("cloneCollection - /collections/{collectionId}/clone", function () {
 
         before(async function () {
           // this.timeout(4000)
-          await utils.setDefaultRevision(reference.testCollection.collectionId, reference.benchmark, reference.pinRevision)
+          await utils.setDefaultRevision(reference.testCollection.collectionId, reference.benchmark, reference.testCollection.pinRevision)
         })
-        it("clone collection for later Review check and test projections everything matches source ", async () => {
+        it("clone collection for later Review check and test projections everything matches source ",async function () {
 
           const res = await chai
             .request(config.baseUrl)
@@ -214,7 +216,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
                         expect(messageObj.collection.statistics.grantCount).to.eql(reference.testCollection.statisticsProjected.grantCount);
                         expect(messageObj.collection.statistics.checklistCount).to.eql(reference.testCollection.statisticsProjected.checklistCount);
                         // // stigs 
-                        expect(messageObj.collection.stigs).to.eql(reference.testCollection.stigsProjected)
+                        expect(messageObj.collection.stigs).to.deep.equalInAnyOrder(reference.testCollection.stigsProjected)
                         // labels
                         expect(messageObj.collection.labels).to.have.lengthOf(reference.testCollection.labelsProjected.length)
                         for(const label of messageObj.collection.labels){
@@ -257,7 +259,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
       })
 
 
-      describe("exportToCollection - /collections/{collectionId}/export-to/{dstCollectionId}", () => {
+      describe("exportToCollection - /collections/{collectionId}/export-to/{dstCollectionId}", function () {
 
         before(async function () {
           // this.timeout(4000)
@@ -266,7 +268,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
           await utils.createDisabledCollectionsandAssets()
         })
         
-        it("export results to another collection - entire asset - create asset in destination", async () => {
+        it("export results to another collection - entire asset - create asset in destination",async function () {
 
           const res = await chai
             .request(config.baseUrl)
@@ -292,14 +294,16 @@ describe('POST - Collection - not all tests run for all iterations', () => {
                     let messageObj = JSON.parse(message)
                     if(messageObj.stage == "result"){
                       expect(messageObj.counts.assetsCreated).to.eql(1)
-                      expect(messageObj.counts.stigsMapped).to.eql(2)
-                      expect(messageObj.counts.reviewsInserted).to.eql(9)
+                      expect(messageObj.counts.stigsMapped).to.eql(reference.testAsset.validStigs.length)
+                      expect(messageObj.counts.reviewsInserted).to.eql(reference.testAsset.reviewCnt)
                       expect(messageObj.counts.reviewsUpdated).to.eql(0)
                     }
                 }
             }
         })
-        it("export results to another collection - entire asset - asset exists", async () => {
+
+
+        it("export results to another collection - entire asset - asset exists",async function () {
 
           const res = await chai
             .request(config.baseUrl)
@@ -335,9 +339,9 @@ describe('POST - Collection - not all tests run for all iterations', () => {
       })
 
 
-      describe("createCollectionLabel - /collections/{collectionId}/labels", () => {
+      describe("createCollectionLabel - /collections/{collectionId}/labels", function () {
 
-        it("Create Label in a Collection", async () => {
+        it("Create Label in a Collection",async function () {
 
           const request = {
               "name": "test-label-POST",
@@ -364,7 +368,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
       })
 
 
-      describe("writeStigPropsByCollectionStig - /collections/{collectionId}/stigs/{benchmarkId}", () => {
+      describe("writeStigPropsByCollectionStig - /collections/{collectionId}/stigs/{benchmarkId}", function () {
         before(async function () {
           this.timeout(4000)
           await utils.uploadTestStigs()
@@ -372,7 +376,7 @@ describe('POST - Collection - not all tests run for all iterations', () => {
           await utils.createDisabledCollectionsandAssets()
         })
 
-        it("Set the Assets mapped to a STIG - default rev and assets", async () => {
+        it("Set the Assets mapped to a STIG - default rev and assets",async function () {
 
           const post =
           {
@@ -396,6 +400,153 @@ describe('POST - Collection - not all tests run for all iterations', () => {
             expect(res.body.revisionPinned).to.eql(true)
             expect(res.body.ruleCount).to.eql(reference.checklistLength)
             expect(res.body.benchmarkId).to.eql(reference.testCollection.benchmark)
+            expect(res.body.assetCount).to.eql(requestBodies.writeStigPropsByCollectionStig.assetIds.length)
+        })
+
+        it("Set the Assets mapped to a STIG - default latest and assets",async function () {
+
+          const post = {
+            defaultRevisionStr: "latest",
+            assetIds: requestBodies.writeStigPropsByCollectionStig.assetIds,
+          }
+
+          const res = await chai
+            .request(config.baseUrl)
+            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
+            .set("Authorization", `Bearer ${user.token}`)
+            .send(post)
+
+            if(distinct.canModifyCollection === false){
+              expect(res).to.have.status(403)
+              return
+            }
+
+            expect(res).to.have.status(200)
+            expect(res.body.revisionStr).to.equal(requestBodies.writeStigPropsByCollectionStig.defaultRevisionStr)
+            expect(res.body.revisionPinned).to.equal(false)
+            expect(res.body.ruleCount).to.eql(reference.checklistLength)
+            expect(res.body.benchmarkId).to.equal(reference.testCollection.benchmark)
+            expect(res.body.assetCount).to.eql(requestBodies.writeStigPropsByCollectionStig.assetIds.length)
+        })
+
+
+        it("Set the Assets mapped to a STIG - assets only",async function () {
+
+          const post = {
+            assetIds: requestBodies.writeStigPropsByCollectionStig.assetIds,
+          }
+
+          const res = await chai
+            .request(config.baseUrl)
+            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
+            .set("Authorization", `Bearer ${user.token}`)
+            .send(post)
+
+            if(distinct.canModifyCollection === false){
+              expect(res).to.have.status(403)
+              return
+            }
+
+            expect(res).to.have.status(200)
+            expect(res.body.revisionStr).to.equal(requestBodies.writeStigPropsByCollectionStig.defaultRevisionStr)
+            expect(res.body.revisionPinned).to.equal(false)
+            expect(res.body.ruleCount).to.eql(reference.checklistLength)
+            expect(res.body.benchmarkId).to.equal(reference.testCollection.benchmark)
+            expect(res.body.assetCount).to.eql(requestBodies.writeStigPropsByCollectionStig.assetIds.length)
+        })
+
+
+        it("Set the Assets mapped to a STIG - invalid rev - expect 422",async function () {
+
+          const post = {
+          defaultRevisionStr: "V1R5"
+          }
+
+          const res = await chai
+            .request(config.baseUrl)
+            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
+            .set("Authorization", `Bearer ${user.token}`)
+            .send(post)
+
+            if(distinct.canModifyCollection === false){
+              expect(res).to.have.status(403)
+              return
+            }
+
+            expect(res).to.have.status(422)
+        })
+
+        it("Set the Assets mapped to a STIG - default rev only",async function () {
+
+          const post = {
+          defaultRevisionStr: reference.testCollection.pinRevision
+          }
+
+          const res = await chai
+            .request(config.baseUrl)
+            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
+            .set("Authorization", `Bearer ${user.token}`)
+            .send(post)
+
+            if(distinct.canModifyCollection === false){
+              expect(res).to.have.status(403)
+              return
+            }
+
+            expect(res).to.have.status(200)
+            expect(res.body.revisionStr).to.equal(reference.testCollection.pinRevision)
+            expect(res.body.revisionPinned).to.equal(true)
+            expect(res.body.ruleCount).to.eql(reference.checklistLength)
+            expect(res.body.benchmarkId).to.equal(reference.testCollection.benchmark)
+            expect(res.body.assetCount).to.eql(requestBodies.writeStigPropsByCollectionStig.assetIds.length)
+        })
+
+
+        it("Set the Assets mapped to a STIG - clear assets",async function () {
+
+          const post = {
+          assetIds: []
+          }
+
+          const res = await chai
+            .request(config.baseUrl)
+            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
+            .set("Authorization", `Bearer ${user.token}`)
+            .send(post)
+
+            if(distinct.canModifyCollection === false){
+              expect(res).to.have.status(403)
+              return
+            }
+
+            expect(res).to.have.status(204)
+            expect(res.body).to.eql({})
+            
+        })
+
+
+        it("Set the Assets mapped to a STIG - after pinned delete",async function () {
+
+          const post = {
+            assetIds: requestBodies.writeStigPropsByCollectionStig.assetIds,
+          }
+
+          const res = await chai
+            .request(config.baseUrl)
+            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
+            .set("Authorization", `Bearer ${user.token}`)
+            .send(post)
+
+            if(distinct.canModifyCollection === false){
+              expect(res).to.have.status(403)
+              return
+            }
+
+            expect(res).to.have.status(200)
+            expect(res.body.revisionStr).to.equal(reference.testCollection.defaultRevision)
+            expect(res.body.revisionPinned).to.equal(false)
+            expect(res.body.ruleCount).to.eql(reference.checklistLength)
+            expect(res.body.benchmarkId).to.equal(reference.testCollection.benchmark)
             expect(res.body.assetCount).to.eql(requestBodies.writeStigPropsByCollectionStig.assetIds.length)
         })
       })
