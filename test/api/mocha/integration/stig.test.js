@@ -293,8 +293,15 @@ describe(`POST - importBenchmark - /stigs`, () => {
 
     before(async function () {
       this.timeout(4000)
-      await utils.loadAppData()
       await utils.uploadTestStigs()
+      try{
+        await utils.deleteStigByRevision("VPN_SRG_TEST", "V1R0")
+      }
+      catch(e){
+        console.log("No V1R0 to delete")
+      }
+    
+      await utils.loadAppData()
     })
 
     it('Import and replace a STIG revision', async function () {
@@ -304,10 +311,10 @@ describe(`POST - importBenchmark - /stigs`, () => {
       const filePath = path.join(directoryPath, testStigfile)
 
       const res = await chai.request(config.baseUrl)
-      .post('/stigs?elevate=true&clobber=true')
+      .post('/stigs?clobber=true&elevate=true')
       .set('Authorization', `Bearer ${user.token}`)
       .set('Content-Type', `multipart/form-data`)
-      .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
+      .attach('importFile', fs.readFileSync(filePath), testStigfile)
       let expectedRevData = 
       {
           "benchmarkId": "VPN_SRG_TEST",

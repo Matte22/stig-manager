@@ -221,6 +221,27 @@ describe('PATCH - Asset', () => {
               "testkey": "poc2Patched"
             })
         })
+        it('Merge metadata property/value into an Asset', async () => {
+          const res = await chai
+            .request(config.baseUrl)
+            .patch(`/assets/${reference.scrapAsset.assetId}/metadata`)
+            .set('Authorization', 'Bearer ' + user.token)
+            .send({
+              "testkey":"poc2Patched"
+            })
+
+            if(!distinct.canModifyCollection){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res.body).to.deep.equal({
+              "testkey": "poc2Patched",
+            })
+            const effectedAsset = await utils.getAsset(reference.scrapAsset.assetId)
+            expect(effectedAsset.metadata).to.deep.equal({
+              "testkey": "poc2Patched"
+            })
+        })
       })
     })
   }

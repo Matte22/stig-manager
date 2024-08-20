@@ -1586,6 +1586,19 @@ describe('GET - putAssetsByCollectionLabelId - /collections/{collectionId}/label
                 })
             expect(res).to.have.status(200)
         })
+        it('check that request body without collectionId properly sets labels - GH-1293', async () => {
+
+            const res = await chai.request(config.baseUrl)
+                .patch(`/assets/${reference.scrapAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
+                .set('Authorization', `Bearer ${user.token}`)
+                .send({
+                    "labelIds": [
+                        "df4e6836-a003-11ec-b1bc-0242ac110002"
+                    ]
+                })
+            expect(res).to.have.status(200)
+            expect(res.body.labelIds).to.have.lengthOf(1);
+        })
     })
 })
 describe('PUT - setStigAssetsByCollectionUser - /collections/{collectionId}/grants/{userId}/access', () => {

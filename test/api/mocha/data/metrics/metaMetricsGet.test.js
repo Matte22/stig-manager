@@ -11,12 +11,12 @@ const reference = require('./referenceData.js')
 const metrics = require('./metaMetricsGet.js')
 const expectations = require('./expectations.js')
 
-
 describe('GET - MetaMetrics', function () { 
   before(async function () {
     this.timeout(4000)
     await utils.uploadTestStigs()
     await utils.loadAppData("appdata-meta-metrics-with-pin.json")
+    await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
     await utils.createDisabledCollectionsandAssets()
   })
 

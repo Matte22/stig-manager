@@ -951,7 +951,7 @@ describe('GET - Metrics', function () {
             })
         })
 
-        describe('GET - getMetricsSummaryByCollectionAggStig - /collections/{collectionId}/metrics/summary/summary/stig', function () {
+        describe('GET - getMetricsSummaryByCollectionAggStig - /collections/{collectionId}/metrics/summary/stig', function () {
 
 
             it('Return summary metrics - stig agg', async function () {

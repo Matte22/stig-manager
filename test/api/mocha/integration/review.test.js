@@ -7,7 +7,7 @@ const utils = require('../utils/testUtils')
 const environment = require('../environment.json')
 const xml2js = require('xml2js')
 const reference = require('./referenceData.js')
-const users = require('./users.js')
+const users = require('../iterations.js')
 
 const user =
   {
@@ -163,9 +163,7 @@ describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{asset
 
                     const res = await chai
                     .request(config.baseUrl)
-                    .put(
-                        `/collections/${reference.testCollection.collectionId}?elevate=true&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs`
-                    )
+                    .patch(`/collections/${reference.testCollection.collectionId}?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs`)
                     .set("Authorization", `Bearer ${user.token}`)
                     .send({
                         metadata: {
@@ -197,7 +195,7 @@ describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{asset
                       .set("Authorization", `Bearer ${user.token}`)
                       .send([
                         {
-                          ruleId: "{{testRuleId}}",
+                          ruleId: reference.ruleId,
                           result: "pass",
                           detail: "test\nvisible to lvl1",
                           comment: "sure",
