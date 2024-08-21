@@ -563,6 +563,7 @@ const setDefaultRevision = async (collectionId, benchmarkId, revisionStr) => {
 
 module.exports = {
   loadAppData,
+  deleteCollection,
   uploadTestStigs,
   getStigByCollectionBenchmarkId,
   setDefaultRevision,
