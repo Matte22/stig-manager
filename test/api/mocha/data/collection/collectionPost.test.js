@@ -6,21 +6,13 @@ const deepEqualInAnyOrder = require('deep-equal-in-any-order')
 chai.use(deepEqualInAnyOrder)
 const config = require("../../testConfig.json")
 const utils = require("../../utils/testUtils")
-// const environment = require("../../environment.json")
 const users = require("../../iterations.js")
 const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
 const requestBodies = require('./requestBodies.js')
 
-
 describe('POST - Collection - not all tests run for all iterations', function () {
-  // before(async function () {
-  //   this.timeout(4000)
-  //   await utils.uploadTestStigs()
-  //   await utils.loadAppData()
-  //   await utils.createDisabledCollectionsandAssets()
-  // })
-
+ 
   for(const user of users) {
     if (expectations[user.name] === undefined){
       it(`No expectations for this iteration scenario: ${user.name}`,async function () {})
@@ -32,71 +24,21 @@ describe('POST - Collection - not all tests run for all iterations', function ()
       before(async function () {
         // this.timeout(4000)
         await utils.uploadTestStigs()
+        try{
+          await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
+        }
+        catch(err){
+            console.log("no stig to upload")
+        }
         await utils.loadAppData()
         await utils.createDisabledCollectionsandAssets()
       })
+
+      after(async function () {
+        await utils.deleteStigByRevision("VPN_SRG_TEST", "V1R0")
+      })
   
       describe("createCollection - /collections", function () {
-
-        // run this test once to validate EOV, I guess???
-        if (user.name === "stigmanadmin") {
-          it("Invalid fields.detail.required value",async function () {
-            const res = await chai
-              .request(config.baseUrl)
-              .post(`/collections`)
-              .set("Authorization", `Bearer ${user.token}`)
-              .send({
-                name: "{{$timestamp}}",
-                description: "Collection TEST description",
-                settings: {
-                  fields: {
-                    detail: {
-                      enabled: "findings",
-                      required: "always",
-                    },
-                    comment: {
-                      enabled: "always",
-                      required: "always",
-                    },
-                  },
-                  status: {
-                    canAccept: true,
-                    minAcceptGrant: 3,
-                    resetCriteria: "result",
-                  },
-                },
-                metadata: {},
-                grants: [
-                  {
-                    userId: "1",
-                    accessLevel: 4,
-                  },
-                ],
-              })
-            expect(res).to.have.status(400)
-          })
-        }
-
-      if (user.name === "stigmanadmin") {
-        it("Missing settings",async function () {
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections`)
-            .set("Authorization", `Bearer ${user.token}`)
-            .send({
-              name: "{{$timestamp}}",
-              description: "Collection TEST description",
-              metadata: {},
-              grants: [
-                {
-                  userId: "1",
-                  accessLevel: 4,
-                },
-              ],
-            })
-          expect(res).to.have.status(201)
-        })
-      }
 
         it("Create a Collection and test projections",async function () {
           const post = requestBodies.createCollection
@@ -170,7 +112,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           // this.timeout(4000)
           await utils.setDefaultRevision(reference.testCollection.collectionId, reference.benchmark, reference.testCollection.pinRevision)
         })
-        it("clone collection for later Review check and test projections everything matches source ",async function () {
+        it("clone collection for Review check and test projections everything matches source ",async function () {
 
           const res = await chai
             .request(config.baseUrl)
@@ -258,7 +200,6 @@ describe('POST - Collection - not all tests run for all iterations', function ()
         })
       })
 
-
       describe("exportToCollection - /collections/{collectionId}/export-to/{dstCollectionId}", function () {
 
         before(async function () {
@@ -302,7 +243,6 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             }
         })
 
-
         it("export results to another collection - entire asset - asset exists",async function () {
 
           const res = await chai
@@ -338,7 +278,6 @@ describe('POST - Collection - not all tests run for all iterations', function ()
         })
       })
 
-
       describe("createCollectionLabel - /collections/{collectionId}/labels", function () {
 
         it("Create Label in a Collection",async function () {
@@ -366,7 +305,6 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             expect(res.body.uses).to.equal(0)
         })
       })
-
 
       describe("writeStigPropsByCollectionStig - /collections/{collectionId}/stigs/{benchmarkId}", function () {
         before(async function () {

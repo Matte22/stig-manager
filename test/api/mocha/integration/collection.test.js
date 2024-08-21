@@ -38,7 +38,7 @@ describe('PATCH - updateCollection - /collections/{collectionId}', () => {
             await utils.uploadTestStigs()
             await utils.createDisabledCollectionsandAssets()
         })
-        it('Merge provided properties with a Collection - make admin a manager', async () => {
+        it('should make admin user a manager', async () => {
             const patchRequest = {
                 "metadata": {
                   "pocName": "poc2Patched",
@@ -72,7 +72,7 @@ describe('PATCH - updateCollection - /collections/{collectionId}', () => {
                 .send(patchRequest)
             expect(res).to.have.status(200)
         })
-        it('Merge provided properties with a Collection - manager attempts to change owner grant', async () => {
+        it('Merge provided properties with a Collection - manager attempts to change an owners grant should be rejected', async () => {
             const patchRequest ={
                 "metadata": {
                   "pocName": "poc2Patched",
@@ -140,7 +140,7 @@ describe('PATCH - updateCollection - /collections/{collectionId}', () => {
                 .send(patchRequest)
             expect(res).to.have.status(200)
         })
-        it('Set all properties of a Collection Copy', async () => {
+        it('manager tries to give self owner. fails.', async () => {
             const putRequest = {
                 "name": "TEST_{{$randomNoun}}-{{$randomJobType}}",
                 "description": null,
@@ -236,6 +236,24 @@ describe('POST - createCollection - /collections', () => {
                 .send(postRequest)
             expect(res).to.have.status(400)
         })
+        it("Missing settings",async function () {
+            const res = await chai
+              .request(config.baseUrl)
+              .post(`/collections`)
+              .set("Authorization", `Bearer ${user.token}`)
+              .send({
+                name: "{{$timestamp}}",
+                description: "Collection TEST description",
+                metadata: {},
+                grants: [
+                  {
+                    userId: "1",
+                    accessLevel: 4,
+                  },
+                ],
+              })
+            expect(res).to.have.status(201)
+          })
     })
 
 })
@@ -324,7 +342,7 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                     .attach('importFile', fs.readFileSync(filePath), testStigfile)
                 expect(res).to.have.status(200)
             })
-            it('Set default rev only', async () => {
+            it('Set default rev for VPN_TEST_STIG and revision V1R0', async () => {
 
                 const res = await chai.request(config.baseUrl)
                     .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.benchmark}`)
@@ -346,7 +364,7 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
             })
         })
         describe('clone param variations', () => {
-            it('clone test collection - everything matches source', async () => {
+            it('clone test collection - checking that new colleciton matches source', async () => {
 
                 const res = await chai.request(config.baseUrl)
                     .post(`/collections/${reference.testCollection.collectionId}/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`)
@@ -410,7 +428,7 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                     }
                 }
             })
-            it('clone test collection - no grants', async () => {
+            it('clone test collection - no grants - no grants should be transfered', async () => {
 
                 const res = await chai.request(config.baseUrl)
                 .post(`/collections/${reference.testCollection.collectionId}/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`)
@@ -495,7 +513,7 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                     }
                 }
             })
-            it('clone test collection - no labels', async () => {
+            it('clone test collection - no labels will be transfered', async () => {
 
                 const res = await chai.request(config.baseUrl)
                     .post(`/collections/${reference.testCollection.collectionId}/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`)
@@ -562,7 +580,7 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                     }
                 }
             })
-            it('clone test collection - no assets', async () => {
+            it('clone test collection - no assets will be transfered', async () => {
 
                 const res = await chai.request(config.baseUrl)
                     .post(`/collections/${reference.testCollection.collectionId}/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`)
@@ -646,7 +664,7 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                     }
                 }
             })
-            it('clone test collection - stigMapping=none', async () => {
+            it('clone test collection - stigMapping=none - stig mappings not transfered', async () => {
 
                 const res = await chai.request(config.baseUrl)
                     .post(`/collections/${reference.testCollection.collectionId}/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`)
@@ -1260,7 +1278,6 @@ describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{asset
             await utils.uploadTestStigs()
             await utils.loadAppData()
         })
-
         it('Import a new STIG - VPN  (as admin) Copy', async () => {
 
             const directoryPath = path.join(__dirname, '../../form-data-files/')
@@ -1514,7 +1531,7 @@ describe('GET - putAssetsByCollectionLabelId - /collections/{collectionId}/label
                 })
             expect(res).to.have.status(200)
         })
-        it('Replace a Labels Asset Mappings in a Collection Copy', async () => {
+        it('Replace an assets label', async () => {
 
             const res = await chai.request(config.baseUrl)
                 .put(`/collections/${reference.testCollection.collectionId}/labels/${reference.scrapLabel}/assets`)
@@ -1641,7 +1658,7 @@ describe('PUT - setStigAssetsByCollectionUser - /collections/{collectionId}/gran
                 }
             }
         })
-        it('set stig-asset grants for a lvl1 user in this collection, with asset from another collection', async () => {
+        it('set stig-asset grants for a lvl1 user in test collection, with asset from another collection', async () => {
 
             const res = await chai.request(config.baseUrl)
                 .put(`/collections/${reference.testCollection.collectionId}/grants/${reference.lvl1User.userId}/access`)

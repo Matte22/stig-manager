@@ -66,6 +66,7 @@ const reference = {
       "755b8a28-9a68-11ec-b1bc-0242ac110002",
       "5130dc84-9a68-11ec-b1bc-0242ac110002",
     ],
+  
     stats: {
       ruleCount: 368,
       stigCount: 2,

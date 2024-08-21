@@ -28,7 +28,7 @@ describe('PUT - putReviewByAssetRule - /collections/{collectionId}/reviews/{asse
             await utils.uploadTestStigs()
             await utils.createDisabledCollectionsandAssets()
         })
-        it('Set all properties of a Review - informational + result comment', async () => {
+        it('Set all properties of a Review with informational and a result comment', async () => {
             const putBody = {
                 "result": "informational",
                 "detail": "test\nvisible to lvl1, THIS REVIEW IS INFORMATIONAL (but comes back as Not_Reviewed in a ckl)",
@@ -81,7 +81,7 @@ describe('PUT - putReviewByAssetRule - /collections/{collectionId}/reviews/{asse
                 }
             }
         })
-        it('Set all properties of a Review - invalid result enum', async () => {
+        it('Set all properties of a Review - invalid result value', async () => {
             const putBody = {
                 "result": "INVALID",
                 "detail": "test\nvisible to lvl1, test of invalid result enum",
@@ -127,7 +127,7 @@ describe('PATCH - patchReviewByAssetRule - /collections/{collectionId}/reviews/{
             expect(res.body.result).to.eql("pass")
             expect(res.body.status).to.have.property('label').that.equals('saved')
         })
-        it('PATCH Review to submitted status', async () => {
+        it('PATCH Review to submitted status, status should chnage to submitted', async () => {
             const res = await chai.request(config.baseUrl)
             .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
             .set('Authorization', `Bearer ${user.token}`)
@@ -135,7 +135,7 @@ describe('PATCH - patchReviewByAssetRule - /collections/{collectionId}/reviews/{
             expect(res).to.have.status(200)
             expect(res.body.status).to.have.property('label').that.equals('submitted')
         })
-        it('PATCH Review patched and no longer meets Collection Requirements', async () => {
+        it('PATCH Review patched and no longer meets Collection Requirements expect saved', async () => {
             const res = await chai.request(config.baseUrl)
             .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
             .set('Authorization', `Bearer ${user.token}`)

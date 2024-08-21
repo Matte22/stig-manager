@@ -135,7 +135,7 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
             
             expect(res.body).to.eql(expectedResponse)
         })
-        it(`Delete a Collection Copy`, async () => {
+        it(`Delete a Collection should now be deleted`, async () => {
 
             const res = await chai
                 .request(config.baseUrl)
@@ -144,7 +144,7 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
             expect(res).to.have.status(200)
             deletedCollection = res.body.collectionId
         })
-        it('PUT Review: asset in deleted collection', async () => {
+        it('put review of an asset in a deleted collection should fail', async () => {
 
             const res = await chai
                 .request(config.baseUrl)
@@ -159,7 +159,7 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
                 })
             expect(res).to.have.status(403)
         })
-        it('Return the STIGs - from deleted collection', async () => {
+        it('Return the STIGs - from deleted collection should fail', async () => {
 
             const res = await chai
                 .request(config.baseUrl)
@@ -167,7 +167,7 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
                 .set("Authorization", `Bearer ${user.token}`)
             expect(res).to.have.status(403)
         })
-        it('import reviews for asset in deleted collection', async () => {
+        it('import reviews for asset in deleted collection should fail', async () => {
 
             const res = await chai
                 .request(config.baseUrl)
@@ -185,7 +185,7 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
                 ])
             expect(res).to.have.status(403)
         })
-        it('Delete an asset in a deleted collection', async () => {
+        it('Delete an asset in a deleted collection should fail', async () => {
 
             const res = await chai
                 .request(config.baseUrl)
@@ -193,7 +193,7 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
                 .set("Authorization", `Bearer ${user.token}`)
             expect(res).to.have.status(403)
         }) 
-        it('Import reviews for deleted asset', async () => {
+        it('Import reviews for deleted asset should fail', async () => {
 
             const res = await chai
                 .request(config.baseUrl)
@@ -211,7 +211,7 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
                 ])
             expect(res).to.have.status(403)
         })
-        it('Return a deleted Collection', async () => {
+        it('Return a deleted Collection no data returned 204', async () => {
 
             const res = await chai
                 .request(config.baseUrl)
@@ -219,7 +219,7 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
                 .set("Authorization", `Bearer ${user.token}`)
             expect(res).to.have.status(204)
         })
-        it('Create an Asset in deleted collection', async () => {
+        it('Create an Asset in deleted collection should fail', async () => {
 
             const res = await chai
                 .request(config.baseUrl)
@@ -245,7 +245,7 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
                 })
             expect(res).to.have.status(403)
         })
-        it('Delete test Asset', async () => {
+        it('should delete the test asset', async () => {
 
             const res = await chai
                 .request(config.baseUrl)
@@ -253,7 +253,7 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
                 .set("Authorization", `Bearer ${user.token}`)
             expect(res).to.have.status(200)
         })
-        it('Return test Asset (with StigGrants projection)', async () => {
+        it('get asset, it should return 403 because asset is deleted', async () => {
 
             const res = await chai
                 .request(config.baseUrl)

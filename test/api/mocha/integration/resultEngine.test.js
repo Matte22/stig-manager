@@ -4,7 +4,6 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require("../testConfig.json")
 const utils = require("../utils/testUtils")
-const environment = require("../environment.json")
 const reference = require("./referenceData")
 const users = require("../iterations")
 
@@ -18,7 +17,6 @@ describe('PATCH - patchReviewByAssetRule - /collections/{collectionId}/reviews/{
                     await utils.uploadTestStigs()
                     await utils.loadAppData()
                 })
-
                 it('Delete a Review - freshRuleId - review may or may not exist', async () => {
                     const res = await chai.request(config.baseUrl)
                       .delete(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.freshRuleId}`)
@@ -50,8 +48,8 @@ describe('PATCH - patchReviewByAssetRule - /collections/{collectionId}/reviews/{
                     for(let stig of review.stigs){
                       expect(stig.benchmarkId).to.be.oneOf(reference.testAsset.validStigs)
                     } 
-                  })
-                  it('resultEngine only - expect fail', async () => {
+                })
+                it('resultEngine only - expect fail', async () => {
                     const res = await chai
                       .request(config.baseUrl)
                       .patch(

@@ -43,10 +43,16 @@ describe('GET - Asset', () => {
           else{
             expect(res).to.have.status(200)
           }
-          expect(res.body.name).to.eql(reference.testAsset.name)
-          expect(res.body.collection.collectionId).to.eql(reference.testAsset.collectionId)
-          expect(res.body.labelIds).to.be.an('array').of.length(reference.testAsset.validStigs.length)
-          
+          expect(res.body.name, "expect asset name to equal test asset").to.eql(reference.testAsset.name)
+          expect(res.body.collection.collectionId, "expect asset to be a part of test collection").to.eql(reference.testAsset.collectionId)
+          expect(res.body.collection.name, "expect collection name to equal test collection").to.eql(reference.testCollection.name)
+          expect(res.body.labelIds).to.be.an('array').of.length(reference.testAsset.labels.length)
+          for(const label of res.body.labelIds){
+            expect(label).to.be.oneOf(reference.testAsset.labels)
+          }
+          expect(res.body.metadata).to.deep.equal({
+            [reference.testAsset.metadataKey]: reference.testAsset.metadataValue
+          })
           if(res.request.url.includes('projection=stigGrants')){
             expect(res.body.stigGrants).to.be.an("array").of.length(distinct.testAssetStigs.length)
             for (let grant of res.body.stigGrants){
@@ -121,7 +127,14 @@ describe('GET - Asset', () => {
           expect(res.body).to.be.an('object')        
           expect(res.body.name).to.eql(reference.testAsset.name)
           expect(res.body.collection.collectionId).to.eql(reference.testAsset.collectionId)
-
+          expect(res.body.collection.name, "expect collection name to equal test collection").to.eql(reference.testCollection.name)
+          expect(res.body.labelIds).to.be.an('array').of.length(reference.testAsset.labels.length)
+          for(const label of res.body.labelIds){
+            expect(label).to.be.oneOf(reference.testAsset.labels)
+          }
+          expect(res.body.metadata).to.deep.equal({
+            [reference.testAsset.metadataKey]: reference.testAsset.metadataValue
+          })
           //stigs
           expect(res.body.stigs).to.exist;
           expect(res.body.stigs).to.be.an("array").of.length(distinct.testAssetStigs.length)
@@ -155,7 +168,12 @@ describe('GET - Asset', () => {
             expect(res.body.name).to.eql(reference.testAssetNoStigs.name)
             expect(res.body.collection.collectionId).to.eql(reference.testAssetNoStigs.collectionId)
             expect(res.body.labelIds).to.be.an('array').of.length(reference.testAssetNoStigs.labels.length)
-  
+            expect(res.body.collection.name, "expect collection name to equal test collection").to.eql(reference.testCollection.name)
+            expect(res.body.labelIds).to.be.an('array').of.length(reference.testAssetNoStigs.labels.length)
+            for(const label of res.body.labelIds){
+              expect(label).to.be.oneOf(reference.testAssetNoStigs.labels)
+            }
+          
             // stigs
             expect(res.body.stigs).to.be.an("array").of.length(reference.testAssetNoStigs.stigs.length)
   
@@ -169,7 +187,6 @@ describe('GET - Asset', () => {
             expect(res.body.statusStats.acceptedCount, "accepted count").to.eql(reference.testAssetNoStigs.stats.acceptedCount)
         })
       })
-
       describe('getAssetMetadata - /assets/{assetId}/metadata,', () => {
         it('Return the Metadata for an Asset', async () => {
           const res = await chai
@@ -221,7 +238,7 @@ describe('GET - Asset', () => {
 
       describe('getAssets - /assets', () => {
 
-        it('Assets accessible to the requester (with STIG grants projection)', async () => {
+        it('Assets accessible to the requester (with STIG grants projection) bnechmark specified', async () => {
           const res = await chai
             .request(config.baseUrl).get(`/assets?collectionId=${reference.testCollection.collectionId}&benchmarkId=${reference.benchmark}&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token)
@@ -233,6 +250,19 @@ describe('GET - Asset', () => {
           expect(res.body).to.be.an('array').of.length(distinct.assetsAvailableStigGrants.length)
           for(const asset of res.body){
             expect(asset.assetId).to.be.oneOf(distinct.assetsAvailableStigGrants)
+            expect(reference.benchmark).to.be.oneOf(asset.stigs.map(stig => stig.benchmarkId))
+            if(asset.assetId === reference.testAsset.assetId){
+              expect(asset.name, "expect asset name to equal test asset").to.eql(reference.testAsset.name)
+              expect(asset.collection.collectionId, "expect asset to be a part of test collection").to.eql(reference.testAsset.collectionId)
+              expect(asset.collection.name, "expect collection name to equal test collection").to.eql(reference.testCollection.name)
+              expect(asset.labelIds).to.be.an('array').of.length(reference.testAsset.labels.length)
+              for(const label of asset.labelIds){
+                expect(label).to.be.oneOf(reference.testAsset.labels)
+              }
+              expect(asset.metadata).to.deep.equal({
+                [reference.testAsset.metadataKey]: reference.testAsset.metadataValue
+              })
+            }
           }
           const jsonData = res.body;
           const regex = new RegExp("asset")
@@ -264,16 +294,24 @@ describe('GET - Asset', () => {
           for (let asset of jsonData){
             expect(asset.name).to.match(regex)
             expect(asset.assetId).to.be.oneOf(distinct.assetIds)
-
-            expect(asset.statusStats).to.exist;
-            if(asset.assetId === reference.testAsset.assetId){
-                expect(asset.statusStats.ruleCount).to.eql(distinct.testAssetStats.ruleCount);
-            }
             for(let stig of asset.stigs){
               expect(stig.benchmarkId).to.be.oneOf(reference.testCollection.validStigs);
             }
             for(let grant of asset.stigGrants){
               expect(grant.benchmarkId).to.be.oneOf(reference.testCollection.validStigs);
+            }
+            if(asset.assetId === reference.testAsset.assetId){
+              expect(asset.name, "expect asset name to equal test asset").to.eql(reference.testAsset.name)
+              expect(asset.collection.collectionId, "expect asset to be a part of test collection").to.eql(reference.testAsset.collectionId)
+              expect(asset.collection.name, "expect collection name to equal test collection").to.eql(reference.testCollection.name)
+              expect(asset.labelIds).to.be.an('array').of.length(reference.testAsset.labels.length)
+              for(const label of asset.labelIds){
+                expect(label).to.be.oneOf(reference.testAsset.labels)
+              }
+              expect(asset.metadata).to.deep.equal({
+                [reference.testAsset.metadataKey]: reference.testAsset.metadataValue
+              })
+              expect(asset.statusStats.ruleCount).to.eql(distinct.testAssetStats.ruleCount);
             }
           }
         })
@@ -296,7 +334,7 @@ describe('GET - Asset', () => {
 
         it('Assets accessible to the requester - No StigGrants (for lvl1 user success)', async () => {
           const res = await chai
-            .request(config.baseUrl).get(`/assets?collectionId=${reference.testCollection.collectionId}&benchmarkId=${reference.benchmark}`)
+            .request(config.baseUrl).get(`/assets?collectionId=${reference.testCollection.collectionId}&benchmarkId=${reference.benchmark}&projection=stigs`)
             .set('Authorization', 'Bearer ' + user.token)
 
           if(user.name === "collectioncreator"){
@@ -309,9 +347,24 @@ describe('GET - Asset', () => {
           const jsonData = res.body;
           const regex = new RegExp("asset")
           
-          for (let asset of jsonData){
+          for (const asset of jsonData){
             expect(asset.name).to.match(regex)
-            expect(asset.assetId).to.be.oneOf(distinct.assetsAvailableBenchmark)
+            expect(asset.assetId, "expect assetId to be within the paramaters of test collection and have test benchmark").to.be.oneOf(distinct.assetsAvailableBenchmark)
+            for(const stig of asset.stigs){
+              expect(stig.benchmarkId, "expect benchmark to be vaid for this user ").to.be.oneOf(distinct.validStigs);
+            }
+            if(asset.assetId === reference.testAsset.assetId){
+              expect(asset.name, "expect asset name to equal test asset").to.eql(reference.testAsset.name)
+              expect(asset.collection.collectionId, "expect asset to be a part of test collection").to.eql(reference.testAsset.collectionId)
+              expect(asset.collection.name, "expect collection name to equal test collection").to.eql(reference.testCollection.name)
+              expect(asset.labelIds).to.be.an('array').of.length(reference.testAsset.labels.length)
+              for(const label of asset.labelIds){
+                expect(label, "expect label to be a valid label").to.be.oneOf(reference.testAsset.labels)
+              }
+              expect(asset.metadata, "expect metadata to match test asset").to.deep.equal({
+                [reference.testAsset.metadataKey]: reference.testAsset.metadataValue
+              })
+            }
           }
         })
       })
@@ -329,9 +382,7 @@ describe('GET - Asset', () => {
             expect(res).to.have.status(403)
             return
           }
-
           expect(res).to.have.status(200)
-
           let cklData
 
           xml2js.parseString(res.body, function (err, result) {
@@ -615,7 +666,7 @@ describe('GET - Asset', () => {
             expect(res.body).to.eql([])
             return
           }
-          
+          expect(res.body).to.be.an('array').of.length(distinct.validStigs.length)
           for(let stig of res.body){
             expect(stig.benchmarkId).to.be.oneOf(reference.testCollection.validStigs)
           }
@@ -663,8 +714,12 @@ describe('GET - Asset', () => {
           expect(res.body).to.be.an('array').of.length(distinct.assetsAvailableBenchmark.length)
           const regex = new RegExp("asset")
           for(let asset of res.body){
-            expect(asset.name).to.match(regex)
-            expect(asset.assetId).to.be.oneOf(distinct.assetsAvailableBenchmark)
+            expect(asset.name, "expect asset name to match regex").to.match(regex)
+            expect(asset.assetId, "expect assetId to be an asset attached to this bnenchmark").to.be.oneOf(distinct.assetsAvailableBenchmark)
+            expect(asset.collectionId, "expect collectionId to be equal to reference.testCollection.collectionId").to.be.eql(reference.testCollection.collectionId)
+            for(const label of asset.assetLabelIds){
+              expect(label).to.be.oneOf(reference.testCollection.labels, 'Label should be one of the valid labels')
+            }
             expect(asset.restrictedUserAccess).to.exist
             if(asset.restrictedUserAccess){
               for(let user of asset.restrictedUserAccess){
@@ -688,11 +743,11 @@ describe('GET - Asset', () => {
           expect(res.body).to.be.an('array').of.length(reference.testCollection.lvl1LabelAssetIds.length)
           for(const asset of res.body){
             expect(asset.assetId).to.be.oneOf(reference.testCollection.lvl1LabelAssetIds)
+            expect(asset.collectionId, "expect collectionId to be equal to reference.testCollection.collectionId").to.be.eql(reference.testCollection.collectionId)
+            for(const label of asset.assetLabelIds){
+              expect(label).to.be.oneOf(reference.testCollection.labels, 'Label should be one of the valid labels')
+            }
           }
-          const regex = new RegExp("asset")
-          for(let asset of res.body){
-            expect(asset.name).to.match(regex)
-          }   
         })
         it('Assets in a Collection attached to a STIG - label', async () => {
 
@@ -712,6 +767,12 @@ describe('GET - Asset', () => {
           const regex = new RegExp("asset")
           for(let asset of res.body){
             expect(asset.name).to.match(regex)
+            expect(asset.name, "expect asset name to match regex").to.match(regex)
+            expect(asset.assetId, "expect assetId to be an asset attached to this bnenchmark").to.be.oneOf(distinct.assetsAvailableBenchmark)
+            expect(asset.collectionId, "expect collectionId to be equal to reference.testCollection.collectionId").to.be.eql(reference.testCollection.collectionId)
+            for(const label of asset.assetLabelIds){
+              expect(label).to.be.oneOf(reference.testCollection.labels, 'Label should be one of the valid labels')
+            }
           }   
         })
       })

@@ -24,7 +24,7 @@ describe('DELETE - Review', () => {
           this.timeout(4000)
           await utils.loadAppData()
           await utils.uploadTestStigs()
-      })
+        })
         
         it('Delete a Review', async () => {
           const res = await chai.request(config.baseUrl)
@@ -51,7 +51,6 @@ describe('DELETE - Review', () => {
           }
        
         })
-      
       })
 
       describe('DELETE - deleteReviewMetadataKey - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {

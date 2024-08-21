@@ -4,7 +4,6 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-// const environment = require('../../environment.json')
 const users = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
@@ -24,7 +23,6 @@ describe('PATCH - Collection', function () {
         it(`No expectations for this iteration scenario: ${user.name}`,async function () {})
         return
       }
-  
 
       describe(`user:${user.name}`, function () {
 

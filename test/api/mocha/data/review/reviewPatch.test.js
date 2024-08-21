@@ -81,7 +81,6 @@ describe('PATCH - Review', () => {
             expect(res.body.result).to.eql("fail")
             expect(res.body.status).to.have.property('label').that.equals('saved')
         })
-     
         it('PATCH Review to Accepted', async () => {
           const res = await chai.request(config.baseUrl)
             .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`)
@@ -128,7 +127,6 @@ describe('PATCH - Review', () => {
           await utils.uploadTestStigs()
           await utils.createDisabledCollectionsandAssets()
         })
-
         it('Merge metadata property/value into a Review', async () => {
           const res = await chai.request(config.baseUrl)
             .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata`)

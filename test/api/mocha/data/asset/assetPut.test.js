@@ -16,7 +16,6 @@ describe('PUT - Asset', () => {
     await utils.loadAppData()
     await utils.createDisabledCollectionsandAssets()
   })
-
   for (const user of users) {
     if (expectations[user.name] === undefined){
       it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
@@ -232,7 +231,7 @@ describe('PUT - Asset', () => {
       })
       describe(`attachStigToAsset - /assets/{assetId}/stigs/{benchmarkId}`, () => {
       
-        it('PUT a STIG assignment to an Asset Copy 3', async function () {
+        it('PUT a STIG assignment to an Asset', async function () {
           const res = await chai.request(config.baseUrl)
             .put(`/assets/${reference.scrapAsset.assetId}/stigs/${reference.scrapAsset.scrapBenchmark}`)
             .set('Authorization', 'Bearer ' + user.token)
@@ -243,6 +242,7 @@ describe('PUT - Asset', () => {
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array').of.length(3)
           for (let stig of res.body) {
+            expect(stig.benchmarkId, "expect stig to be one of the valid stigs").to.be.oneOf(reference.scrapCollection.validStigs)
             if (stig.benchmarkId === reference.scrapAsset.scrapBenchmark) {
               expect(stig.benchmarkId).to.equal(reference.scrapAsset.scrapBenchmark)
             }
@@ -287,7 +287,6 @@ describe('PUT - Asset', () => {
       })
     })
   }
-
 })
 
       

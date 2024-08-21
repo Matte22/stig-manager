@@ -29,7 +29,6 @@ describe('PUT - Review', () => {
         describe(`user:${user.name}`, () => {
             const distinct = expectations[user.name]
             describe('PUT - putReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId}', () => {
-
        
                 it('PUT Review: accepted, pass, no detail', async () => {
 
@@ -352,51 +351,48 @@ describe('PUT - Review', () => {
 
             describe('PUT - putReviewMetadata - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata', () => {
 
-            before(async function () {
+                before(async function () {
+                    this.timeout(4000)
+                    await utils.uploadTestStigs()
+                    await utils.loadAppData()
+                    await utils.createDisabledCollectionsandAssets()
+                })
+                    it('Set all metadata of a Review', async () => {
+                        const res = await chai.request(config.baseUrl)
+                        .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata`)
+                        .set('Authorization', `Bearer ${user.token}`)
+                        .send({[reference.testCollection.metadataKey]: reference.testCollection.metadataValue})
+                        if(user.name === 'collectioncreator') {
+                            expect(res).to.have.status(403)
+                            return
+                        }
+                        expect(res).to.have.status(200)
+                        expect(res.body).to.eql({[reference.testCollection.metadataKey]: reference.testCollection.metadataValue})
+
+                    })
+                })
+
+            describe('PUT - putReviewMetadataValue - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {
+
+                before(async function () {
                 this.timeout(4000)
                 await utils.uploadTestStigs()
                 await utils.loadAppData()
                 await utils.createDisabledCollectionsandAssets()
-            })
-
-            it('Set all metadata of a Review', async () => {
-                const res = await chai.request(config.baseUrl)
-                .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata`)
-                .set('Authorization', `Bearer ${user.token}`)
-                .send({[reference.testCollection.metadataKey]: reference.testCollection.metadataValue})
-                if(user.name === 'collectioncreator') {
-                    expect(res).to.have.status(403)
-                    return
-                }
-                expect(res).to.have.status(200)
-                expect(res.body).to.eql({[reference.testCollection.metadataKey]: reference.testCollection.metadataValue})
-
-            })
-            })
-
-            describe('PUT - putReviewMetadataValue - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {
-
-            before(async function () {
-            this.timeout(4000)
-            await utils.uploadTestStigs()
-            await utils.loadAppData()
-            await utils.createDisabledCollectionsandAssets()
-            })
-
-                it('Set one metadata key/value of a Review', async () => {
-                const res = await chai.request(config.baseUrl)
-                    .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata/keys/${reference.testCollection.metadataKey}`)
-                    .set('Authorization', `Bearer ${user.token}`)
-                    .set('Content-Type', 'application/json') 
-                    .send(`${JSON.stringify(reference.testCollection.metadataValue)}`)
-                if(user.name === 'collectioncreator') {
-                    expect(res).to.have.status(403)
-                    return
-                }
-                expect(res).to.have.status(204)
                 })
-        
-            })
+                    it('Set one metadata key/value of a Review', async () => {
+                    const res = await chai.request(config.baseUrl)
+                        .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata/keys/${reference.testCollection.metadataKey}`)
+                        .set('Authorization', `Bearer ${user.token}`)
+                        .set('Content-Type', 'application/json') 
+                        .send(`${JSON.stringify(reference.testCollection.metadataValue)}`)
+                    if(user.name === 'collectioncreator') {
+                        expect(res).to.have.status(403)
+                        return
+                    }
+                    expect(res).to.have.status(204)
+                    })
+                })
         })
     }
 })

@@ -14,7 +14,12 @@ describe('GET - Stig', () => {
     before(async function () {
         this.timeout(4000)
         await utils.uploadTestStigs()
-        await utils.uploadTestStig('U_VPN_SRG_V1R0_Manual-xccdf.xml')
+        try{
+            await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
+        }
+        catch(err){
+            console.log("no stig to upload")
+        }
         await utils.loadAppData()
     })
 

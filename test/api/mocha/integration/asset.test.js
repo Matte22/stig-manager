@@ -24,7 +24,6 @@ describe(`PUT - attachAssetsToStig - /collections/{collectionId}/stigs/{benchmar
       await utils.uploadTestStigs()
       await utils.createDisabledCollectionsandAssets()
     })
-    
     it('gh-756 issue. assign a benchmark used in test Collection in scrap Collection', async function () {
       const res = await chai.request(config.baseUrl)
       .put(`/collections/${environment.scrapCollection.collectionId}/stigs/${environment.testCollection.benchmark}/assets?projection=restrictedUserAccess`)
@@ -53,7 +52,7 @@ describe(`PUT - attachAssetsToStig - /collections/{collectionId}/stigs/{benchmar
 
 describe(`GET - getChecklistByAssetStig - /assets/{assetId}/checklists/{benchmarkId}/{revisionStr}`, () => { 
 
-  describe('valid filename from Asset with reserved chars', () => {
+  describe('Testing that a valid filename can be produced from an asset that contains os reserved chars', () => {
 
     before(async function () {
       this.timeout(4000)
@@ -62,7 +61,7 @@ describe(`GET - getChecklistByAssetStig - /assets/{assetId}/checklists/{benchmar
     })
     
     let createdAssetId = null
-    it('Create an Asset in collection to be deleted Copy', async function () {
+    it('should Create an Asset in collection to be deleted', async function () {
       const res = await chai.request(config.baseUrl)
       .post(`/assets?projection=stigs`)
       .set('Authorization', 'Bearer ' + user.token)
