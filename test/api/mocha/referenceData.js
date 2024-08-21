@@ -28,6 +28,7 @@ const reference = {
     labelCount: 2,
     lvl1LabelName: "test-label-lvl1",
     lvl1Label: "5130dc84-9a68-11ec-b1bc-0242ac110002",
+    lvl1LabelAssetIds: ["42"],
     fullLabelName: "test-label-full",
     fullLabel: "755b8a28-9a68-11ec-b1bc-0242ac110002",
     labels: [
@@ -227,7 +228,7 @@ const reference = {
     name: "Collection_X_lvl1_asset-1",
     assetId: "42",
     collectionId: "21",
-    usersWithGrant: ["86,85"],
+    usersWithGrant: ["86","85"],
     benchmark: "VPN_SRG_TEST",
     validStigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST"],
     reviewCnt: 9,
@@ -236,8 +237,31 @@ const reference = {
     labels: [
       "755b8a28-9a68-11ec-b1bc-0242ac110002",
       "5130dc84-9a68-11ec-b1bc-0242ac110002"
-    ]
-  }
+    ],
+    stats: {
+      ruleCount: 368,
+      stigCount: 2,
+      savedCount: 2,
+      acceptedCount: 0,
+      rejectedCount: 0,
+      submittedCount: 7,
+    },
+  },
+  testAssetNoStigs: {
+    name: "ACHERNAR_Collection_X_asset",
+    assetId: "29",
+    collectionId: "21",
+    labels: [],
+    stigs: [],
+    stats: {
+        ruleCount: null,
+        stigCount: 0,
+        savedCount: null,
+        acceptedCount: null,
+        rejectedCount: null,
+        submittedCount: null,
+      },
+  },  
 };
 
 module.exports = reference;

@@ -6,9 +6,9 @@ const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const users = require('../../iterations.js')
 const expectations = require('./expectations.js')
-const reference = require('./referenceData.js')
+const reference = require('../../referenceData.js')
 
-describe('POST - Asset', () => {
+describe('POST - Asset', function () {
   before(async function () {
     this.timeout(4000)
     await utils.uploadTestStigs()
@@ -18,14 +18,14 @@ describe('POST - Asset', () => {
 
   for (const user of users) {
     if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+      it(`No expectations for this iteration scenario: ${user.name}`, async function () {})
       continue
     }
-    describe(`user:${user.name}`, () => {
+    describe(`user:${user.name}`, function () {
       const distinct = expectations[user.name]
-      describe(`createAsset - /assets`, () => {
+      describe(`createAsset - /assets`, function () {
 
-        it('Create an Asset (with stigs projection)', async () => {
+        it('Create an Asset (with stigs projection)', async function () {
           const res = await chai
             .request(config.baseUrl)
             .post('/assets?projection=stigs')
@@ -64,7 +64,7 @@ describe('POST - Asset', () => {
           expect(effectedAsset.description).to.equal('test')
         })
 
-        it('Create an Asset (with statusStats projection', async () => {
+        it('Create an Asset (with statusStats projection', async function () {
           const res = await chai
             .request(config.baseUrl)
             .post('/assets?projection=statusStats')
@@ -100,7 +100,7 @@ describe('POST - Asset', () => {
 
         })
 
-        it('Create an Asset (with stigGrants projection)', async () => {
+        it('Create an Asset (with stigGrants projection)', async function () {
           const res = await chai
             .request(config.baseUrl)
             .post('/assets?projection=stigGrants')

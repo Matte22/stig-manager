@@ -6,9 +6,9 @@ const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const users = require('../../iterations.js')
 const expectations = require('./expectations.js')
-const reference = require('./referenceData.js')
+const reference = require('../../referenceData.js')
 
-describe('DELETE - Asset', () => {
+describe('DELETE - Asset', function () {
 
   before(async function () {
     this.timeout(4000)
@@ -19,14 +19,14 @@ describe('DELETE - Asset', () => {
 
   for(const user of users){
     if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+      it(`No expectations for this iteration scenario: ${user.name}`, async function () {})
       continue
     }
 
-    describe(`user:${user.name}`, () => {
+    describe(`user:${user.name}`, function () {
       const distinct = expectations[user.name]
-      describe(`deleteAssetMetadataKey - /assets/{assetId}/metadata/keys/{key}`, () => {
-        it('Delete one metadata key/value of an Asset', async () => {
+      describe(`deleteAssetMetadataKey - /assets/{assetId}/metadata/keys/{key}`, function () {
+        it('Delete one metadata key/value of an Asset', async function () {
           const res = await chai
             .request(config.baseUrl)
             .delete(`/assets/${reference.scrapAsset.assetId}/metadata/keys/${reference.scrapAsset.metadataKey}`)
@@ -44,8 +44,8 @@ describe('DELETE - Asset', () => {
           expect(asset.metadata).to.not.have.property(reference.scrapAsset.metadataKey)
         })
       })
-      describe(`removeStigsFromAsset -/assets/{assetId}/stigs`, () => {
-        it('Delete all STIG assignments to an Asset', async () => {
+      describe(`removeStigsFromAsset -/assets/{assetId}/stigs`, function () {
+        it('Delete all STIG assignments to an Asset', async function () {
           const res = await chai
             .request(config.baseUrl)
             .delete(`/assets/${reference.scrapAsset.assetId}/stigs`)
@@ -61,8 +61,8 @@ describe('DELETE - Asset', () => {
           
         })
       })
-      describe(`removeStigFromAsset - /assets/{assetId}/stigs/{benchmarkId}`, () => {
-        it('Delete a STIG assignment to an Asset', async () => {
+      describe(`removeStigFromAsset - /assets/{assetId}/stigs/{benchmarkId}`, function () {
+        it('Delete a STIG assignment to an Asset', async function () {
           const res = await chai
             .request(config.baseUrl)
             .delete(`/assets/${reference.scrapAsset.assetId}/stigs/${reference.scrapAsset.scrapBenchmark}`)
@@ -77,7 +77,7 @@ describe('DELETE - Asset', () => {
           expect(asset.stigs).to.not.include(reference.scrapAsset.scrapBenchmark)
         })
       })
-      describe(`deleteAsset - /assets/{assetId}`, () => {
+      describe(`deleteAsset - /assets/{assetId}`, function () {
         before(async function () {
           this.timeout(4000)
           await utils.loadAppData()
@@ -85,7 +85,7 @@ describe('DELETE - Asset', () => {
           await utils.createDisabledCollectionsandAssets()
         })
 
-        it('Delete an Asset in test collection', async () => {
+        it('Delete an Asset in test collection', async function () {
 
           // creating a test asset to delete
           // this might need preivledges? 
@@ -119,7 +119,7 @@ describe('DELETE - Asset', () => {
         expect(res.body.assetId).to.equal(assetId)
         })
 
-        it('Delete test Asset', async () => {
+        it('Delete test Asset', async function () {
           const res = await chai
             .request(config.baseUrl)
             .delete(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)

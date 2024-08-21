@@ -8,7 +8,7 @@ const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const users = require("../../iterations.js")
 const expectations = require('./expectations.js')
-const reference = require('./referenceData.js')
+const reference = require('../../referenceData.js')
 const requestBodies = require('./requestBodies.js')
 
 describe('PUT - Collection', function () {

@@ -6,10 +6,9 @@ const deepEqualInAnyOrder = require('deep-equal-in-any-order')
 chai.use(deepEqualInAnyOrder)
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-// const environment = require('../../environment.json')
 const users = require('../../iterations.js')
 const expectations = require('./expectations.js')
-const reference = require('./referenceData.js')
+const reference = require('../../referenceData.js')
 
 describe('GET - Collection', function () {
 
@@ -23,7 +22,7 @@ describe('GET - Collection', function () {
 
   for(const user of users){
     if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`,async function () {})
+      it(`No expectations for this iteration scenario: ${user.name}`, async function () {})
       continue
     }
 
@@ -34,7 +33,7 @@ describe('GET - Collection', function () {
       describe('getCollections - /collections', function () {
         if (user.name === 'stigmanadmin' ){
 
-          it('Return Collections accessible to the requester No Filters - elevated stigmanadmin only',async function () {
+          it('Return Collections accessible to the requester No Filters - elevated stigmanadmin only', async function (done) {
 
             const res = await chai.request(config.baseUrl)
               .get('/collections?projection=owners&projection=statistics&elevate=true')
@@ -51,6 +50,7 @@ describe('GET - Collection', function () {
             expect(testCollection.statistics.assetCount, "asset count").to.equal(distinct.assetIds.length)
             expect(testCollection.statistics.checklistCount, "checklist count").to.equal(distinct.checklistCnt)
             expect(testCollection.statistics.grantCount, "grant count").to.equal(distinct.grantCnt)
+            done()
           })
         }
 

@@ -6,9 +6,9 @@ const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const users = require('../../iterations.js')
 const expectations = require('./expectations.js')
-const reference = require('./referenceData.js')
+const reference = require('../../referenceData.js')
 
-describe('PUT - Asset', () => {
+describe('PUT - Asset', function () {
 
   before(async function () {
     this.timeout(4000)
@@ -19,12 +19,12 @@ describe('PUT - Asset', () => {
 
   for (const user of users) {
     if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+      it(`No expectations for this iteration scenario: ${user.name}`, async function () {})
       continue
     }
-    describe(`user:${user.name}`, () => {
+    describe(`user:${user.name}`, function () {
       const distinct = expectations[user.name]
-      describe(`replaceAsset -/assets/{assetId}`, () => {
+      describe(`replaceAsset -/assets/{assetId}`, function () {
         
         it('Set all properties of an Asset', async function () {
           const res = await chai.request(config.baseUrl)
@@ -189,7 +189,7 @@ describe('PUT - Asset', () => {
           expect(res).to.have.status(403)
         })
       })
-      describe(`putAssetMetadata - /assets/{assetId}/metadata`, () => {
+      describe(`putAssetMetadata - /assets/{assetId}/metadata`, function () {
 
         it('Set metadata of an Asset', async function () {
           const res = await chai.request(config.baseUrl)
@@ -211,7 +211,7 @@ describe('PUT - Asset', () => {
           expect(effectedAsset.metadata).to.have.property(reference.scrapAsset.metadataKey)
         })
       })
-      describe(`putAssetMetadataValue - /assets/{assetId}/metadata/keys/{key}`, () => {
+      describe(`putAssetMetadataValue - /assets/{assetId}/metadata/keys/{key}`, function () {
       
         it('Set one metadata key/value of an Asset', async function () {
           const res = await chai.request(config.baseUrl)
@@ -230,7 +230,7 @@ describe('PUT - Asset', () => {
           expect(effectedAsset.metadata).to.have.property(reference.scrapAsset.metadataKey)
         })
       })
-      describe(`attachStigToAsset - /assets/{assetId}/stigs/{benchmarkId}`, () => {
+      describe(`attachStigToAsset - /assets/{assetId}/stigs/{benchmarkId}`, function () {
       
         it('PUT a STIG assignment to an Asset Copy 3', async function () {
           const res = await chai.request(config.baseUrl)
@@ -256,7 +256,7 @@ describe('PUT - Asset', () => {
           }
         })
       })
-      describe(`putAssetsByCollectionLabelId - /collections/{collectionId}/labels/{labelId}/assets`, () => {
+      describe(`putAssetsByCollectionLabelId - /collections/{collectionId}/labels/{labelId}/assets`, function () {
       
         it('Replace a Labels Asset Mappings in a Collection', async function () {
           const res = await chai.request(config.baseUrl)

@@ -6,17 +6,17 @@ const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const users = require('../../iterations.js')
 const expectations = require('./expectations.js')
-const reference = require('./referenceData.js')
+const reference = require('../../referenceData.js')
 
-describe('PATCH - Asset', () => {
+describe('PATCH - Asset', function () {
 
   for(const user of users){
     if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+      it(`No expectations for this iteration scenario: ${user.name}`, async function () {})
       continue
     }
 
-    describe(`user:${user.name}`, () => {
+    describe(`user:${user.name}`, function () {
       const distinct = expectations[user.name]
       beforeEach(async function () {
         this.timeout(4000)
@@ -25,9 +25,9 @@ describe('PATCH - Asset', () => {
         await utils.createDisabledCollectionsandAssets()
       })
 
-      describe(`updateAsset - /assets/{assetId}`, () => {
+      describe(`updateAsset - /assets/{assetId}`, function () {
       
-        it('Merge provided properties with an Asset - Change Collection - Fail for all users', async () => {
+        it('Merge provided properties with an Asset - Change Collection - Fail for all users', async function () {
           const res = await chai
             .request(config.baseUrl)
             .patch(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
@@ -48,7 +48,7 @@ describe('PATCH - Asset', () => {
           expect(res).to.have.status(403)
         })
 
-        it('Merge provided properties with an Asset - Change Collection - valid for lvl3 and lvl4 only (IE works for admin for me)', async () => {
+        it('Merge provided properties with an Asset - Change Collection - valid for lvl3 and lvl4 only (IE works for admin for me)', async function () {
           const res = await chai
             .request(config.baseUrl)
             .patch(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
@@ -97,7 +97,7 @@ describe('PATCH - Asset', () => {
           
         }) 
     
-        it('Merge provided properties with an Asset', async () => {
+        it('Merge provided properties with an Asset', async function () {
         
           const res = await chai
             .request(config.baseUrl)
@@ -146,9 +146,9 @@ describe('PATCH - Asset', () => {
         })
       })
 
-      describe(`patchAssets - /assets`, () => {
+      describe(`patchAssets - /assets`, function () {
     
-        it('Delete Assets - expect success for valid users', async () => {
+        it('Delete Assets - expect success for valid users', async function () {
           const res = await chai
             .request(config.baseUrl)
             .patch(`/assets?collectionId=${reference.testCollection.collectionId}`)
@@ -174,7 +174,7 @@ describe('PATCH - Asset', () => {
           expect(effectedAsset.response).to.have.status(400)
             
         })
-        it('Delete Assets - assets not in collection', async () => {
+        it('Delete Assets - assets not in collection', async function () {
             const res = await chai
               .request(config.baseUrl)
               .patch(`/assets?collectionId=${reference.testCollection.collectionId}`)
@@ -185,7 +185,7 @@ describe('PATCH - Asset', () => {
               })
               expect(res).to.have.status(403)
         })
-        it('Delete Assets - collection does not exist', async () => {
+        it('Delete Assets - collection does not exist', async function () {
           const res = await chai
             .request(config.baseUrl)
             .patch(`/assets?collectionId=${99999}`)
@@ -198,9 +198,9 @@ describe('PATCH - Asset', () => {
         })
       })  
 
-      describe(`patchAssetMetadata - /assets/{assetId}/metadata`, () => {
+      describe(`patchAssetMetadata - /assets/{assetId}/metadata`, function () {
 
-        it('Merge provided properties with an Asset - Change metadata', async () => {
+        it('Merge provided properties with an Asset - Change metadata', async function () {
           const res = await chai
             .request(config.baseUrl)
             .patch(`/assets/${reference.scrapAsset.assetId}/metadata`)
@@ -221,7 +221,7 @@ describe('PATCH - Asset', () => {
               "testkey": "poc2Patched"
             })
         })
-        it('Merge metadata property/value into an Asset', async () => {
+        it('Merge metadata property/value into an Asset', async function () {
           const res = await chai
             .request(config.baseUrl)
             .patch(`/assets/${reference.scrapAsset.assetId}/metadata`)

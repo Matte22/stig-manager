@@ -7,7 +7,7 @@ const utils = require('../../utils/testUtils')
 // const environment = require('../../environment.json')
 const users = require('../../iterations')
 const expectations = require('./expectations')
-const reference = require('./referenceData')
+const reference = require('../../referenceData.js')
 
 
 describe('DELETE - Collection ', function () {

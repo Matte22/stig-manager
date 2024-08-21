@@ -16,12 +16,15 @@ const distinct = {
     grant: 'admin',
     assignedStigs: ['VPN_SRG_TEST'],
     assetIds: ['29', '62', '42', '154'],
+    assetMatchString: "asset",
     validStigs: ['VPN_SRG_TEST', 'Windows_10_STIG_TEST'],
     collectionIds: ['21'],
     canModifyCollection: true,
     assetsAvailableFullLabel: ["62","42"],
     assetsAvailableBenchmark: ["42","62", "154"],
     assetsAvailableStigGrants:["42","62", "154"],
+    hasAccessToTestAsset: true,
+    hasAccessToTestAssetNoStigs: true,
     
   },
   lvl1: {
@@ -40,10 +43,14 @@ const distinct = {
     canModifyCollection: false,
     assignedStigs: ['VPN_SRG_TEST'],
     assetIds: ['42', '154'],
+    assetMatchString: "lvl1",
     assetsAvailableFullLabel: ["42"],
     assetsAvailableBenchmark: ["42", "154"],
     validStigs: ['VPN_SRG_TEST'],
     collectionIds: ['21'],
+    hasAccessToTestAsset: true,
+    hasAccessToTestAssetNoStigs: false,
+
   },
   lvl2: {
     testAssetStigs: ['VPN_SRG_TEST', 'Windows_10_STIG_TEST'],
@@ -55,16 +62,20 @@ const distinct = {
       rejectedCount: 0,
       submittedCount: 7
     },
-    user: 'admin',
+    user: 'lvl2',
     userId: '87',
     canModifyCollection: false,
-    grant: 'admin',
+    grant: 'full',
     assignedStigs: ['VPN_SRG_TEST'],
     assetIds: ['29', '62', '42', '154'],
+    assetMatchString: "asset",
     assetsAvailableFullLabel: ["62","42"],
     assetsAvailableBenchmark: ["42","62", "154"],
     validStigs: ['VPN_SRG_TEST', 'Windows_10_STIG_TEST'],
     collectionIds: ['21'],
+    hasAccessToTestAsset: true,
+    hasAccessToTestAssetNoStigs: true,
+
   },
   lvl3: {
     testAssetStigs: ['VPN_SRG_TEST', 'Windows_10_STIG_TEST'],
@@ -76,17 +87,21 @@ const distinct = {
       rejectedCount: 0,
       submittedCount: 7
     },
-    user: 'admin',
+    user: 'lvl3',
     userId: '87',
-    grant: 'admin',
+    grant: 'manage',
     canModifyCollection: true,
     assignedStigs: ['VPN_SRG_TEST'],
     assetIds: ['29', '62', '42', '154'],
+    assetMatchString: "asset",
     validStigs: ['VPN_SRG_TEST', 'Windows_10_STIG_TEST'],
     collectionIds: ['21'],
     assetsAvailableFullLabel: ["62","42"],
     assetsAvailableBenchmark: ["42","62", "154"],
     assetsAvailableStigGrants:["42","62", "154"],
+    hasAccessToTestAsset: true,
+    hasAccessToTestAssetNoStigs: true,
+
   },
   lvl4: {
     testAssetStigs: ['VPN_SRG_TEST', 'Windows_10_STIG_TEST'],
@@ -98,20 +113,26 @@ const distinct = {
       rejectedCount: 0,
       submittedCount: 7
     },
-    user: 'admin',
+    user: 'lvl4',
     userId: '87',
-    grant: 'admin',
+    grant: 'owner',
     canModifyCollection: true,
     assetsAvailableFullLabel: ["62","42"],
     assignedStigs: ['VPN_SRG_TEST'],
     assetIds: ['29', '62', '42', '154'],
+    assetMatchString: "asset",
     assetsAvailableBenchmark: ["42","62", "154"],
     validStigs: ['VPN_SRG_TEST', 'Windows_10_STIG_TEST'],
     collectionIds: ['21'],
     assetsAvailableStigGrants:["42","62", "154"],
+    hasAccessToTestAsset: true,
+    hasAccessToTestAssetNoStigs: true,
   },
   collectioncreator: {
     canModifyCollection: false,
+    hasAccessToTestAsset: false,
+    hasAccessToTestAssetNoStigs: false,
+
   }
 }
 module.exports = distinct

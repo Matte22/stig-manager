@@ -4,14 +4,13 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const environment = require('../../environment.json')
 const xml2js = require('xml2js');
 const users = require('../../iterations.js')
 const expectations = require('./expectations.js')
-const reference = require('./referenceData.js')
+const reference = require('../../referenceData.js')
 
 
-describe('GET - Asset', () => {
+describe('GET - Asset', function () {
   before(async function () {
     this.timeout(4000)
     await utils.uploadTestStigs()
@@ -21,16 +20,16 @@ describe('GET - Asset', () => {
 
   for(const user of users){
     if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+      it(`No expectations for this iteration scenario: ${user.name}`, async function () {})
       continue
     }
 
-    describe(`user:${user.name}`, () => {
+    describe(`user:${user.name}`, function () {
       const distinct = expectations[user.name]
 
-      describe('getAsset - /assets/{assetId}', () => {
+      describe('getAsset - /assets/{assetId}', function () {
       
-        it('Return an Asset (with STIGgrants projection)', async () => {
+        it('Return an Asset (with STIGgrants projection)', async function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
@@ -71,7 +70,7 @@ describe('GET - Asset', () => {
 
         })
 
-        it('Return an Asset (with STIGgrants projection) - Asset - no assigned STIGs', async () => {
+        it('Return an Asset (with STIGgrants projection) - Asset - no assigned STIGs', async function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAssetNoStigs.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
@@ -106,13 +105,13 @@ describe('GET - Asset', () => {
 
         })
 
-        it('Return an Asset (without STIGgrants projection)', async () => {
+        it('Return an Asset (without STIGgrants projection)', async function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "collectioncreator"){
+          if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
             return
           }
@@ -139,13 +138,13 @@ describe('GET - Asset', () => {
 
         })
 
-        it('Return an Asset (without STIGgrants projection) - Asset - no assigned STIGs', async () => {
+        it('Return an Asset (without STIGgrants projection) - Asset - no assigned STIGs', async function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAssetNoStigs.assetId}?projection=statusStats&projection=stigs`)
             .set('Authorization', 'Bearer ' + user.token)
 
-            if(user.name === "lvl1" || user.name === "collectioncreator"){
+            if(!distinct.hasAccessToTestAssetNoStigs){
               expect(res).to.have.status(403)
               return
             }
@@ -170,14 +169,14 @@ describe('GET - Asset', () => {
         })
       })
 
-      describe('getAssetMetadata - /assets/{assetId}/metadata,', () => {
-        it('Return the Metadata for an Asset', async () => {
+      describe('getAssetMetadata - /assets/{assetId}/metadata,', function () {
+        it('Return the Metadata for an Asset', async function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/metadata`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "collectioncreator"){
+          if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
             return
           }
@@ -187,13 +186,13 @@ describe('GET - Asset', () => {
           expect(res.body.testkey).to.eql(reference.testAsset.metadataValue)
         })
       })
-      describe('getAssetMetadataKeys - /assets/{assetId}/metadata/keys', () => {
-        it('Return the Metadata KEYS for an Asset', async () => {
+      describe('getAssetMetadataKeys - /assets/{assetId}/metadata/keys', function () {
+        it('Return the Metadata KEYS for an Asset', async function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/metadata/keys`)
             .set('Authorization', 'Bearer ' + user.token)
-          if(user.name === "collectioncreator"){
+          if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
             return
           }
@@ -203,14 +202,14 @@ describe('GET - Asset', () => {
         })
       })
 
-      describe('getAssetMetadataValue - /assets/{assetId}/metadata/keys/{key}', () => {
-        it('Return the Metadata VALUE for an Asset metadata KEY', async () => {
+      describe('getAssetMetadataValue - /assets/{assetId}/metadata/keys/{key}', function () {
+        it('Return the Metadata VALUE for an Asset metadata KEY', async function () {
 
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/metadata/keys/${reference.testAsset.metadataKey}`)
             .set('Authorization', 'Bearer ' + user.token)
-          if(user.name === "collectioncreator"){
+          if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
             return
           }
@@ -219,9 +218,9 @@ describe('GET - Asset', () => {
         })
       })
 
-      describe('getAssets - /assets', () => {
+      describe('getAssets - /assets', function () {
 
-        it('Assets accessible to the requester (with STIG grants projection)', async () => {
+        it('Assets accessible to the requester (with STIG grants projection)', async function () {
           const res = await chai
             .request(config.baseUrl).get(`/assets?collectionId=${reference.testCollection.collectionId}&benchmarkId=${reference.benchmark}&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token)
@@ -235,31 +234,29 @@ describe('GET - Asset', () => {
             expect(asset.assetId).to.be.oneOf(distinct.assetsAvailableStigGrants)
           }
           const jsonData = res.body;
-          const regex = new RegExp("asset")
+          const regex = new RegExp(distinct.assetMatchString)
           
           for (let asset of jsonData){
             expect(asset.name).to.match(regex)
           }
         })
 
-        it('Assets accessible to the requester (with STIG grants projection - no benchmark specified)', async () => {
+        it('Assets accessible to the requester (with STIG grants projection - no benchmark specified)', async function () {
           const res = await chai
-            .request(config.baseUrl).get(`/assets?collectionId=${environment.testCollection.collectionId}&projection=statusStats&projection=stigs&projection=stigGrants`)
+            .request(config.baseUrl).get(`/assets?collectionId=${reference.testCollection.collectionId}&projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + user.token)
 
           if(distinct.canModifyCollection === false){
             expect(res).to.have.status(403)
             return
           }
-          else{
-            expect(res).to.have.status(200)
-          }
+
+          expect(res).to.have.status(200)
 
           expect(res.body).to.be.an('array').of.length(distinct.assetIds.length)
         
           const jsonData = res.body;
-          const assetMatchString = environment.assetMatchString
-          const regex = new RegExp(assetMatchString)
+          const regex = new RegExp(distinct.assetMatchString)
           
           for (let asset of jsonData){
             expect(asset.name).to.match(regex)
@@ -278,12 +275,12 @@ describe('GET - Asset', () => {
           }
         })
 
-        it('Assets accessible to the requester - labels', async () => {
+        it('Assets accessible to the requester - labels', async function () {
           const res = await chai
             .request(config.baseUrl).get(`/assets?collectionId=${reference.testCollection.collectionId}&labelId=${reference.testCollection.fullLabel}`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "collectioncreator"){
+          if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
             return
           }
@@ -294,12 +291,12 @@ describe('GET - Asset', () => {
           }
         })
 
-        it('Assets accessible to the requester - No StigGrants (for lvl1 user success)', async () => {
+        it('Assets accessible to the requester - No StigGrants (for lvl1 user success)', async function () {
           const res = await chai
             .request(config.baseUrl).get(`/assets?collectionId=${reference.testCollection.collectionId}&benchmarkId=${reference.benchmark}`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "collectioncreator"){
+          if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
             return
           }
@@ -307,7 +304,7 @@ describe('GET - Asset', () => {
           expect(res.body).to.be.an('array').of.length(distinct.assetsAvailableBenchmark.length)
           
           const jsonData = res.body;
-          const regex = new RegExp("asset")
+          const regex = new RegExp(distinct.assetMatchString)
           
           for (let asset of jsonData){
             expect(asset.name).to.match(regex)
@@ -316,16 +313,16 @@ describe('GET - Asset', () => {
         })
       })
 
-      describe('getChecklistByAsset - /assets/{assetId}/checklists', () => {
+      describe('getChecklistByAsset - /assets/{assetId}/checklists', function () {
 
-        it('Return the Checklist for the supplied Asset with benchmark query param', async () => {
+        it('Return the Checklist for the supplied Asset with benchmark query param', async function () {
 
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/checklists?benchmarkId=${reference.benchmark}`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "collectioncreator"){
+          if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
             return
           }
@@ -340,7 +337,7 @@ describe('GET - Asset', () => {
           let cklHostName = cklData.CHECKLIST.ASSET[0].HOST_NAME[0]
           let cklIStigs = cklData.CHECKLIST.STIGS[0].iSTIG
       
-          const regex = new RegExp("asset")
+          const regex = new RegExp(distinct.assetMatchString)
           expect(cklHostName).to.match(regex)
 
           for (let stig of cklIStigs){
@@ -352,20 +349,20 @@ describe('GET - Asset', () => {
             }
             let cklVulns = stig.VULN;
             expect(cklVulns).to.be.an('array');
-            if (currentStigId == 'VPN_SRG_TEST') {
+            if (currentStigId == reference.benchmark) {
                 expect(cklVulns).to.be.an('array').of.length(reference.checklistLength);
             }
           }
         })
 
-        it('Return the Checklist for the supplied Asset and MULTI-STIG JSON (.cklB) - no specified STIG', async () => {
+        it('Return the Checklist for the supplied Asset and MULTI-STIG JSON (.cklB) - no specified STIG', async function () {
             
             const res = await chai
               .request(config.baseUrl)
               .get(`/assets/${reference.testAsset.assetId}/checklists?format=cklb`)
               .set('Authorization', 'Bearer ' + user.token)
 
-            if(user.name === "collectioncreator"){
+            if(!distinct.hasAccessToTestAsset){
               expect(res).to.have.status(403)
               return
             }
@@ -375,7 +372,7 @@ describe('GET - Asset', () => {
             let cklbHostName = cklbData.target_data.host_name
             let cklbIStigs = cklbData.stigs
 
-            const regex = new RegExp("asset")
+            const regex = new RegExp(distinct.assetMatchString)
             expect(cklbHostName).to.match(regex)
 
             for (let stig of cklbIStigs){
@@ -383,24 +380,24 @@ describe('GET - Asset', () => {
               expect(stigId).to.be.oneOf(reference.testCollection.validStigs)
               let cklbVulns = stig.rules;
               expect(cklbVulns).to.be.an('array');
-              if (stigId == 'VPN_SRG_TEST') {
+              if (stigId == reference.benchmark) {
                   expect(cklbVulns).to.be.an('array').of.length(reference.checklistLength);
               }
             }
         })
 
-        it('Return the Checklist for the supplied Asset and MULTI-STIG JSON (.cklB) - specific STIGs', async () => {
+        it('Return the Checklist for the supplied Asset and MULTI-STIG JSON (.cklB) - specific STIGs', async function () {
 
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/checklists?format=cklb&benchmarkId=${reference.benchmark}&benchmarkId=Windows_10_STIG_TEST`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "collectioncreator"){
+          if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
             return
           }
-          if(user.name === "lvl1"){
+          if(distinct.grant === 'restricted'){
             expect(res).to.have.status(400)
             return
           }
@@ -409,7 +406,7 @@ describe('GET - Asset', () => {
           let cklbHostName = cklbData.target_data.host_name
           let cklbIStigs = cklbData.stigs
 
-          const regex = new RegExp("asset")
+          const regex = new RegExp(distinct.assetMatchString)
           expect(cklbHostName).to.match(regex)
 
           for (let stig of cklbIStigs){
@@ -417,21 +414,21 @@ describe('GET - Asset', () => {
             expect(stigId).to.be.oneOf(reference.testCollection.validStigs)
             let cklbVulns = stig.rules;
             expect(cklbVulns).to.be.an('array');
-            if (stigId == 'VPN_SRG_TEST') {
+            if (stigId == reference.benchmark) {
                 expect(cklbVulns).to.be.an('array').of.length(reference.checklistLength);
             }
           }
 
         })
 
-        it('Return the Checklist for the supplied Asset and MULTI-STIG XML (.CKL) - no specified stigs', async () => {
+        it('Return the Checklist for the supplied Asset and MULTI-STIG XML (.CKL) - no specified stigs', async function () {
 
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/checklists/`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "collectioncreator"){
+          if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
             return
           }
@@ -447,7 +444,7 @@ describe('GET - Asset', () => {
           let cklHostName = cklData.CHECKLIST.ASSET[0].HOST_NAME[0]
           let cklIStigs = cklData.CHECKLIST.STIGS[0].iSTIG
 
-          const regex = new RegExp("asset")
+          const regex = new RegExp(distinct.assetMatchString)
           expect(cklHostName).to.match(regex)
 
           for (let stig of cklIStigs){
@@ -459,24 +456,24 @@ describe('GET - Asset', () => {
             }
             let cklVulns = stig.VULN;
             expect(cklVulns).to.be.an('array');
-            if (currentStigId == 'VPN_SRG_TEST') {
+            if (currentStigId == reference.benchmark) {
                 expect(cklVulns).to.be.an('array').of.length(reference.checklistLength);
             }
           }
         })
 
-        it('Return the Checklist for the supplied Asset and MULTI-STIG XML (.CKL) - specified stigs', async () => {
+        it('Return the Checklist for the supplied Asset and MULTI-STIG XML (.CKL) - specified stigs', async function () {
             
             const res = await chai
               .request(config.baseUrl)
               .get(`/assets/${reference.testAsset.assetId}/checklists?benchmarkId=${reference.benchmark}&benchmarkId=Windows_10_STIG_TEST`)
               .set('Authorization', 'Bearer ' + user.token)
       
-            if(user.name === "collectioncreator"){
+            if(!distinct.hasAccessToTestAsset){
               expect(res).to.have.status(403)
               return
             }
-            if(user.name === "lvl1"){
+            if(distinct.grant === 'restricted'){
               expect(res).to.have.status(400)
               return
             }
@@ -492,7 +489,7 @@ describe('GET - Asset', () => {
             let cklHostName = cklData.CHECKLIST.ASSET[0].HOST_NAME[0]
             let cklIStigs = cklData.CHECKLIST.STIGS[0].iSTIG
       
-            const regex = new RegExp("asset")
+            const regex = new RegExp(distinct.assetMatchString)
             expect(cklHostName).to.match(regex)
       
             for (let stig of cklIStigs){
@@ -504,23 +501,23 @@ describe('GET - Asset', () => {
               }
               let cklVulns = stig.VULN;
               expect(cklVulns).to.be.an('array');
-              if (currentStigId == 'VPN_SRG_TEST') {
+              if (currentStigId == reference.benchmark) {
                   expect(cklVulns).to.be.an('array').of.length(reference.checklistLength);
               }
             }
         })
       })
 
-      describe('getChecklistByAssetStig - /assets/{assetId}/checklists/{benchmarkId}/{revisionStr}', () => {
+      describe('getChecklistByAssetStig - /assets/{assetId}/checklists/{benchmarkId}/{revisionStr}', function () {
 
-        it('Return the Checklist for the supplied Asset and benchmarkId and revisionStr', async () => {
+        it('Return the Checklist for the supplied Asset and benchmarkId and revisionStr', async function () {
 
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/checklists/${reference.benchmark}/${reference.revisionStr}?format=ckl`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "collectioncreator"){
+          if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(204)
             return
           }
@@ -536,7 +533,7 @@ describe('GET - Asset', () => {
           let cklHostName = cklData.CHECKLIST.ASSET[0].HOST_NAME[0]
           let cklIStigs = cklData.CHECKLIST.STIGS[0].iSTIG
 
-          const regex = new RegExp("asset")
+          const regex = new RegExp(distinct.assetMatchString)
           expect(cklHostName).to.match(regex)
 
           for (let stig of cklIStigs){
@@ -548,20 +545,20 @@ describe('GET - Asset', () => {
             }
             let cklVulns = stig.VULN;
             expect(cklVulns).to.be.an('array');
-            if (currentStigId == 'VPN_SRG_TEST') {
+            if (currentStigId == reference.benchmark) {
                 expect(cklVulns).to.be.an('array').of.length(reference.checklistLength);
             }
           }
         })
 
-        it('Return the Checklist for the supplied Asset and STIG XML (.cklB) - specific STIG', async () => {
+        it('Return the Checklist for the supplied Asset and STIG XML (.cklB) - specific STIG', async function () {
 
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/checklists/${reference.benchmark}/${reference.revisionStr}?format=cklb`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "collectioncreator"){
+          if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(204)
             return
           }
@@ -572,7 +569,7 @@ describe('GET - Asset', () => {
           let cklbHostName = cklbData.target_data.host_name
           let cklbIStigs = cklbData.stigs
 
-          const regex = new RegExp("asset")
+          const regex = new RegExp(distinct.assetMatchString)
           expect(cklbHostName).to.match(regex)
 
           for (let stig of cklbIStigs){
@@ -580,20 +577,20 @@ describe('GET - Asset', () => {
             expect(stigId).to.be.oneOf(reference.testCollection.validStigs)
             let cklbVulns = stig.rules;
             expect(cklbVulns).to.be.an('array');
-            if (stigId == 'VPN_SRG_TEST') {
+            if (stigId == reference.benchmark) {
                 expect(cklbVulns).to.be.an('array').of.length(reference.checklistLength);
             }
           }
         })
 
-        it('Return the Checklist for the supplied Asset and STIG JSON', async () => {
+        it('Return the Checklist for the supplied Asset and STIG JSON', async function () {
 
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/checklists/${reference.benchmark}/${reference.revisionStr}?format=json`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "collectioncreator"){
+          if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(204)
             return
           }
@@ -602,16 +599,16 @@ describe('GET - Asset', () => {
         })
       })
 
-      describe('getStigsByAsset - /assets/{assetId}/stigs', () => {
+      describe('getStigsByAsset - /assets/{assetId}/stigs', function () {
 
-        it('Return the Checklist for the supplied Asset and benchmarkId and revisionStr - rules', async () => {
+        it('Return the Checklist for the supplied Asset and benchmarkId and revisionStr - rules', async function () {
 
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/stigs`)
             .set('Authorization', 'Bearer ' + user.token)
           expect(res).to.have.status(200)
-          if(user.name === "collectioncreator"){
+          if(!distinct.hasAccessToTestAsset){
             expect(res.body).to.eql([])
             return
           }
@@ -622,23 +619,23 @@ describe('GET - Asset', () => {
         })
       })
 
-      describe('getAssetsByCollectionLabelId - /collections/{collectionId}/labels/{labelId}/assets', () => {
+      describe('getAssetsByCollectionLabelId - /collections/{collectionId}/labels/{labelId}/assets', function () {
 
-        it('Return the Checklist for the supplied Asset and benchmarkId - rules', async () => {
+        it('Return the Checklist for the supplied Asset and benchmarkId - rules', async function () {
 
           const res = await chai
             .request(config.baseUrl)
             .get(`/collections/${reference.testCollection.collectionId}/labels/${reference.testCollection.fullLabel}/assets`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "collectioncreator"){
+          if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
             return
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array').of.length(distinct.assetsAvailableFullLabel.length)
           
-          const regex = new RegExp("asset")
+          const regex = new RegExp(distinct.assetMatchString)
           for(let asset of res.body){
             expect(asset.name).to.match(regex)
             expect(asset.assetId).to.be.oneOf(distinct.assetsAvailableFullLabel)
@@ -646,22 +643,22 @@ describe('GET - Asset', () => {
         })
       })
 
-      describe('getAssetsByStig - /collections/{collectionId}/stigs/{benchmarkId}/assets', () => {
+      describe('getAssetsByStig - /collections/{collectionId}/stigs/{benchmarkId}/assets', function () {
 
-        it('Assets in a Collection attached to a STIG', async () => {
+        it('Assets in a Collection attached to a STIG', async function () {
 
           const res = await chai
             .request(config.baseUrl)
             .get(`/collections/${reference.testCollection.collectionId}/stigs/${reference.benchmark}/assets?projection=restrictedUserAccess`)
             .set('Authorization', 'Bearer ' + user.token)
             
-          if(user.name === "collectioncreator"){
+          if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
             return
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array').of.length(distinct.assetsAvailableBenchmark.length)
-          const regex = new RegExp("asset")
+          const regex = new RegExp(distinct.assetMatchString)
           for(let asset of res.body){
             expect(asset.name).to.match(regex)
             expect(asset.assetId).to.be.oneOf(distinct.assetsAvailableBenchmark)
@@ -673,14 +670,14 @@ describe('GET - Asset', () => {
             }
           }   
         })
-        it('Assets in a Collection attached to a STIG - label-lvl1', async () => {
+        it('Assets in a Collection attached to a STIG - label-lvl1', async function () {
 
           const res = await chai
             .request(config.baseUrl)
             .get(`/collections/${reference.testCollection.collectionId}/stigs/${reference.benchmark}/assets?labelId=${reference.testCollection.lvl1Label}`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "collectioncreator"){
+          if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
             return
           }
@@ -689,19 +686,19 @@ describe('GET - Asset', () => {
           for(const asset of res.body){
             expect(asset.assetId).to.be.oneOf(reference.testCollection.lvl1LabelAssetIds)
           }
-          const regex = new RegExp("asset")
+          const regex = new RegExp(distinct.assetMatchString)
           for(let asset of res.body){
             expect(asset.name).to.match(regex)
           }   
         })
-        it('Assets in a Collection attached to a STIG - label', async () => {
+        it('Assets in a Collection attached to a STIG - label', async function () {
 
           const res = await chai
             .request(config.baseUrl)
             .get(`/collections/${reference.testCollection.collectionId}/stigs/${reference.benchmark}/assets?labelId=${reference.testCollection.fullLabel}`)
             .set('Authorization', 'Bearer ' + user.token)
 
-          if(user.name === "collectioncreator"){
+          if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
             return
           }
@@ -709,7 +706,7 @@ describe('GET - Asset', () => {
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array').of.length(distinct.assetsAvailableFullLabel.length)
 
-          const regex = new RegExp("asset")
+          const regex = new RegExp(distinct.assetMatchString)
           for(let asset of res.body){
             expect(asset.name).to.match(regex)
           }   
