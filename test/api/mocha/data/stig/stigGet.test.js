@@ -14,6 +14,7 @@ describe('GET - Stig', () => {
     before(async function () {
         this.timeout(4000)
         await utils.uploadTestStigs()
+        await utils.uploadTestStig('U_VPN_SRG_V1R0_Manual-xccdf.xml')
         await utils.loadAppData()
     })
 
@@ -123,37 +124,6 @@ describe('GET - Stig', () => {
                 })
             })
             describe('GET - getRevisionsByBenchmarkId - /stigs/{benchmarkId}/revisions', () => {
-
-                describe('Replacement of Stig tests. ', () => {
-                    before(async function () {
-                        this.skip()
-                        // this.timeout(4000)
-                        // await utils.loadAppData()
-                        // await utils.uploadTestStigs()
-                        // something in heris is bokren 
-                       await utils.replaceStigRevision("U_VPN_SRG_V1R1_Manual-xccdf.xml")
-                       await utils.replaceStigRevision()
-                    })
-
-                    after(async function () {
-                        this.timeout(4000)
-                        await utils.loadAppData()
-                        await utils.uploadTestStigs()
-                    })
-
-                    it.skip('Return a list of revisions for the specified STIG - check for updated revision (broken)', async () => {
-                
-                    const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${environment.testCollection.benchmark}/revisions`)
-                    .set('Authorization', `Bearer ${user.token}`)
-                    expect(res).to.have.status(200)
-                    expect(res.body).to.be.an('array')
-                    expect(res.body).to.be.lengthOf(1)
-                    for(let revision of res.body){
-                        expect(revision.ruleCount).to.eql(2)
-                    }
-                })
-            })
 
                 it('Return a list of revisions for the specified STIG', async () => {
                     const res = await chai.request(config.baseUrl)

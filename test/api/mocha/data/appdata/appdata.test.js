@@ -53,10 +53,15 @@ describe('Appdata', () => {
           return
         }
         expect(res).to.have.status(200)
+        expect(res.body).to.be.an('object')
+        expect(res.body.dbInfo).to.exist
+        expect(res.body.dbInfo).to.have.property('tables')
+        expect(res.body.stigmanVersion).to.exist
+									
         })
       })
       describe('GET - getDefinition - /op/definition', () => {
-        it('Return API Deployment Details', async () => {
+        it('Return API Deployment Definition', async () => {
         const res = await chai.request(config.baseUrl)
             .get(`/op/definition`)
             .set('Authorization', `Bearer ${user.token}`)

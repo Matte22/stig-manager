@@ -212,7 +212,7 @@ describe('PATCH - patchReviewByAssetRule - /collections/{collectionId}/reviews/{
                     }
                     expect(res).to.have.status(200)
                     expect(res.body).to.deep.equal(expectedResponse)
-                  })
+                })
             })
         })
     }

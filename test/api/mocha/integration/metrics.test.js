@@ -191,3 +191,53 @@ describe('GET - getMetricsDetailByCollection - /collections/{collectionId}/metri
     })
   })
 })
+
+describe('GET - getMetricsSummaryByCollectionAggStig - /collections/{collectionId}/metrics/summary/stig', function () {
+
+    describe('default-rev-recalc', function () {
+        before(async function () {
+            this.timeout(4000)
+            await utils.loadAppData()
+            await utils.uploadTestStigs()
+            await utils.createDisabledCollectionsandAssets()
+        })
+
+        it('Import a new STIG - new Copy', async function () {
+      
+            const directoryPath = path.join(__dirname, '../../form-data-files/')
+            const testStigfile = 'U_VPN_SRG_V1R1_Manual-xccdf.xml'
+            const filePath = path.join(directoryPath, testStigfile)
+      
+            const res = await chai.request(config.baseUrl)
+            .post('/stigs?clobber=true&elevate=true')
+            .set('Authorization', `Bearer ${user.token}`)
+            .set('Content-Type', `multipart/form-data`)
+            .attach('importFile', fs.readFileSync(filePath), testStigfile)
+            let expectedRevData = 
+            {
+                "benchmarkId": "VPN_SRG_TEST",
+                "revisionStr": "V1R1",
+                "action": "replaced"
+            }
+            expect(res).to.have.status(200)
+            expect(res.body).to.deep.eql(expectedRevData)
+        })
+        it('Deletes the specified revision of a STIG v1r0 - with force - could fail if not present, so no tests Copy', async function () {
+
+            const res = await chai.request(config.baseUrl)
+                .delete(`/stigs/${reference.benchmark}/revisions/V1R1?elevate=true&force=true`)
+                .set('Authorization', `Bearer ${user.token}`)
+        })
+        it('Return summary metrics - check no null benchmarks', async function () {
+
+            const res = await chai.request(config.baseUrl)
+                .get(`/collections/${reference.testCollection.collectionId}/metrics/summary/stig`)
+                .set('Authorization', `Bearer ${user.token}`)
+         
+            expect(res).to.have.status(200)
+            for (let stig of res.body){
+                expect(stig.benchmarkId).to.not.equal(null)
+            }
+        })
+    })
+})
