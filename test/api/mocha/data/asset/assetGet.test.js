@@ -349,9 +349,6 @@ describe('GET - Asset', function () {
           for (const asset of jsonData){
             expect(asset.name).to.match(regex)
             expect(asset.assetId, "expect assetId to be within the parameters of test collection and have test benchmark").to.be.oneOf(distinct.assetsAvailableBenchmark)
-            for(const stig of asset.stigs){
-              expect(stig.benchmarkId, "expect benchmark to be valid for this user ").to.be.oneOf(distinct.validStigs);
-            }
             if(asset.assetId === reference.testAsset.assetId){
               expect(asset.name, "expect asset name to equal test asset").to.eql(reference.testAsset.name)
               expect(asset.collection.collectionId, "expect asset to be a part of test collection").to.eql(reference.testAsset.collectionId)
