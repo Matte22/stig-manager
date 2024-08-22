@@ -2,10 +2,10 @@ const chai = require("chai")
 const chaiHttp = require("chai-http")
 chai.use(chaiHttp)
 const expect = chai.expect
-const config = require("../../testConfig.json")
-const utils = require("../../utils/testUtils.js")
-const reference = require("../referenceData.js")
-const users = require("../../iterations.js")
+const config = require("../testConfig.json")
+const utils = require("../utils/testUtils.js")
+const reference = require("./referenceData.js")
+const users = require("../iterations.js")
 const expectations = require("./expectations.js")
 
 describe(`POST - writeStigPropsByCollectionStig - /collections/{collectionId}/stigs/{benchmarkId} - postReviewBatch - /collections/{collectionId}/reviews`, () => {
@@ -24,6 +24,23 @@ describe(`POST - writeStigPropsByCollectionStig - /collections/{collectionId}/st
                     await utils.uploadTestStigs()
                     await utils.loadAppData()
                     await utils.createDisabledCollectionsandAssets()
+                    try{
+                        await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
+                    }
+                    catch(err){
+                        console.log("no stig to upload")
+                    }
+                   
+                })
+                after(async function () {
+                    this.timeout(4000)
+                    try{
+                        await utils.deleteStigByRevision("VPN_SRG_TEST", "V1R0")
+                    }
+                    catch{
+                        console.log("no stig to delete")
+                    }
+                   
                 })
                 describe('Pin Revision for Collection', () => {
 

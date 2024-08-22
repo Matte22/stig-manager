@@ -23,7 +23,6 @@ describe('PATCH - Collection', function () {
         it(`No expectations for this iteration scenario: ${user.name}`,async function () {})
         return
       }
-  
 
       describe(`user:${user.name}`, function () {
 

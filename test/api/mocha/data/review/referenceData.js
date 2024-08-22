@@ -33,7 +33,18 @@ const reference = {
     testRuleIdHistoryCount: 2,
     testRuleIdStig: 'VPN_SRG_TEST',
     testRuleIdStigCount: 1,
-    testBenchmarkReviews: 6
+    testBenchmarkReviews: 6,
+    reviewRuleIds: [
+      "SV-106179r1_rule",
+      "SV-106181r1_rule",
+      "SV-106183r1_rule",
+      "SV-106185r1_rule",
+      "SV-106187r1_rule",
+      "SV-106189r1_rule",
+      'SV-77813r6_rule',
+      'SV-77811r1_rule',
+      'SV-77809r3_rule'
+    ],
   },
   stigmanadmin: {
     username: 'stigmanadmin',

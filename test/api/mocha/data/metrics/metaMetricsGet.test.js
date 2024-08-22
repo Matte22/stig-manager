@@ -16,7 +16,12 @@ describe('GET - MetaMetrics', function () {
     this.timeout(4000)
     await utils.uploadTestStigs()
     await utils.loadAppData("appdata-meta-metrics-with-pin.json")
-    await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
+    try{
+        await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
+    }
+    catch(err){
+        console.log("no stig to upload")
+    }
     await utils.createDisabledCollectionsandAssets()
   })
 

@@ -1126,7 +1126,6 @@ describe('POST - Review', () => {
           expect(res.body).to.be.an('object')
           expect(res.body).to.deep.equal(expectedResponse)
         })
-
         it('Import reviews for asset in deleted collection and deleted asset', async () => {
           const res = await chai.request(config.baseUrl)
             .post(`/collections/${deletedCollection.collectionId}/reviews/${deletedAsset.assetId}`)
