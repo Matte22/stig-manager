@@ -29,7 +29,7 @@ describe('GET - User', () => {
               .set('Authorization', 'Bearer ' + user.token)
 
           expect(res).to.have.status(200)
-          expect(res.body.username).to.equal(user.name)
+          expect(res.body.username, "expect username to be current user").to.equal(user.name)
           for(grant of res.body.collectionGrants) {
             expect(grant).to.exist
             expect(grant).to.have.property('collection')
@@ -52,8 +52,8 @@ describe('GET - User', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array')
-          expect(res.body[0].username).to.equal('wf-test')
-          expect(res.body[0].userId).to.equal(reference.wfTest.userId)
+          expect(res.body[0].username, "expect user to be wf-test").to.equal('wf-test')
+          expect(res.body[0].userId, "expect userId to be wfTest userId").to.equal(reference.wfTest.userId)
         })
         it('Return a list of Users accessible to the requester USERNAME no projections', async () => {
 
@@ -67,8 +67,8 @@ describe('GET - User', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array')
-          expect(res.body[0].username).to.equal('wf-test')
-          expect(res.body[0].userId).to.equal(reference.wfTest.userId)
+          expect(res.body[0].username,"expect user to be wf-test").to.equal('wf-test')
+          expect(res.body[0].userId, "expect userId to be wfTest userId").to.equal(reference.wfTest.userId)
         })
         it('Return a list of Users accessible to the requester with elevate and projections', async () => {
 
@@ -82,13 +82,13 @@ describe('GET - User', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array')
-          expect(res.body).to.be.an('array').of.length(reference.allUserIds.length)
+          expect(res.body, "expect to get back all usersIds with elevate").to.be.an('array').of.length(reference.allUserIds.length)
           for(let user of res.body) {
             expect(user).to.have.property('collectionGrants')
             expect(user).to.have.property('statistics')
             expect(user).to.have.property('username')
             expect(user).to.have.property('userId')
-            expect(user.userId).to.be.oneOf(reference.allUserIds)
+            expect(user.userId, "expect userId to be one of the users the system").to.be.oneOf(reference.allUserIds)
           }
         })
         it('Return a list of Users accessible to the requester no projections for lvl1 sucess. ', async () => {
@@ -101,7 +101,7 @@ describe('GET - User', () => {
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array').of.length(reference.allUserIds.length)
           for(let user of res.body) {
-            expect(user.userId).to.be.oneOf(reference.allUserIds)
+            expect(user.userId, "expect userId to be one of the users the system").to.be.oneOf(reference.allUserIds)
           }
         })
       })
@@ -121,8 +121,8 @@ describe('GET - User', () => {
           expect(res.body).to.be.an('object')
           expect(res.body).to.have.property('collectionGrants')
           expect(res.body).to.have.property('statistics')
-          expect(res.body.username).to.equal(reference.wfTest.username)
-          expect(res.body.userId).to.equal(reference.wfTest.userId)
+          expect(res.body.username, "expect username to be wf-Test").to.equal(reference.wfTest.username)
+          expect(res.body.userId, "expect userId to be wf-Test userId (22)").to.equal(reference.wfTest.userId)
         })
       })
     })
@@ -163,16 +163,16 @@ describe('POST - User', () => {
             for(let grant of res.body.collectionGrants) {
               expect(grant).to.have.property('collection')
               expect(grant).to.have.property('accessLevel')
-              expect(grant.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
+              expect(grant.collection.collectionId, "Expect collectionId to be scrapColleciton Id").to.equal(reference.scrapCollection.collectionId)
             }
 
             const createdUser = await utils.getUser(res.body.userId)
 
             expect(createdUser).to.be.an('object')
-            expect(createdUser.username).to.equal(res.body.username)
-            expect(createdUser.userId).to.equal(res.body.userId)
+            expect(createdUser.username, "expecte created userId to be equal to the userId retured from API").to.equal(res.body.username)
+            expect(createdUser.userId, ).to.equal(res.body.userId)
             expect(createdUser.collectionGrants).to.be.an('array')
-            expect(createdUser.collectionGrants).to.have.lengthOf(1)
+            expect(createdUser.collectionGrants, "expect created user to have a single grant to scrap collection").to.have.lengthOf(1)
         })
       })
     })
@@ -213,19 +213,19 @@ describe('PATCH - User', () => {
               }
               expect(res).to.have.status(200)
               expect(res.body.username).to.equal('PatchTest')
-              expect(res.body.userId).to.equal(reference.scrapLvl1User.userId)
+              expect(res.body.userId, "expect userId to be equal to scraplvl1users userId").to.equal(reference.scrapLvl1User.userId)
 
               for(let grant of res.body.collectionGrants) {
                 expect(grant).to.have.property('collection')
                 expect(grant).to.have.property('accessLevel')
-                expect(grant.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
+                expect(grant.collection.collectionId, "expect collectionId to be scrapCollection Id").to.equal(reference.scrapCollection.collectionId)
               }
 
               const userEffected = await utils.getUser(res.body.userId)
 
               expect(userEffected).to.be.an('object')
-              expect(userEffected.username).to.equal(res.body.username)
-              expect(userEffected.userId).to.equal(res.body.userId)
+              expect(userEffected.username, "expectthe effected user to be the one returned by the api").to.equal(res.body.username)
+              expect(userEffected.userId,"expectthe effected user to be the one returned by the api").to.equal(res.body.userId)
               expect(userEffected.collectionGrants).to.be.an('array')
         })
       })
@@ -266,22 +266,22 @@ describe('PUT - User', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('object')
-          expect(res.body.username).to.equal('putTesting')
-          expect(res.body.userId).to.equal(reference.scrapLvl1User.userId)
+          expect(res.body.username, "expect username to be putTesting").to.equal('putTesting')
+          expect(res.body.userId, "expect userId to be scraplvl1").to.equal(reference.scrapLvl1User.userId)
           expect(res.body.collectionGrants).to.be.an('array')
           expect(res.body.statistics).to.be.an('object')
 
           for(let grant of res.body.collectionGrants) {
             expect(grant).to.have.property('collection')
             expect(grant).to.have.property('accessLevel')
-            expect(grant.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
+            expect(grant.collection.collectionId, "expect to have grant to the scrap collection").to.equal(reference.scrapCollection.collectionId)
           }
 
           const userEffected = await utils.getUser(res.body.userId)
 
           expect(userEffected).to.be.an('object')
-          expect(userEffected.username).to.equal(res.body.username)
-          expect(userEffected.userId).to.equal(res.body.userId)
+          expect(userEffected.username, "user effected to have username returned by API").to.equal(res.body.username)
+          expect(userEffected.userId, "user effected to have Id returned by API").to.equal(res.body.userId)
           expect(userEffected.collectionGrants).to.be.an('array')
 
         })
@@ -324,7 +324,7 @@ describe('DELETE - User', () => {
             }
             expect(res).to.have.status(200)
             const userEffected = await utils.getUser(environment.deleteUser.userId)
-            expect(userEffected).to.be.empty
+            expect(userEffected, "expect empty response (user delete worked)").to.be.empty
         })
         it('Delete a User - not elevated', async () => {
           const res = await chai

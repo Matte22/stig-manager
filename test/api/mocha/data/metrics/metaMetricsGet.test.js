@@ -9,7 +9,6 @@ const utils = require('../../utils/testUtils.js')
 const users = require('../../iterations.js')
 const reference = require('./referenceData.js')
 const metrics = require('./metaMetricsGet.js')
-const expectations = require('./expectations.js')
 
 describe('GET - MetaMetrics', function () { 
   before(async function () {
@@ -26,10 +25,7 @@ describe('GET - MetaMetrics', function () {
   })
 
   for(let user of users) {
-    if (expectations[user.name] === undefined){
-        it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
-        continue
-    }
+   
     describe(`user:${user.name}`, function () {
         
         describe('GET - getMetricsDetailByMeta - /collections/meta/metrics/detail', function () {

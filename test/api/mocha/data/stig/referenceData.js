@@ -5,17 +5,39 @@
 const reference = {
   benchmark: 'VPN_SRG_TEST',
   scrapBenchmark: 'RHEL_7_STIG_TEST',
-  testStigfile: "U_VPN_SRG_V1R1_Manual-xccdf.xml",
+  testStigfile: 'U_VPN_SRG_V1R1_Manual-xccdf.xml',
   checklistLength: 81,
   revisionStr: 'V1R1',
-  vpnStigs: ['VPN_SRG_TEST', 'VPN_SRG_OTHER', 'VPN_SRG_Rule-fingerprint-match-test'],
-  allStigsForAdmin: ["A10_Networks_ADC_ALG_STIG","AAA_Service_SRG", "Adobe_Acrobat_Pro_DC_Continuous_STIG",
-    "RHEL_7_STIG_TEST","VPN_SRG_OTHER", "VPN_SRG_Rule-fingerprint-match-test","VPN_SRG_TEST","Windows_10_STIG_TEST"],
+  testBenchmarkAllRevisions: ['V1R1', 'V1R0'],
+  vpnStigs: [
+    'VPN_SRG_TEST',
+    'VPN_SRG_OTHER',
+    'VPN_SRG_Rule-fingerprint-match-test'
+  ],
+  allStigsForAdmin: [
+    'A10_Networks_ADC_ALG_STIG',
+    'AAA_Service_SRG',
+    'Adobe_Acrobat_Pro_DC_Continuous_STIG',
+    'RHEL_7_STIG_TEST',
+    'VPN_SRG_OTHER',
+    'VPN_SRG_Rule-fingerprint-match-test',
+    'VPN_SRG_TEST',
+    'Windows_10_STIG_TEST'
+  ],
   testCollection: {
-    cci: "000015",
-    ruleId: 'SV-106179r1_rule',
-    groupId: "V-97041",
+    cci: {
+      id: '000015',
+      status: 'draft',
+
+    },
+    rule: {
+     ruleId: 'SV-106179r1_rule',
+     groupId: 'V-97041',
+     version: 'SRG-NET-000019-VPN-000040'
+    },
+    groupId: 'V-97041'
   },
+  testBenchmarkCollections: ['1', '21', '83']
 }
 
 module.exports = reference
