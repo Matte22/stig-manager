@@ -30,7 +30,7 @@ const collectioncreator = {
 }
 describe('PATCH - updateCollection - /collections/{collectionId}', () => {
 
-    describe('Verify manager grant restrictions', () => {
+    describe('Verify manager grant restrictions (ensure a manager cannot modify an "owner" grant)', () => {
 
         before(async function () {
             this.timeout(4000)
@@ -259,7 +259,7 @@ describe('POST - createCollection - /collections', () => {
 })
 describe('PUT - setStigAssetsByCollectionUser - /collections/{collectionId}/grants/{userId}/access', () => {
 
-    describe('gh-761 - statusStats', () =>{
+    describe('gh-761 - statusStats (statusStats projection for /assets returns inaccurate rules count when more than one user has the same restricted grant)', () =>{
 
         before(async function () {
             this.timeout(4000)
@@ -328,7 +328,7 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
             await utils.loadAppData()
             await utils.uploadTestStigs()
         })
-        describe('clone data prep', () => {
+        describe('clone data prep - set cloned collection default rev for test benchmark to non-"latest"', () => {
             it('Import a new STIG - VPN R1V0 copy', async () => {
                 const directoryPath = path.join(__dirname, '../../form-data-files/')
                 const testStigfile = reference.testStigfile
@@ -1298,7 +1298,7 @@ describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{asset
                 .set('Authorization', `Bearer ${user.token}`)
             expect(res).to.have.status(200)
         })
-        it('Import one or more Reviews with matching Rule Fingerprints', async () => {
+        it('Import one or more Reviews with matching Rule Fingerprints - 2 of these rules have matching fingerprints, so only 2 rules are actually inserted and the other is ignored. ', async () => {
 
             const res = await chai.request(config.baseUrl)
                 .post(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}`)
@@ -1424,7 +1424,7 @@ describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{asset
                 .set('Authorization', `Bearer ${user.token}`)
             expect(res).to.have.status(200)
         })
-        it('Import one or more Reviews with matching RuleIds', async () => {
+        it('Import one or more Reviews with matching RuleIds - 2 rules match, only one is inserted, 2 total.', async () => {
                 
                 const res = await chai.request(config.baseUrl)
                     .post(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}`)
@@ -1496,7 +1496,7 @@ describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{asset
 })
 describe('GET - putAssetsByCollectionLabelId - /collections/{collectionId}/labels/{labelId}/assets', () => {
 
-    describe('valid label checks', () => {
+    describe(`valid label checks - ensure asset labels are valid for that asset's collection.`, () => {
 
         before(async function () {
             this.timeout(4000)

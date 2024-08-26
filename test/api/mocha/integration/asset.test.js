@@ -24,7 +24,7 @@ describe(`PUT - attachAssetsToStig - /collections/{collectionId}/stigs/{benchmar
       await utils.uploadTestStigs()
       await utils.createDisabledCollectionsandAssets()
     })
-    it('gh-756 issue. assign a benchmark used in test Collection in scrap Collection', async function () {
+    it('gh-756 issue (assigning a benchmark in one collection removes all assignements for that benchmark from all other collections) . assign a benchmark used in test Collection in scrap Collection', async function () {
       const res = await chai.request(config.baseUrl)
       .put(`/collections/${environment.scrapCollection.collectionId}/stigs/${environment.testCollection.benchmark}/assets?projection=restrictedUserAccess`)
       .set('Authorization', 'Bearer ' + user.token)
