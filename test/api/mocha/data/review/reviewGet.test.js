@@ -12,8 +12,8 @@ const users = require('../../iterations.js')
 describe('GET - Review', () => {
   before(async function () {
     this.timeout(4000)
-    await utils.loadAppData()
     await utils.uploadTestStigs()
+    await utils.loadAppData()
     await utils.createDisabledCollectionsandAssets()
   })
 
@@ -39,6 +39,9 @@ describe('GET - Review', () => {
 
           for(let review of res.body){
             expect(review.assetId).to.be.oneOf(reference.testCollection.assetIds)
+            for(let assetLabelId of review.assetLabelIds){
+              expect(assetLabelId).to.be.oneOf(reference.testAsset.labels)
+            }
             for(let stig of review.stigs){
               expect(stig.benchmarkId).to.be.oneOf(reference.testCollection.validStigs)
             }
@@ -185,35 +188,29 @@ describe('GET - Review', () => {
             return
           }
           expect(res).to.have.status(200)
-          expect(res.body).to.be.an('array')
+          expect(res.body).to.be.an('array').of.length(distinct.testAsset.reviewsAvailableToUser)
           for(let review of res.body){
-            // checking for basic properties
-            expect(review).to.have.property('assetId')
             expect(review.assetId).to.be.equal(reference.testAsset.assetId)
-            expect(review).to.have.property('assetLabelIds')
-            expect(review).to.have.property('assetName')
-            expect(review).to.have.property('resultEngine')
-            expect(review).to.have.property('detail')
-            expect(review).to.have.property('status')
-
-            //check projectrions 
-            expect(review).to.have.property('rule')
-            expect(review).to.have.property('stigs')
-            expect(review.stigs).to.be.an('array')  
-            expect(review).to.have.property('metadata')
-
-            for(let stig of review.stigs){
-              expect(stig).to.have.property('benchmarkId')
-              expect(stig.benchmarkId).to.be.oneOf(reference.testAsset.validStigs)
+            for(let assetLabelId of review.assetLabelIds){
+              expect(assetLabelId).to.be.oneOf(reference.testAsset.labels)
             }
-
-            //check metadata
-            expect(review.metadata).to.be.an('object')
-        
-            //check rule
-            expect(review.rule).to.be.an('object')
-            expect(review.rule).to.have.property('ruleId')
-            
+            for(let stig of review.stigs){
+              expect(stig.benchmarkId).to.be.oneOf(reference.testAsset.validStigs)
+              
+            }
+            if(review.ruleId === reference.testAsset.testRuleId){
+              expect(review.metadata, "metadata").to.eql({[reference.testAsset.metadataKey]: reference.testAsset.metadataValue})
+              expect(review.status.label, "expect review to be submitted").to.be.oneOf(['submitted'])
+              expect(review.result, "expect result to be pass").to.eql('pass')
+              for(const stig of review.stigs){
+                expect(stig.benchmarkId, "expect stig attached to be test bernchmark").to.be.equal(reference.benchmark)
+                expect(stig.ruleCount, "Expect 81 rules for vpn srg test").to.be.equal(reference.checklistLength)
+                expect(stig.revisionStr, "expect default reviison").to.be.equal(reference.revisionStr)
+              }
+            }
+            else{
+              expect(review.metadata).to.be.empty
+            }
           }
         })
         it('Return a list of Reviews for an Asset, benchmarkId Projection.', async () => {
@@ -233,7 +230,17 @@ describe('GET - Review', () => {
             for(let stig of review.stigs){
               expect(stig).to.have.property('benchmarkId')
               expect(stig.benchmarkId).to.be.equal(reference.testCollection.benchmark)
-            }        
+            }
+            if(review.ruleId === reference.testAsset.testRuleId){
+              expect(review.metadata, "metadata").to.eql({[reference.testAsset.metadataKey]: reference.testAsset.metadataValue})
+              expect(review.status.label, "expect review to be submitted").to.be.oneOf(['submitted'])
+              expect(review.result, "expect result to be pass").to.eql('pass')
+              for(const stig of review.stigs){
+                expect(stig.benchmarkId, "expect stig attached to be test bernchmark").to.be.equal(reference.benchmark)
+                expect(stig.ruleCount, "Expect 81 rules for vpn srg test").to.be.equal(reference.checklistLength)
+                expect(stig.revisionStr, "expect default reviison").to.be.equal(reference.revisionStr)
+              }
+            }
           }
         })
         it('Return a list of Reviews for an Asset , metadata Projection.', async () => {
@@ -361,13 +368,16 @@ describe('GET - Review', () => {
         
           // checking for basic properties
           expect(review.rule.ruleId).to.be.equal(reference.testCollection.ruleId)
-
           expect(review.metadata).to.have.property(reference.testCollection.metadataKey)
           expect(review.metadata[reference.testCollection.metadataKey]).to.be.equal(reference.testCollection.metadataValue)
           for(let stig of review.stigs){
-            expect(stig).to.have.property('benchmarkId')
-            expect(stig.benchmarkId).to.be.oneOf(reference.testAsset.validStigs)
-          } 
+            expect(stig.benchmarkId, "expect stig attached to be test bernchmark").to.be.equal(reference.benchmark)
+            expect(stig.ruleCount, "Expect 81 rules for vpn srg test").to.be.equal(reference.checklistLength)
+            expect(stig.revisionStr, "expect default reviison").to.be.equal(reference.revisionStr)
+          }
+          expect(review.assetLabelIds).to.include.members(reference.testAsset.labels)
+          expect(review.status.label, "expect review to be submitted").to.be.oneOf(['submitted'])
+          expect(review.result, "expect result to be pass").to.eql('pass')
         })
       })
       describe('GET - getReviewMetadata - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata', () => {
