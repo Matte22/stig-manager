@@ -54,39 +54,44 @@ To install the dependencies required to run the test suite, run:
 npm install
 ```
 
-Ensure that you set uphave the necessary configuration files:
+Ensure that the necessary configuration files have been configured:
 ```test/api/mocha/testConfig.json```
 
 
 ## Usage
 
-To run the tests for local developmeent, use the following bash script:
+The test suite uses Mocha as the test runner and Chai-http to call endpoints and Chai for assertions. 
+
+To run the tests for local development, use the following bash script:
 
 ```test/api/runMocha.sh``` (use -h flag for help)
 
+In CI/CD use ```npm test``` to run tests. 
 
-The test suite uses Mocha as the test runner and Chai-http to call endpoints and Chai for assertions. 
+
+
 
 ## How to Write Tests
 
-The test suite relies on several conventions:
+The test suite follows these conventions:
 
-- ```test/api/mocha``` is the root for all testing files 
-- ```test/api/mocha/data``` are tests that check for the vailidty of our endpoints in a basic form. They simply call endpoints to ensure correctness of data.
-- Each directory in the ```test/api/mocha/data``` is organized by api tag.
-- Test files MOSTLY follow the naming convention of, ```<apiTag><HTTPrequestMethod>.test.js``` example: ```assetPatch.test.js```
-- ```/test/api/mocha/data/crossBoundary``` tests for lvl1 cross boundary
-- ```/test/api/mocha/integration```are our integration tests (here describe what an integration test is) in our definiton it is a set of related endpoints called together to test major app functionalities. where the data tests are more unit type tests but for one specific api call.
-- all tests willl rely on their respective 'referenceData.js' and 'expectations.js' to look for our test 'answers' these answers are the data coming back from the api is going to be expected against for correctness. 
-- referencedata.js is mostly static or more global data about the tests or api paths
-- expectations.js contains data  specific to the current iterations (in our case we use users in different iterations) this file will also control if a test is going to be run for a specific iteration
-- iterations.js and iterations in genrerarl are a list of iterations that a test or group of tests willb e called. (see code exmaples attached for our major for loop that does iterations)
+- The main directory for all testing files is located at ```test/api/mocha```.
+- Tests validating the basic functionality of our endpoints are found in ```test/api/mocha/data```.
+- Each subdirectory within ```test/api/mocha/data``` is organized by API tag
+- Test files generally adhere to the naming convention ```<apiTag><HTTPMethod>.test.js``` (e.g., ```assetPatch.test.js```).
+- The ```test/api/mocha/crossBoundary``` directory contains tests for Level 1 cross-boundary scenarios.
+- Integration tests are located in ```test/api/mocha/integration```. Integration tests, as defined here, involve calling a set of related endpoints together to validate major application functionalities. These differ from the more focused, unit-like data tests that target individual API 
+- ```iterations.js``` defines the various iterations a test or group of tests will execute. This structure supports running the same test across multiple scenarios.
+- Most tests reference corresponding ```referenceData.js``` and ```expectations.js``` files. These files contain the "answers" or expected data against which the API responses are validated.
+  - ```referenceData.js``` typically contains static or more global data about the tests or API paths.
+   - ```expectations.js``` contains data specific to the current test iterations (e.g., different user scenarios) and controls whether a test should run for a particular iteration.
+
 
 #### Test Naming conventions
 
-- top level describes: describe('<httpmethod> - <tag>', function () { example describe('DELETE - Asset', function () {
-- describe within an iteration (used by our runMocha.sh to run for a specific iteration) describe(`iteration:${iteration.name}`, function () {
-- endpoint level describe describe(`<operationId - path/path/path, function () {exmaple describe(`deleteAssetMetadataKey - /assets/{assetId}/metadata/keys/{key}`, function () {
+- top-level describe: ```describe('<HTTPMethod> - <APITag>', function () ``` Example: ```describe('DELETE - Asset', function ()```
+- Iteration-specific describe (used by runMocha.sh to run for a specific iteration): ```describe(iteration:${iteration.name}`, function () ```
+- Endpoint-level describe: ```describe('<operationId> - <endpointPath>', function ()``` Example: ```describe('deleteAssetMetadataKey - /assets/{assetId}/metadata/keys/{key}', function ()```
 
 Make sure these files are correctly set up before running the tests.
 
@@ -101,4 +106,3 @@ Make sure these files are correctly set up before running the tests.
 - The PR Workflow running the tests will also generate a coverage report showing how much of the API code is covered by the tests.
 
 
-****
