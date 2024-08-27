@@ -6,8 +6,8 @@ const reference = {
   // collectionId: "21",
   // collectionName: "Test Collection",
   // collectionDescription: "This is a test collection",
-  // collectionOwner: "admin",
-  // collectionOwnerID: "87",
+  collectionOwner: "admin",
+  collectionOwnerID: "87",
   benchmark: "VPN_SRG_TEST",
   checklistLength: 81,
   revisionStr: "V1R1",
@@ -262,6 +262,44 @@ const reference = {
         submittedCount: null,
       },
   },  
+  testCci: {
+    id: "000015",
+    status: "draft",
+  },
+  testRule: {
+    ruleId: "SV-106179r1_rule",
+    groupId: "V-97041",
+    version: "SRG-NET-000019-VPN-000040",
+  },
+  ruleIdLvl1NoAccess: "SV-77809r3_rule",
+  testGroupId: "V-97041",
+  allUserIds: ['87', '86', '82', '85', '21', '44', '45', '1', '22', '43'],
+  wfTest: {
+    username: 'wf-test',
+    userId: '22'
+  },
+  deleteUser: {
+    username: 'workforce-60',
+    userId: '43'
+  },  
+  testBenchmarkAllRevisions: ['V1R1', 'V1R0'],
+  scrapBenchmark: 'RHEL_7_STIG_TEST',
+  testStigfile: 'U_VPN_SRG_V1R1_Manual-xccdf.xml',
+  vpnStigs: [
+    'VPN_SRG_TEST',
+    'VPN_SRG_OTHER',
+    'VPN_SRG_Rule-fingerprint-match-test'
+  ],
+  allStigsForAdmin: [
+    'A10_Networks_ADC_ALG_STIG',
+    'AAA_Service_SRG',
+    'Adobe_Acrobat_Pro_DC_Continuous_STIG',
+    'RHEL_7_STIG_TEST',
+    'VPN_SRG_OTHER',
+    'VPN_SRG_Rule-fingerprint-match-test',
+    'VPN_SRG_TEST',
+    'Windows_10_STIG_TEST'
+  ],  
 };
 
 module.exports = reference;

@@ -7,7 +7,7 @@ const { expect } = chai
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils.js')
 const iterations = require('../../iterations.js')
-const reference = require('./referenceData.js')
+const reference = require('../../referenceData.js')
 const metrics = require('./metricsGet.js')
 
 describe('GET - Metrics', function () { 

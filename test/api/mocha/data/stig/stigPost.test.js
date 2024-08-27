@@ -7,7 +7,7 @@ const utils = require('../../utils/testUtils')
 const fs = require('fs')
 const path = require('path')
 const iterations = require("../../iterations.js")
-const reference = require('./referenceData.js')
+const reference = require('../../referenceData.js')
 const expectations = require('./expectations.js')
 
 describe('POST - Stig', () => {

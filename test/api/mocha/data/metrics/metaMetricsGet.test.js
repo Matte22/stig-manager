@@ -7,7 +7,7 @@ const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils.js')
 const iterations = require('../../iterations.js')
-const reference = require('./referenceData.js')
+const reference = require('../../referenceData.js')
 const metrics = require('./metaMetricsGet.js')
 
 describe('GET - MetaMetrics', function () { 
