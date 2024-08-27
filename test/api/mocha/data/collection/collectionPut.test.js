@@ -6,7 +6,7 @@ const deepEqualInAnyOrder = require('deep-equal-in-any-order')
 chai.use(deepEqualInAnyOrder)
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const users = require("../../iterations.js")
+const iterations = require("../../iterations.js")
 const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
 const requestBodies = require('./requestBodies.js')
@@ -20,14 +20,14 @@ describe('PUT - Collection', function () {
       await utils.createDisabledCollectionsandAssets()
   })
 
-  for(const user of users){
-    if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`,async function () {})
+  for(const iteration of iterations){
+    if (expectations[iteration.name] === undefined){
+      it(`No expectations for this iteration scenario: ${iteration.name}`,async function () {})
       continue
     }
 
-    describe(`user:${user.name}`, function () {
-      const distinct = expectations[user.name]
+    describe(`iteration:${iteration.name}`, function () {
+      const distinct = expectations[iteration.name]
     
       describe('replaceCollection - /collections/{collectionId}', function () {
 
@@ -37,7 +37,7 @@ describe('PUT - Collection', function () {
             const res = await chai.request(config.baseUrl)
                 // .put(`/collections/${reference.testCollection.collectionId}`)
                 .put(`/collections/${reference.testCollection.collectionId}?projection=grants&projection=owners&projection=statistics&projection=stigs&projection=assets`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
                 .send(putRequest)
 
               if(distinct.canModifyCollection === false){
@@ -133,9 +133,9 @@ describe('PUT - Collection', function () {
       
         //     const res = await chai.request(config.baseUrl)
         //         .put(`/collections/${reference.testCollection.collectionId}?projection=grants&projection=owners&projection=statistics&projection=stigs&projection=assets`)
-        //         .set('Authorization', `Bearer ${user.token}`)
+        //         .set('Authorization', `Bearer ${iteration.token}`)
         //         .send(putRequest    )
-        //     if(user.name === "lvl1" || user.name === "lvl2") {
+        //     if(iteration.name === "lvl1" || iteration.name === "lvl2") {
         //       expect(res).to.have.status(403)
         //       return
         //     } 
@@ -154,7 +154,7 @@ describe('PUT - Collection', function () {
         //     // grants projection
         //     expect(res.body.grants).to.have.lengthOf(5)
         //     for(const grant of res.body.grants){
-        //       expect(grant.user.userId).to.be.oneOf(putRequest.grants.map(g => g.userId))
+        //       expect(grant.iteration.userId).to.be.oneOf(putRequest.grants.map(g => g.userId))
         //     }
         
         //     // assets projection
@@ -177,11 +177,11 @@ describe('PUT - Collection', function () {
 
       describe('setStigAssetsByCollectionUser - /collections/{collectionId}/grants/{userId}/access', function () {
 
-        it('set stig-asset grants for a lvl1 user in this collection.',async function () {
+        it('set stig-asset grants for a lvl1 iteration in this collection.',async function () {
 
             const res = await chai.request(config.baseUrl)
                 .put(`/collections/${reference.scrapCollection.collectionId}/grants/${reference.scrapLvl1User.userId}/access`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
                 .send([{
                       "benchmarkId": reference.scrapAsset.scrapBenchmark,
                       "assetId": reference.scrapAsset.assetId,
@@ -211,7 +211,7 @@ describe('PUT - Collection', function () {
 
             const res = await chai.request(config.baseUrl)
                 .put(`/collections/${reference.testCollection.collectionId}/metadata`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
                 .send(putRequest)
 
               if(distinct.canModifyCollection === false){
@@ -228,7 +228,7 @@ describe('PUT - Collection', function () {
         it('Set one metadata key/value of a Collection',async function () {
           const res = await chai.request(config.baseUrl)
             .put(`/collections/${reference.testCollection.collectionId}/metadata/keys/${reference.testCollection.collectionMetadataKey}`)
-            .set('Authorization', `Bearer ${user.token}`)
+            .set('Authorization', `Bearer ${iteration.token}`)
             .set('Content-Type', 'application/json') 
             .send(`${JSON.stringify(reference.testCollection.collectionMetadataValue)}`)
 

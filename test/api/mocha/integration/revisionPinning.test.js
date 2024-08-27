@@ -5,12 +5,12 @@ const expect = chai.expect
 const config = require("../testConfig.json")
 const utils = require("../utils/testUtils.js")
 const reference = require("./referenceData.js")
-const users = require("../iterations.js")
+const iterations = require("../iterations.js")
 const expectations = require("./expectations.js")
 
 describe(`POST - writeStigPropsByCollectionStig - /collections/{collectionId}/stigs/{benchmarkId} - postReviewBatch - /collections/{collectionId}/reviews`, () => {
 
-    for(const user of users){
+    for(const user of iterations){
         if (expectations[user.name] === undefined){
             it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
             continue

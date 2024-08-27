@@ -6,20 +6,20 @@ const deepEqualInAnyOrder = require('deep-equal-in-any-order')
 chai.use(deepEqualInAnyOrder)
 const config = require("../../testConfig.json")
 const utils = require("../../utils/testUtils")
-const users = require("../../iterations.js")
+const iterations = require("../../iterations.js")
 const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
 const requestBodies = require('./requestBodies.js')
 
 describe('POST - Collection - not all tests run for all iterations', function () {
  
-  for(const user of users) {
-    if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`,async function () {})
+  for(const iteration of iterations) {
+    if (expectations[iteration.name] === undefined){
+      it(`No expectations for this iteration scenario: ${iteration.name}`,async function () {})
       continue
     }
-    describe(`user:${user.name}`, function () {
-      const distinct = expectations[user.name]
+    describe(`iteration:${iteration.name}`, function () {
+      const distinct = expectations[iteration.name]
       
       before(async function () {
         // this.timeout(4000)
@@ -47,7 +47,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             .post(
               `/collections?elevate=${distinct.canElevate}&projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`
             )
-            .set("Authorization", `Bearer ${user.token}`)
+            .set("Authorization", `Bearer ${iteration.token}`)
             .send(post)
             if(distinct.canCreateCollection === false){
               expect(res).to.have.status(403)
@@ -55,7 +55,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             }
             expect(res).to.have.status(201)
             if (distinct.grant === 'none') {  
-              // grant = none user can create a collection, but does not give itself access to the collection
+              // grant = none iteration can create a collection, but does not give itself access to the collection
               // TODO: Should eventually be changed to respond with empty object
               return
             }
@@ -117,7 +117,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const res = await chai
             .request(config.baseUrl)
             .post(`/collections/${reference.testCollection.collectionId}/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`)
-            .set("Authorization", `Bearer ${user.token}`)
+            .set("Authorization", `Bearer ${iteration.token}`)
             .send({
               name:"Clone_" + Math.floor(Math.random() * 100) + "-" + Math.floor(Math.random() * 100) + "_X",
               description: "clone of test collection x",
@@ -214,7 +214,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const res = await chai
             .request(config.baseUrl)
             .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
-            .set("Authorization", `Bearer ${user.token}`)
+            .set("Authorization", `Bearer ${iteration.token}`)
             .send([
               {
                 assetId: reference.testAsset.assetId,
@@ -248,7 +248,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const res = await chai
             .request(config.baseUrl)
             .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
-            .set("Authorization", `Bearer ${user.token}`)
+            .set("Authorization", `Bearer ${iteration.token}`)
             .send([
               {
                 assetId: reference.testAsset.assetId,
@@ -290,7 +290,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const res = await chai
             .request(config.baseUrl)
             .post(`/collections/${reference.scrapCollection.collectionId}/labels`)
-            .set("Authorization", `Bearer ${user.token}`)
+            .set("Authorization", `Bearer ${iteration.token}`)
             .send(request)
 
             if(distinct.canModifyCollection === false){
@@ -325,7 +325,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const res = await chai
             .request(config.baseUrl)
             .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${user.token}`)
+            .set("Authorization", `Bearer ${iteration.token}`)
             .send(post)
 
             if(distinct.canModifyCollection === false){
@@ -351,7 +351,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const res = await chai
             .request(config.baseUrl)
             .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${user.token}`)
+            .set("Authorization", `Bearer ${iteration.token}`)
             .send(post)
 
             if(distinct.canModifyCollection === false){
@@ -377,7 +377,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const res = await chai
             .request(config.baseUrl)
             .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${user.token}`)
+            .set("Authorization", `Bearer ${iteration.token}`)
             .send(post)
 
             if(distinct.canModifyCollection === false){
@@ -403,7 +403,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const res = await chai
             .request(config.baseUrl)
             .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${user.token}`)
+            .set("Authorization", `Bearer ${iteration.token}`)
             .send(post)
 
             if(distinct.canModifyCollection === false){
@@ -423,7 +423,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const res = await chai
             .request(config.baseUrl)
             .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${user.token}`)
+            .set("Authorization", `Bearer ${iteration.token}`)
             .send(post)
 
             if(distinct.canModifyCollection === false){
@@ -449,7 +449,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const res = await chai
             .request(config.baseUrl)
             .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${user.token}`)
+            .set("Authorization", `Bearer ${iteration.token}`)
             .send(post)
 
             if(distinct.canModifyCollection === false){
@@ -472,7 +472,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const res = await chai
             .request(config.baseUrl)
             .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${user.token}`)
+            .set("Authorization", `Bearer ${iteration.token}`)
             .send(post)
 
             if(distinct.canModifyCollection === false){

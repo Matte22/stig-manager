@@ -5,7 +5,7 @@ const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const xml2js = require('xml2js');
-const users = require('../../iterations.js')
+const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
 
@@ -21,13 +21,13 @@ describe('PUT - Review', () => {
         deletedAsset = deletedItems.asset
     })
 
-    for(const user of users){
-        if (expectations[user.name] === undefined){
-            it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+    for(const iteration of iterations){
+        if (expectations[iteration.name] === undefined){
+            it(`No expectations for this iteration scenario: ${iteration.name}`, async () => {})
             continue
         }
-        describe(`user:${user.name}`, () => {
-            const distinct = expectations[user.name]
+        describe(`iteration:${iteration.name}`, () => {
+            const distinct = expectations[iteration.name]
             describe('PUT - putReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId}', () => {
        
                 it('PUT Review: accepted, pass, no detail', async () => {
@@ -42,7 +42,7 @@ describe('PUT - Review', () => {
 
                     const res = await chai.request(config.baseUrl)
                         .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`)
-                        .set('Authorization', `Bearer ${user.token}`)
+                        .set('Authorization', `Bearer ${iteration.token}`)
                         .send(putBody)
 
                     expect(res).to.have.status(403)
@@ -61,9 +61,9 @@ describe('PUT - Review', () => {
 
                     const res = await chai.request(config.baseUrl)
                         .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`)
-                        .set('Authorization', `Bearer ${user.token}`)
+                        .set('Authorization', `Bearer ${iteration.token}`)
                         .send(putBody)
-                    if(user.name === 'collectioncreator') {
+                    if(iteration.name === 'collectioncreator') {
                         expect(res).to.have.status(403)
                         return
                     }
@@ -90,7 +90,7 @@ describe('PUT - Review', () => {
 
                     const res = await chai.request(config.baseUrl)
                         .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`)
-                        .set('Authorization', `Bearer ${user.token}`)
+                        .set('Authorization', `Bearer ${iteration.token}`)
                         .send(putBody)
 
                     expect(res).to.have.status(403)
@@ -107,7 +107,7 @@ describe('PUT - Review', () => {
 
                     const res = await chai.request(config.baseUrl)
                         .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`)
-                        .set('Authorization', `Bearer ${user.token}`)
+                        .set('Authorization', `Bearer ${iteration.token}`)
                         .send(putBody)
 
                     expect(res).to.have.status(403)
@@ -127,9 +127,9 @@ describe('PUT - Review', () => {
 
                     const res = await chai.request(config.baseUrl)
                         .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}?projection=rule&projection=history&projection=stigs`)
-                        .set('Authorization', `Bearer ${user.token}`)
+                        .set('Authorization', `Bearer ${iteration.token}`)
                         .send(putBody)
-                    if(user.name === 'collectioncreator') {
+                    if(iteration.name === 'collectioncreator') {
                         expect(res).to.have.status(403)
                         return
                     }
@@ -192,7 +192,7 @@ describe('PUT - Review', () => {
 
                     const res = await chai.request(config.baseUrl)
                         .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`)
-                        .set('Authorization', `Bearer ${user.token}`)
+                        .set('Authorization', `Bearer ${iteration.token}`)
                         .send(putBody)
 
                     expect(res).to.have.status(400)
@@ -214,9 +214,9 @@ describe('PUT - Review', () => {
 
                     const res = await chai.request(config.baseUrl)
                         .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}?projection=rule&projection=history&projection=stigs&projection=metadata`)
-                        .set('Authorization', `Bearer ${user.token}`)
+                        .set('Authorization', `Bearer ${iteration.token}`)
                         .send(putBody)
-                    if(user.name === 'collectioncreator') {
+                    if(iteration.name === 'collectioncreator') {
                         expect(res).to.have.status(403)
                         return
                     }
@@ -247,7 +247,7 @@ describe('PUT - Review', () => {
                     }
                     const res = await chai.request(config.baseUrl)
                         .put(`/collections/${deletedCollection.collectionId}/reviews/${deletedAsset.assetId}/${reference.testCollection.ruleId}`)
-                        .set('Authorization', `Bearer ${user.token}`)
+                        .set('Authorization', `Bearer ${iteration.token}`)
                         .send(putBody)
 
                     expect(res).to.have.status(403)
@@ -264,9 +264,9 @@ describe('PUT - Review', () => {
 
                     const res = await chai.request(config.baseUrl)
                         .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}?projection=rule&projection=history&projection=stigs&projection=metadata`)
-                        .set('Authorization', `Bearer ${user.token}`)
+                        .set('Authorization', `Bearer ${iteration.token}`)
                         .send(putBody)
-                    if(user.name === 'collectioncreator') {
+                    if(iteration.name === 'collectioncreator') {
                         expect(res).to.have.status(403)
                         return
                     }
@@ -331,9 +331,9 @@ describe('PUT - Review', () => {
                     
                     const res = await chai.request(config.baseUrl)
                     .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}?projection=rule&projection=history&projection=stigs&projection=metadata`)
-                    .set('Authorization', `Bearer ${user.token}`)
+                    .set('Authorization', `Bearer ${iteration.token}`)
                     .send(putBody)
-                    if(user.name === 'collectioncreator') {
+                    if(iteration.name === 'collectioncreator') {
                         expect(res).to.have.status(403)
                         return
                     }
@@ -360,9 +360,9 @@ describe('PUT - Review', () => {
                     it('Set all metadata of a Review', async () => {
                         const res = await chai.request(config.baseUrl)
                         .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata`)
-                        .set('Authorization', `Bearer ${user.token}`)
+                        .set('Authorization', `Bearer ${iteration.token}`)
                         .send({[reference.testCollection.metadataKey]: reference.testCollection.metadataValue})
-                        if(user.name === 'collectioncreator') {
+                        if(iteration.name === 'collectioncreator') {
                             expect(res).to.have.status(403)
                             return
                         }
@@ -383,10 +383,10 @@ describe('PUT - Review', () => {
                     it('Set one metadata key/value of a Review', async () => {
                     const res = await chai.request(config.baseUrl)
                         .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata/keys/${reference.testCollection.metadataKey}`)
-                        .set('Authorization', `Bearer ${user.token}`)
+                        .set('Authorization', `Bearer ${iteration.token}`)
                         .set('Content-Type', 'application/json') 
                         .send(`${JSON.stringify(reference.testCollection.metadataValue)}`)
-                    if(user.name === 'collectioncreator') {
+                    if(iteration.name === 'collectioncreator') {
                         expect(res).to.have.status(403)
                         return
                     }

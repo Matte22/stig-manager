@@ -1,9 +1,9 @@
-//This data contains expected response data that varies by iteration "scenario" or "user" for each test case. These expectations are relative to the "referenceData.js" data used to construct the API requests. 
+//This data contains expected response data that varies by iteration "scenario" or "iteration" for each test case. These expectations are relative to the "referenceData.js" data used to construct the API requests. 
 
 
 const distinct = {
   stigmanadmin: {
-    user: "admin",
+    iteration: "admin",
     userId: "87",
     canElevate: true,
     canCreateCollection: true,
@@ -40,7 +40,7 @@ const distinct = {
     canModifyCollection: true
     },
   lvl1:{
-    user: "lvl1",
+    iteration: "lvl1",
     userId: "85",
     canElevate: false,
     canCreateCollection: false,
@@ -75,7 +75,7 @@ const distinct = {
     canModifyCollection: false
   },
   lvl2: {
-    user: "lvl2",
+    iteration: "lvl2",
     userId: "87",
     canElevate: false,
     canCreateCollection: false,
@@ -110,7 +110,7 @@ const distinct = {
     canModifyCollection: false
     },
   lvl3: {
-    user: "lvl3",
+    iteration: "lvl3",
     userId: "87",
     canElevate: false,
     collectionCount: 2,
@@ -145,7 +145,7 @@ const distinct = {
     canModifyCollection: true
     },
   lvl4: {
-    user: "lvl4",
+    iteration: "lvl4",
     userId: "87",
     canCreateCollection: false,
     canElevate: false,
@@ -180,7 +180,7 @@ const distinct = {
     canModifyCollection: true
     },
     collectioncreator:{
-      user: "collectioncreator",
+      iteration: "collectioncreator",
       userId: "82",
       canElevate: false,
       canCreateCollection: true,

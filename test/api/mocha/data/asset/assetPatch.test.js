@@ -4,20 +4,20 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const users = require('../../iterations.js')
+const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
 
 describe('PATCH - Asset', function () {
 
-  for(const user of users){
-    if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async function () {})
+  for(const iteration of iterations){
+    if (expectations[iteration.name] === undefined){
+      it(`No expectations for this iteration scenario: ${iteration.name}`, async function () {})
       continue
     }
 
-    describe(`user:${user.name}`, function () {
-      const distinct = expectations[user.name]
+    describe(`iteration:${iteration.name}`, function () {
+      const distinct = expectations[iteration.name]
       beforeEach(async function () {
         this.timeout(4000)
         await utils.uploadTestStigs()
@@ -27,11 +27,11 @@ describe('PATCH - Asset', function () {
 
       describe(`updateAsset - /assets/{assetId}`, function () {
       
-        it('Merge provided properties with an Asset - Change Collection - Fail for all users', async function () {
+        it('Merge provided properties with an Asset - Change Collection - Fail for all iterations', async function () {
           const res = await chai
             .request(config.baseUrl)
             .patch(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send({ 
               "collectionId": reference.scrapLvl1User.userId,
               "description": "test desc",
@@ -52,7 +52,7 @@ describe('PATCH - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .patch(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send({
               "collectionId": reference.scrapCollection.collectionId,
               "description": "test desc",
@@ -102,7 +102,7 @@ describe('PATCH - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .patch(`/assets/${reference.scrapAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send({
               "collectionId": reference.scrapCollection.collectionId,
               "description": "scrap",
@@ -148,11 +148,11 @@ describe('PATCH - Asset', function () {
 
       describe(`patchAssets - /assets`, function () {
     
-        it('Delete Assets - expect success for valid users', async function () {
+        it('Delete Assets - expect success for valid iterations', async function () {
           const res = await chai
             .request(config.baseUrl)
             .patch(`/assets?collectionId=${reference.testCollection.collectionId}`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send({
               "operation": "delete",
               "assetIds": ["29","42"]
@@ -178,7 +178,7 @@ describe('PATCH - Asset', function () {
             const res = await chai
               .request(config.baseUrl)
               .patch(`/assets?collectionId=${reference.testCollection.collectionId}`)
-              .set('Authorization', 'Bearer ' + user.token)
+              .set('Authorization', 'Bearer ' + iteration.token)
               .send({
                 "operation": "delete",
                 "assetIds": ["258","260"]
@@ -189,7 +189,7 @@ describe('PATCH - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .patch(`/assets?collectionId=${99999}`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send({
               "operation": "delete",
               "assetIds": ["29","42"]
@@ -204,7 +204,7 @@ describe('PATCH - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .patch(`/assets/${reference.scrapAsset.assetId}/metadata`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send({
               "testkey":"poc2Patched"
             })
@@ -225,7 +225,7 @@ describe('PATCH - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .patch(`/assets/${reference.scrapAsset.assetId}/metadata`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send({
               "testkey":"poc2Patched"
             })

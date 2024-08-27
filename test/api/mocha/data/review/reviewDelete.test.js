@@ -4,20 +4,19 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const environment = require('../../environment.json')
-const users = require('../../iterations.js')
+const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
 
 describe('DELETE - Review', () => {
     
-  for(const user of users) {
-    if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+  for(const iteration of iterations) {
+    if (expectations[iteration.name] === undefined){
+      it(`No expectations for this iteration scenario: ${iteration.name}`, async () => {})
       continue
     }
-    describe(`user:${user.name}`, () => {
-      const distinct = expectations[user.name]
+    describe(`iteration:${iteration.name}`, () => {
+      const distinct = expectations[iteration.name]
       describe('DELETE - deleteReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId}', () => {
 
         beforeEach(async function () {
@@ -29,9 +28,9 @@ describe('DELETE - Review', () => {
         it('Delete a Review', async () => {
           const res = await chai.request(config.baseUrl)
             .delete(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testAsset.testRuleId}?projection=rule&projection=history&projection=stigs`)
-            .set('Authorization', `Bearer ${user.token}`)
+            .set('Authorization', `Bearer ${iteration.token}`)
 
-          if(user.name === 'collectioncreator') {
+          if(iteration.name === 'collectioncreator') {
             expect(res).to.have.status(403)
             return
           }
@@ -65,9 +64,9 @@ describe('DELETE - Review', () => {
         it('Delete one metadata key/value of a Review', async () => {
           const res = await chai.request(config.baseUrl)
             .delete(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testAsset.testRuleId}/metadata/keys/${reference.testCollection.collectionMetadataKey}`)
-            .set('Authorization', `Bearer ${user.token}`)
+            .set('Authorization', `Bearer ${iteration.token}`)
             .send(`${JSON.stringify(reference.testCollection.collectionMetadataValue)}`)
-          if(user.name === 'collectioncreator') {
+          if(iteration.name === 'collectioncreator') {
             expect(res).to.have.status(403)
             return
           }

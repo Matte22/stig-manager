@@ -4,10 +4,9 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const environment = require('../../environment.json')
 const fs = require('fs')
 const path = require('path')
-const users = require("../../iterations.js")
+const iterations = require("../../iterations.js")
 const reference = require('./referenceData.js')
 const expectations = require('./expectations.js')
 
@@ -17,15 +16,15 @@ describe('POST - Stig', () => {
     await utils.uploadTestStigs()
     await utils.loadAppData()
     await utils.createDisabledCollectionsandAssets()
-    await utils.deleteStig(environment.testCollection.benchmark)
+    await utils.deleteStig(reference.benchmark)
     })
 
-    for(const user of users){
-        if (expectations[user.name] === undefined){
-            it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+    for(const iteration of iterations){
+        if (expectations[iteration.name] === undefined){
+            it(`No expectations for this iteration scenario: ${iteration.name}`, async () => {})
             continue
         }
-        describe(`user:${user.name}`, () => {
+        describe(`iteration:${iteration.name}`, () => {
             describe('POST - importBenchmark - /stigs', () => {
 
                 it('Import a new STIG - new', async () => {
@@ -36,7 +35,7 @@ describe('POST - Stig', () => {
             
                     const res = await chai.request(config.baseUrl)
                     .post('/stigs?elevate=true&clobber=false')
-                    .set('Authorization', `Bearer ${user.token}`)
+                    .set('Authorization', `Bearer ${iteration.token}`)
                     .set('Content-Type', `multipart/form-data`)
                     .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
                     let expectedRevData = {
@@ -44,7 +43,7 @@ describe('POST - Stig', () => {
                         revisionStr: "V1R1",
                         action: "inserted",
                     }
-                    if(user.name !== "stigmanadmin"){
+                    if(iteration.name !== "stigmanadmin"){
                         expect(res).to.have.status(403)
                         return
                     }
@@ -59,7 +58,7 @@ describe('POST - Stig', () => {
             
                     const res = await chai.request(config.baseUrl)
                     .post('/stigs?elevate=true&clobber=false')
-                    .set('Authorization', `Bearer ${user.token}`)
+                    .set('Authorization', `Bearer ${iteration.token}`)
                     .set('Content-Type', `multipart/form-data`)
                     .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
                     let expectedRevData = 
@@ -68,7 +67,7 @@ describe('POST - Stig', () => {
                         "revisionStr": "V1R1",
                         "action": "preserved"
                     }
-                    if(user.name !== "stigmanadmin"){
+                    if(iteration.name !== "stigmanadmin"){
                         expect(res).to.have.status(403)
                         return
                     }
@@ -83,7 +82,7 @@ describe('POST - Stig', () => {
             
                     const res = await chai.request(config.baseUrl)
                     .post('/stigs?elevate=true&clobber=true')
-                    .set('Authorization', `Bearer ${user.token}`)
+                    .set('Authorization', `Bearer ${iteration.token}`)
                     .set('Content-Type', `multipart/form-data`)
                     .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
                     let expectedRevData = 
@@ -92,7 +91,7 @@ describe('POST - Stig', () => {
                         "revisionStr": "V1R1",
                         "action": "replaced"
                     }
-                    if(user.name !== "stigmanadmin"){
+                    if(iteration.name !== "stigmanadmin"){
                         expect(res).to.have.status(403)
                         return
                     }

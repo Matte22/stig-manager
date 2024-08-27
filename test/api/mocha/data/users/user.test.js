@@ -4,11 +4,10 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const environment = require('../../environment.json')
-const users = require('../../iterations.js')
+const iterations = require('../../iterations.js')
 const reference = require('./referenceData.js')
 
-describe('GET - User', () => {
+describe('GET - iteration', () => {
   before(async function () {
     this.timeout(4000)
     await utils.uploadTestStigs()
@@ -16,9 +15,9 @@ describe('GET - User', () => {
     await utils.createDisabledCollectionsandAssets()
   })
 
-  for(const user of users) {
+  for(const iteration of iterations) {
 
-    describe(`user:${user.name}`, () => {
+    describe(`iteration:${iteration.name}`, () => {
 
       describe(`GET - getUserObject - /user`, () => {
 
@@ -26,10 +25,10 @@ describe('GET - User', () => {
           const res = await chai
               .request(config.baseUrl)
               .get(`/user`)
-              .set('Authorization', 'Bearer ' + user.token)
+              .set('Authorization', 'Bearer ' + iteration.token)
 
           expect(res).to.have.status(200)
-          expect(res.body.username, "expect username to be current user").to.equal(user.name)
+          expect(res.body.username, "expect username to be current user").to.equal(iteration.name)
           for(grant of res.body.collectionGrants) {
             expect(grant).to.exist
             expect(grant).to.have.property('collection')
@@ -37,16 +36,16 @@ describe('GET - User', () => {
         })
       })
       
-      describe(`GET - getUsers - /users`, () => {
+      describe(`GET - getUsers - /user`, () => {
 
-        it('Return a list of Users accessible to the requester USERNAME', async () => {
+        it('Return a list of users accessible to the requester USERNAME', async () => {
 
           const res = await chai
               .request(config.baseUrl)
               .get(`/users?elevate=true&username=${reference.wfTest.username}&projection=collectionGrants&projection=statistics`)
-              .set('Authorization', 'Bearer ' + user.token)
+              .set('Authorization', 'Bearer ' + iteration.token)
 
-          if(user.name != "stigmanadmin"){
+          if(iteration.name != "stigmanadmin"){
             expect(res).to.have.status(403)
             return
           }
@@ -55,13 +54,13 @@ describe('GET - User', () => {
           expect(res.body[0].username, "expect user to be wf-test").to.equal('wf-test')
           expect(res.body[0].userId, "expect userId to be wfTest userId").to.equal(reference.wfTest.userId)
         })
-        it('Return a list of Users accessible to the requester USERNAME no projections', async () => {
+        it('Return a list of user accessible to the requester USERNAME no projections', async () => {
 
           const res = await chai
               .request(config.baseUrl)
               .get(`/users?elevate=true&username=${reference.wfTest.username}`)
-              .set('Authorization', 'Bearer ' + user.token)
-          if(user.name != "stigmanadmin"){
+              .set('Authorization', 'Bearer ' + iteration.token)
+          if(iteration.name != "stigmanadmin"){
             expect(res).to.have.status(403)
             return
           }
@@ -70,13 +69,13 @@ describe('GET - User', () => {
           expect(res.body[0].username,"expect user to be wf-test").to.equal('wf-test')
           expect(res.body[0].userId, "expect userId to be wfTest userId").to.equal(reference.wfTest.userId)
         })
-        it('Return a list of Users accessible to the requester with elevate and projections', async () => {
+        it('Return a list of user accessible to the requester with elevate and projections', async () => {
 
           const res = await chai
               .request(config.baseUrl)
               .get(`/users?elevate=true&projection=collectionGrants&projection=statistics`)
-              .set('Authorization', 'Bearer ' + user.token)
-          if(user.name != "stigmanadmin"){
+              .set('Authorization', 'Bearer ' + iteration.token)
+          if(iteration.name != "stigmanadmin"){
             expect(res).to.have.status(403)
             return
           }
@@ -91,12 +90,12 @@ describe('GET - User', () => {
             expect(user.userId, "expect userId to be one of the users the system").to.be.oneOf(reference.allUserIds)
           }
         })
-        it('Return a list of Users accessible to the requester no projections for lvl1 sucess. ', async () => {
+        it('Return a list of users accessible to the requester no projections for lvl1 sucess. ', async () => {
 
           const res = await chai
               .request(config.baseUrl)
               .get(`/users`)
-              .set('Authorization', 'Bearer ' + user.token)
+              .set('Authorization', 'Bearer ' + iteration.token)
     
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array').of.length(reference.allUserIds.length)
@@ -108,12 +107,12 @@ describe('GET - User', () => {
 
       describe(`GET - getUserByUserId - /users{userId}}`, async () => {
 
-        it('Return a User', async () => {
+        it('Return a user', async () => {
           const res = await chai
               .request(config.baseUrl)
               .get(`/users/${reference.wfTest.userId}?elevate=true&projection=collectionGrants&projection=statistics`)
-              .set('Authorization', 'Bearer ' + user.token)
-          if(user.name != "stigmanadmin"){
+              .set('Authorization', 'Bearer ' + iteration.token)
+          if(iteration.name != "stigmanadmin"){
             expect(res).to.have.status(403)
             return
           }
@@ -129,7 +128,7 @@ describe('GET - User', () => {
   }
 })
 
-describe('POST - User', () => {
+describe('POST - user', () => {
   before(async function () {
     this.timeout(4000)
     await utils.loadAppData()
@@ -137,14 +136,14 @@ describe('POST - User', () => {
     await utils.createDisabledCollectionsandAssets()
   })
 
-  for(const user of users) {
-    describe(`user:${user.name}`, () => {
+  for(const iteration of iterations) {
+    describe(`iteration:${iteration.name}`, () => {
       describe(`POST - createUser - /users`, () => {
-        it('Create a User', async () => {
+        it('Create a user', async () => {
           const res = await chai
               .request(config.baseUrl)
               .post(`/users?elevate=true&projection=collectionGrants&projection=statistics`)
-              .set('Authorization', 'Bearer ' + user.token)
+              .set('Authorization', 'Bearer ' + iteration.token)
               .send({
                 "username": "TEST_USER" +  Math.floor(Math.random() * 1000),
                 "collectionGrants": [
@@ -154,7 +153,7 @@ describe('POST - User', () => {
                     }
                 ]
             })
-            if(user.name != "stigmanadmin"){
+            if(iteration.name != "stigmanadmin"){
               expect(res).to.have.status(403)
               return
             }
@@ -180,7 +179,7 @@ describe('POST - User', () => {
 })
 
 
-describe('PATCH - User', () => {
+describe('PATCH - user', () => {
   before(async function () {
     this.timeout(4000)
     await utils.loadAppData()
@@ -188,16 +187,16 @@ describe('PATCH - User', () => {
     await utils.createDisabledCollectionsandAssets()
   })
 
-  for(const user of users) {
-    describe(`user:${user.name}`, () => {
+  for(const iteration of iterations) {
+    describe(`iteration:${iteration.name}`, () => {
 
       describe(`PATCH - updateUser - /users{userId}`, async () => {
 
-        it('Merge provided properties with a User - Change Username', async () => {
+        it('Merge provided properties with a user - Change Username', async () => {
           const res = await chai
                 .request(config.baseUrl)
                 .patch(`/users/${reference.scrapLvl1User.userId}?elevate=true&projection=collectionGrants&projection=statistics`)
-                .set('Authorization', 'Bearer ' + user.token)
+                .set('Authorization', 'Bearer ' + iteration.token)
                 .send({
                   "username": "PatchTest",
                   "collectionGrants": [
@@ -207,7 +206,7 @@ describe('PATCH - User', () => {
                       }
                   ]
               })
-              if(user.name != "stigmanadmin"){
+              if(iteration.name != "stigmanadmin"){
                 expect(res).to.have.status(403)
                 return
               }
@@ -233,7 +232,7 @@ describe('PATCH - User', () => {
   }
 })
 
-describe('PUT - User', () => {
+describe('PUT - user', () => {
   before(async function () {
     this.timeout(4000)
     await utils.loadAppData()
@@ -241,16 +240,16 @@ describe('PUT - User', () => {
     await utils.createDisabledCollectionsandAssets()
   })
 
-  for(const user of users) {
-    describe(`user:${user.name}`, () => {
+  for(const iteration of iterations) {
+    describe(`iteration:${iteration.name}`, () => {
       describe(`PUT - replaceUser - /users{userId}`, async () => {
 
 
-        it(`Set all properties of a User - Change Username`, async () => {
+        it(`Set all properties of a user - Change Username`, async () => {
         const res = await chai
           .request(config.baseUrl)
           .put(`/users/${reference.scrapLvl1User.userId}?elevate=true&projection=collectionGrants&projection=statistics`)
-          .set('Authorization', 'Bearer ' + user.token)
+          .set('Authorization', 'Bearer ' + iteration.token)
           .send({
             "username": "putTesting",
             "collectionGrants": [
@@ -260,7 +259,7 @@ describe('PUT - User', () => {
                 }
             ]
           })
-          if(user.name != "stigmanadmin"){
+          if(iteration.name != "stigmanadmin"){
             expect(res).to.have.status(403)
             return
           }
@@ -290,7 +289,7 @@ describe('PUT - User', () => {
   }
 })
 
-describe('DELETE - User', () => {
+describe('DELETE - user', () => {
   before(async function () {
     this.timeout(4000)
     await utils.loadAppData()
@@ -298,39 +297,39 @@ describe('DELETE - User', () => {
     await utils.createDisabledCollectionsandAssets()
   })
 
-  for(const user of users) {
-    describe(`user:${user.name}`, () => {
+  for(const iteration of iterations) {
+    describe(`iteration:${iteration.name}`, () => {
 
       describe(`DELETE - deleteUser - /users/{userId}`, async () => {
-        it('Delete a User - fail due to user access record', async () => {
+        it('Delete a user - fail due to user access record', async () => {
           const res = await chai
             .request(config.baseUrl)
             .delete(`/users/${reference.collectionOwnerID}?elevate=true&projection=collectionGrants&projection=statistics`)
-            .set('Authorization', 'Bearer ' + user.token)
-            if(user.name != "stigmanadmin"){
+            .set('Authorization', 'Bearer ' + iteration.token)
+            if(iteration.name != "stigmanadmin"){
               expect(res).to.have.status(403)
               return
             }
             expect(res).to.have.status(422)
         })
-        it('Delete a User - succeed, as user has never accessed the system', async () => {
+        it('Delete a user - succeed, as user has never accessed the system', async () => {
           const res = await chai
             .request(config.baseUrl)
             .delete(`/users/${reference.deleteUser.userId}?elevate=true`)
-            .set('Authorization', 'Bearer ' + user.token)
-            if(user.name != "stigmanadmin"){
+            .set('Authorization', 'Bearer ' + iteration.token)
+            if(iteration.name != "stigmanadmin"){
               expect(res).to.have.status(403)
               return
             }
             expect(res).to.have.status(200)
-            const userEffected = await utils.getUser(environment.deleteUser.userId)
+            const userEffected = await utils.getUser("43")
             expect(userEffected, "expect empty response (user delete worked)").to.be.empty
         })
-        it('Delete a User - not elevated', async () => {
+        it('Delete a user - not elevated', async () => {
           const res = await chai
             .request(config.baseUrl)
-            .delete(`/users/${reference.deleteUser.userId}?elevate=false`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .delete(`/users/${43}?elevate=false`)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
             expect(res).to.have.status(403)
         })

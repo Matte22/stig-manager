@@ -5,7 +5,7 @@ const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const reference = require('./referenceData.js')
-const users = require('../../iterations.js')
+const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
 
 describe('PATCH - Review', () => {
@@ -16,13 +16,13 @@ describe('PATCH - Review', () => {
       await utils.uploadTestStigs()
   })
   
-  for(const user of users) {
-    if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+  for(const iteration of iterations) {
+    if (expectations[iteration.name] === undefined){
+      it(`No expectations for this iteration scenario: ${iteration.name}`, async () => {})
       continue
     }
-    describe(`user:${user.name}`, () => {
-      const distinct = expectations[user.name]
+    describe(`iteration:${iteration.name}`, () => {
+      const distinct = expectations[iteration.name]
       describe('PATCH - patchReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId}', () => {
 
         beforeEach(async function () {
@@ -34,9 +34,9 @@ describe('PATCH - Review', () => {
         it('PATCH Review with new details, expect status to remain', async () => {
           const res = await chai.request(config.baseUrl)
             .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
-            .set('Authorization', `Bearer ${user.token}`)
+            .set('Authorization', `Bearer ${iteration.token}`)
             .send({detail:"these details have changed, but the status remains"})
-          if(user.name === 'collectioncreator') {
+          if(iteration.name === 'collectioncreator') {
             expect(res).to.have.status(403)
             return
           }
@@ -46,9 +46,9 @@ describe('PATCH - Review', () => {
         it('PATCH Review with new result, expect status to reset to saved', async () => {
             const res = await chai.request(config.baseUrl)
               .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
-              .set('Authorization', `Bearer ${user.token}`)
+              .set('Authorization', `Bearer ${iteration.token}`)
               .send({result: "pass"})
-            if(user.name === 'collectioncreator') {
+            if(iteration.name === 'collectioncreator') {
               expect(res).to.have.status(403)
               return
             }
@@ -59,9 +59,9 @@ describe('PATCH - Review', () => {
         it('PATCH Review to submitted status', async () => {
             const res = await chai.request(config.baseUrl)
               .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
-              .set('Authorization', `Bearer ${user.token}`)
+              .set('Authorization', `Bearer ${iteration.token}`)
               .send({status: "submitted"})
-            if(user.name === 'collectioncreator') {
+            if(iteration.name === 'collectioncreator') {
               expect(res).to.have.status(403)
               return
             }
@@ -71,9 +71,9 @@ describe('PATCH - Review', () => {
         it('PATCH Review patched and no longer meets Collection Requirements', async () => {
             const res = await chai.request(config.baseUrl)
               .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
-              .set('Authorization', `Bearer ${user.token}`)
+              .set('Authorization', `Bearer ${iteration.token}`)
               .send({result: "fail"})
-            if(user.name === 'collectioncreator') {
+            if(iteration.name === 'collectioncreator') {
               expect(res).to.have.status(403)
               return
             }
@@ -84,10 +84,10 @@ describe('PATCH - Review', () => {
         it('PATCH Review to Accepted', async () => {
           const res = await chai.request(config.baseUrl)
             .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`)
-            .set('Authorization', `Bearer ${user.token}`)
+            .set('Authorization', `Bearer ${iteration.token}`)
             .send({status: "accepted"})
           
-          if(user.name === "lvl1" || user.name === "lvl2" || user.name === "collectioncreator") {
+          if(iteration.name === "lvl1" || iteration.name === "lvl2" || iteration.name === "collectioncreator") {
             expect(res).to.have.status(403)
             return
           }
@@ -100,14 +100,14 @@ describe('PATCH - Review', () => {
             .request(config.baseUrl)
             .patch(
               `/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`)
-            .set("Authorization", `Bearer ${user.token}`)
+            .set("Authorization", `Bearer ${iteration.token}`)
             .send({
               result: "pass",
               detail: "test\nvisible to lvl1",
               comment: "sure",
               status: "submitted",
             })
-          if(user.name === 'collectioncreator') {
+          if(iteration.name === 'collectioncreator') {
             expect(res).to.have.status(403)
             return
           }
@@ -130,9 +130,9 @@ describe('PATCH - Review', () => {
         it('Merge metadata property/value into a Review', async () => {
           const res = await chai.request(config.baseUrl)
             .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata`)
-            .set('Authorization', `Bearer ${user.token}`)
+            .set('Authorization', `Bearer ${iteration.token}`)
             .send({[reference.testCollection.metadataKey]: reference.testCollection.metadataValue})
-          if(user.name === 'collectioncreator') {
+          if(iteration.name === 'collectioncreator') {
             expect(res).to.have.status(403)
             return
           }

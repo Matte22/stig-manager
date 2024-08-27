@@ -5,7 +5,7 @@ const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const xml2js = require('xml2js');
-const users = require('../../iterations.js')
+const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
 
@@ -18,14 +18,14 @@ describe('GET - Asset', function () {
     await utils.createDisabledCollectionsandAssets()
   })
 
-  for(const user of users){
-    if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async function () {})
+  for(const iteration of iterations){
+    if (expectations[iteration.name] === undefined){
+      it(`No expectations for this iteration scenario: ${iteration.name}`, async function () {})
       continue
     }
 
-    describe(`user:${user.name}`, function () {
-      const distinct = expectations[user.name]
+    describe(`iteration:${iteration.name}`, function () {
+      const distinct = expectations[iteration.name]
 
       describe('getAsset - /assets/{assetId}', function () {
       
@@ -33,7 +33,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
           if(distinct.canModifyCollection === false){
             expect(res).to.have.status(403)
@@ -80,7 +80,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAssetNoStigs.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
           if(distinct.canModifyCollection === false){
             expect(res).to.have.status(403)
@@ -115,7 +115,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
           if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
@@ -155,7 +155,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAssetNoStigs.assetId}?projection=statusStats&projection=stigs`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
             if(!distinct.hasAccessToTestAssetNoStigs){
               expect(res).to.have.status(403)
@@ -192,7 +192,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/metadata`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
           if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
@@ -209,7 +209,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/metadata/keys`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
           if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
             return
@@ -226,7 +226,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/metadata/keys/${reference.testAsset.metadataKey}`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
           if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
             return
@@ -241,7 +241,7 @@ describe('GET - Asset', function () {
         it('Assets accessible to the requester (with STIG grants projection)', async function () {
           const res = await chai
             .request(config.baseUrl).get(`/assets?collectionId=${reference.testCollection.collectionId}&benchmarkId=${reference.benchmark}&projection=stigs&projection=stigGrants`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
           if(distinct.canModifyCollection === false){
             expect(res).to.have.status(403)
             return
@@ -275,7 +275,7 @@ describe('GET - Asset', function () {
         it('Assets accessible to the requester (with STIG grants projection - no benchmark specified)', async function () {
           const res = await chai
             .request(config.baseUrl).get(`/assets?collectionId=${reference.testCollection.collectionId}&projection=statusStats&projection=stigs&projection=stigGrants`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
           if(distinct.canModifyCollection === false){
             expect(res).to.have.status(403)
@@ -318,7 +318,7 @@ describe('GET - Asset', function () {
         it('Assets accessible to the requester - labels', async function () {
           const res = await chai
             .request(config.baseUrl).get(`/assets?collectionId=${reference.testCollection.collectionId}&labelId=${reference.testCollection.fullLabel}`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
           if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
@@ -331,10 +331,10 @@ describe('GET - Asset', function () {
           }
         })
 
-        it('Assets accessible to the requester - No StigGrants (for lvl1 user success)', async function () {
+        it('Assets accessible to the requester - No StigGrants (for lvl1 iteration success)', async function () {
           const res = await chai
             .request(config.baseUrl).get(`/assets?collectionId=${reference.testCollection.collectionId}&benchmarkId=${reference.benchmark}`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
           if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
@@ -372,7 +372,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/checklists?benchmarkId=${reference.benchmark}`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
           if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
@@ -412,7 +412,7 @@ describe('GET - Asset', function () {
             const res = await chai
               .request(config.baseUrl)
               .get(`/assets/${reference.testAsset.assetId}/checklists?format=cklb`)
-              .set('Authorization', 'Bearer ' + user.token)
+              .set('Authorization', 'Bearer ' + iteration.token)
 
             if(!distinct.hasAccessToTestAsset){
               expect(res).to.have.status(403)
@@ -443,7 +443,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/checklists?format=cklb&benchmarkId=${reference.benchmark}&benchmarkId=Windows_10_STIG_TEST`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
           if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
@@ -478,7 +478,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/checklists/`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
           if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
@@ -519,7 +519,7 @@ describe('GET - Asset', function () {
             const res = await chai
               .request(config.baseUrl)
               .get(`/assets/${reference.testAsset.assetId}/checklists?benchmarkId=${reference.benchmark}&benchmarkId=Windows_10_STIG_TEST`)
-              .set('Authorization', 'Bearer ' + user.token)
+              .set('Authorization', 'Bearer ' + iteration.token)
       
             if(!distinct.hasAccessToTestAsset){
               expect(res).to.have.status(403)
@@ -567,7 +567,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/checklists/${reference.benchmark}/${reference.revisionStr}?format=ckl`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
           if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(204)
@@ -608,7 +608,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/checklists/${reference.benchmark}/${reference.revisionStr}?format=cklb`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
           if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(204)
@@ -640,7 +640,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/checklists/${reference.benchmark}/${reference.revisionStr}?format=json`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
           if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(204)
@@ -658,7 +658,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAsset.assetId}/stigs`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
           expect(res).to.have.status(200)
           if(!distinct.hasAccessToTestAsset){
             expect(res.body).to.eql([])
@@ -678,7 +678,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/collections/${reference.testCollection.collectionId}/labels/${reference.testCollection.fullLabel}/assets`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
           if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
@@ -702,7 +702,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/collections/${reference.testCollection.collectionId}/stigs/${reference.benchmark}/assets?projection=restrictedUserAccess`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             
           if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
@@ -720,8 +720,8 @@ describe('GET - Asset', function () {
             }
             expect(asset.restrictedUserAccess).to.exist
             if(asset.restrictedUserAccess){
-              for(let user of asset.restrictedUserAccess){
-                expect(user.username).to.be.eql("lvl1")
+              for(let iteration of asset.restrictedUserAccess){
+                expect(iteration.username).to.be.eql("lvl1")
               }
             }
           }   
@@ -731,7 +731,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/collections/${reference.testCollection.collectionId}/stigs/${reference.benchmark}/assets?labelId=${reference.testCollection.lvl1Label}`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
           if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
@@ -756,7 +756,7 @@ describe('GET - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/collections/${reference.testCollection.collectionId}/stigs/${reference.benchmark}/assets?labelId=${reference.testCollection.fullLabel}`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
 
           if(!distinct.hasAccessToTestAsset){
             expect(res).to.have.status(403)
