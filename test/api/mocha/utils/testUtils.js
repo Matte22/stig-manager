@@ -3,7 +3,6 @@ const config = require('../testConfig.json')
 const FormData = require('form-data')
 const fs = require('fs')
 const path = require('path')
-const environment = require('../environment.json')
 
 const adminToken = config.adminToken
 
@@ -197,7 +196,7 @@ const importReview = async (collectionId, assetId) => {
       `${config.baseUrl}/collections/${collectionId}/reviews/${assetId}`,
       [
         {
-        "ruleId": `${environment.testCollection.ruleId}`,
+        "ruleId": "SV-106179r1_rule",
         "result": "pass",
         "detail": "test\nvisible to lvl1",
         "comment": "sure",

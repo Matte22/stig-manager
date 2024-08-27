@@ -5,11 +5,11 @@ const expect = chai.expect
 const config = require("../testConfig.json")
 const utils = require("../utils/testUtils")
 const reference = require("./referenceData")
-const users = require("../iterations")
+const iterations = require("../iterations")
 
 describe('PATCH - patchReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId} - PUT - putReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId}', () => {
     
-    for(const user of users){
+    for(const user of iterations){
         describe(`user:${user.name}`, () => {
             describe('resultEngine tests', () => {
                 before(async function () {

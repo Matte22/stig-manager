@@ -4,13 +4,13 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const users = require('../../iterations.js')
+const iterations = require('../../iterations.js')
 
 describe('Appdata', () => {
 
-  for(const user of users){
+  for(const iteration of iterations){
   
-    describe(`user:${user.name}`, () => {
+    describe(`iteration:${iteration.name}`, () => {
       before(async function () {
         this.timeout(4000)
         await utils.loadAppData()
@@ -21,8 +21,8 @@ describe('Appdata', () => {
         it('Export application data', async () => {
         const res = await chai.request(config.baseUrl)
             .get(`/op/appdata?elevate=true`)
-            .set('Authorization', `Bearer ${user.token}`)
-        if(user.name !== "stigmanadmin"){
+            .set('Authorization', `Bearer ${iteration.token}`)
+        if(iteration.name !== "stigmanadmin"){
           expect(res).to.have.status(403)
           return
         }
@@ -33,13 +33,13 @@ describe('Appdata', () => {
         it('Return API version and configuration information', async () => {
         const res = await chai.request(config.baseUrl)
             .get(`/op/configuration`)
-            .set('Authorization', `Bearer ${user.token}`)
+            .set('Authorization', `Bearer ${iteration.token}`)
         expect(res).to.have.status(200)
         })
         it('delate alter test', async () => {
           const res = await chai.request(config.baseUrl)
               .get(`/op/configuration`)
-              .set('Authorization', `Bearer ${user.token}`)
+              .set('Authorization', `Bearer ${iteration.token}`)
           expect(res).to.have.status(200)
           })
       })
@@ -47,8 +47,8 @@ describe('Appdata', () => {
         it('Return API Deployment Details', async () => {
         const res = await chai.request(config.baseUrl)
             .get(`/op/details?elevate=true`)
-            .set('Authorization', `Bearer ${user.token}`)
-        if(user.name !== "stigmanadmin"){
+            .set('Authorization', `Bearer ${iteration.token}`)
+        if(iteration.name !== "stigmanadmin"){
           expect(res).to.have.status(403)
           return
         }
@@ -64,7 +64,7 @@ describe('Appdata', () => {
         it('Return API Deployment Definition', async () => {
         const res = await chai.request(config.baseUrl)
             .get(`/op/definition`)
-            .set('Authorization', `Bearer ${user.token}`)
+            .set('Authorization', `Bearer ${iteration.token}`)
         expect(res).to.have.status(200)
         })
       })

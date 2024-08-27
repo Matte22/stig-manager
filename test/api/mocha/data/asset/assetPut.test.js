@@ -4,7 +4,7 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const users = require('../../iterations.js')
+const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
 
@@ -16,19 +16,19 @@ describe('PUT - Asset', function () {
     await utils.loadAppData()
     await utils.createDisabledCollectionsandAssets()
   })
-  for (const user of users) {
-    if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async function () {})
+  for (const iteration of iterations) {
+    if (expectations[iteration.name] === undefined){
+      it(`No expectations for this iteration scenario: ${iteration.name}`, async function () {})
       continue
     }
-    describe(`user:${user.name}`, function () {
-      const distinct = expectations[user.name]
+    describe(`iteration:${iteration.name}`, function () {
+      const distinct = expectations[iteration.name]
       describe(`replaceAsset -/assets/{assetId}`, function () {
         
         it('Set all properties of an Asset', async function () {
           const res = await chai.request(config.baseUrl)
             .put(`/assets/${reference.scrapAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send({
               "name": 'TestAsset' + Math.floor(Math.random() * 1000),
               "collectionId": reference.scrapCollection.collectionId,
@@ -92,7 +92,7 @@ describe('PUT - Asset', function () {
         it('Set all properties of an Asset - assign new STIG', async function () {
           const res = await chai.request(config.baseUrl)
             .put(`/assets/${reference.testAsset.assetId}`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send({
               "name": 'TestAsset' + Math.floor(Math.random() * 1000),
               "collectionId": reference.testCollection.collectionId,
@@ -134,7 +134,7 @@ describe('PUT - Asset', function () {
         it('Set all properties of an Asset- with metadata', async function () {
           const res = await chai.request(config.baseUrl)
             .put(`/assets/${reference.scrapAsset.assetId}`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send({
               "name":'TestAsset' + Math.floor(Math.random() * 1000),
               "collectionId": reference.scrapCollection.collectionId,
@@ -168,10 +168,10 @@ describe('PUT - Asset', function () {
 
         })
 
-        it('Set all properties of an Asset - Change Collection - invalid for all users', async function () {
+        it('Set all properties of an Asset - Change Collection - invalid for all iteration', async function () {
           const res = await chai.request(config.baseUrl)
             .put(`/assets/${reference.scrapAsset.assetId}`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send({
               "name": 'TestAsset' + Math.floor(Math.random() * 1000),
               "collectionId": reference.scrapLvl1User.userId,
@@ -193,7 +193,7 @@ describe('PUT - Asset', function () {
         it('Set metadata of an Asset', async function () {
           const res = await chai.request(config.baseUrl)
             .put(`/assets/${reference.scrapAsset.assetId}/metadata`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send({
               [reference.scrapAsset.metadataKey]: reference.scrapAsset.metadataValue
             })
@@ -215,7 +215,7 @@ describe('PUT - Asset', function () {
         it('Set one metadata key/value of an Asset', async function () {
           const res = await chai.request(config.baseUrl)
             .put(`/assets/${reference.scrapAsset.assetId}/metadata/keys/${reference.scrapAsset.metadataKey}`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .set('Content-Type', 'application/json') 
             .send(`${JSON.stringify(reference.scrapAsset.metadataValue)}`)
 
@@ -234,7 +234,7 @@ describe('PUT - Asset', function () {
         it('PUT a STIG assignment to an Asset', async function () {
           const res = await chai.request(config.baseUrl)
             .put(`/assets/${reference.scrapAsset.assetId}/stigs/${reference.scrapAsset.scrapBenchmark}`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
           if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
@@ -261,7 +261,7 @@ describe('PUT - Asset', function () {
         it('Replace a Labels Asset Mappings in a Collection', async function () {
           const res = await chai.request(config.baseUrl)
             .put(`/collections/${reference.testCollection.collectionId}/labels/${reference.testCollection.fullLabel}/assets`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send([reference.testAsset.assetId])
           if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
@@ -280,7 +280,7 @@ describe('PUT - Asset', function () {
         it('Replace a Labels Asset Mappings in a Collection assign to an asset that does not exist', async function () {
           const res = await chai.request(config.baseUrl)
             .put(`/collections/${reference.testCollection.collectionId}/labels/${reference.testCollection.fullLabel}/assets`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send(["9999"])
           expect(res).to.have.status(403)
         })

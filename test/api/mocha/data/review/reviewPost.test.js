@@ -4,11 +4,11 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const users = require('../../iterations.js')
+const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('./referenceData.js')
 
-const checkReviews = (reviews, postreview, user) => {
+const checkReviews = (reviews, postreview, iteration) => {
   for(let review of reviews){
     if(review.ruleId == reference.testCollection.ruleId && review.assetId == reference.testAsset.assetId){
       if (postreview.action == "insert") {
@@ -17,8 +17,8 @@ const checkReviews = (reviews, postreview, user) => {
       }else{
         expect(review.resultEngine).to.eql(null)
         expect(review.status.label).to.eql("saved")
-        expect(review.status.user.username).to.eql(user.name)
-        expect(review.username).to.eql(user.name)
+        expect(review.status.user.username).to.eql(iteration.name)
+        expect(review.username).to.eql(iteration.name)
         expect(review.result).to.eql(postreview.source.review.result)
         expect(review.detail).to.eql(postreview.source.review.detail)
       }
@@ -33,7 +33,7 @@ const checkReviews = (reviews, postreview, user) => {
         expect(review.resultEngine).to.eql(null)
         expect(review.status.label).to.eql("submitted")
         expect(review.status.user.username).to.eql("admin")
-        expect(review.username).to.eql(user.name)
+        expect(review.username).to.eql(iteration.name)
         expect(review.result).to.eql(postreview.source.review.result)
         expect(review.detail).to.eql(postreview.source.review.detail)
       }
@@ -46,8 +46,8 @@ const checkReviews = (reviews, postreview, user) => {
         expect(review.resultEngine).to.eql(null)
       }
       expect(review.status.label).to.eql("saved")
-      expect(review.status.user.username).to.eql(user.name)
-      expect(review.username).to.eql(user.name)
+      expect(review.status.user.username).to.eql(iteration.name)
+      expect(review.username).to.eql(iteration.name)
       expect(review.result).to.eql(postreview.source.review.result)
       expect(review.detail).to.eql(postreview.source.review.detail)
     }
@@ -56,13 +56,13 @@ const checkReviews = (reviews, postreview, user) => {
 
 describe('POST - Review', () => {
 
-  for(const user of users){
-    if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async () => {})
+  for(const iteration of iterations){
+    if (expectations[iteration.name] === undefined){
+      it(`No expectations for this iteration scenario: ${iteration.name}`, async () => {})
       continue
     }
-    describe(`user:${user.name}`, () => {
-      const distinct = expectations[user.name]
+    describe(`iteration:${iteration.name}`, () => {
+      const distinct = expectations[iteration.name]
       describe('POST - postReviewBatch - /collections/{collectionId}/reviews', () => {
         describe(`Batch Review Editing`, () => {
 
@@ -90,9 +90,9 @@ describe('POST - Review', () => {
 
               const res = await chai.request(config.baseUrl)
                 .post(`/collections/${reference.testCollection.collectionId}/reviews`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
                 .send(postreview)
-              if(user.name === 'collectioncreator') {
+              if(iteration.name === 'collectioncreator') {
                 expect(res).to.have.status(403)
                 return
               }
@@ -114,8 +114,8 @@ describe('POST - Review', () => {
                   }else{
                     expect(review.resultEngine).to.eql(null)
                     expect(review.status.label).to.eql("saved")
-                    expect(review.status.user.username).to.eql(user.name)
-                    expect(review.username).to.eql(user.name)
+                    expect(review.status.user.username).to.eql(iteration.name)
+                    expect(review.username).to.eql(iteration.name)
                     expect(review.result).to.eql(postreview.source.review.result)
                     expect(review.detail).to.eql(postreview.source.review.detail)
                   }
@@ -130,7 +130,7 @@ describe('POST - Review', () => {
                     expect(review.resultEngine).to.eql(null)
                     expect(review.status.label).to.eql("submitted")
                     expect(review.status.user.username).to.eql("admin")
-                    expect(review.username).to.eql(user.name)
+                    expect(review.username).to.eql(iteration.name)
                     expect(review.result).to.eql(postreview.source.review.result)
                     expect(review.detail).to.eql(postreview.source.review.detail)
                   }
@@ -143,8 +143,8 @@ describe('POST - Review', () => {
                     expect(review.resultEngine).to.eql(null)
                   }
                   expect(review.status.label).to.eql("saved")
-                  expect(review.status.user.username).to.eql(user.name)
-                  expect(review.username).to.eql(user.name)
+                  expect(review.status.user.username).to.eql(iteration.name)
+                  expect(review.username).to.eql(iteration.name)
                   expect(review.result).to.eql(postreview.source.review.result)
                   expect(review.detail).to.eql(postreview.source.review.detail)
                 }
@@ -170,9 +170,9 @@ describe('POST - Review', () => {
 
               const res = await chai.request(config.baseUrl)
                 .post(`/collections/${reference.testCollection.collectionId}/reviews`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
                 .send(postreview)
-              if(user.name === 'collectioncreator') {
+              if(iteration.name === 'collectioncreator') {
                 expect(res).to.have.status(403)
                 return
               }
@@ -194,8 +194,8 @@ describe('POST - Review', () => {
                   }else{
                     expect(review.resultEngine).to.eql(null)
                     expect(review.status.label).to.eql("saved")
-                    expect(review.status.user.username).to.eql(user.name)
-                    expect(review.username).to.eql(user.name)
+                    expect(review.status.user.username).to.eql(iteration.name)
+                    expect(review.username).to.eql(iteration.name)
                     expect(review.result).to.eql(postreview.source.review.result)
                     expect(review.detail).to.eql(postreview.source.review.detail)
                   }
@@ -210,7 +210,7 @@ describe('POST - Review', () => {
                     expect(review.resultEngine).to.eql(null)
                     expect(review.status.label).to.eql("submitted")
                     expect(review.status.user.username).to.eql("admin")
-                    expect(review.username).to.eql(user.name)
+                    expect(review.username).to.eql(iteration.name)
                     expect(review.result).to.eql(postreview.source.review.result)
                     expect(review.detail).to.eql(postreview.source.review.detail)
                   }
@@ -223,8 +223,8 @@ describe('POST - Review', () => {
                     expect(review.resultEngine).to.eql(null)
                   }
                   expect(review.status.label).to.eql("saved")
-                  expect(review.status.user.username).to.eql(user.name)
-                  expect(review.username).to.eql(user.name)
+                  expect(review.status.user.username).to.eql(iteration.name)
+                  expect(review.username).to.eql(iteration.name)
                   expect(review.result).to.eql(postreview.source.review.result)
                   expect(review.detail).to.eql(postreview.source.review.detail)
                 }
@@ -249,9 +249,9 @@ describe('POST - Review', () => {
 
               const res = await chai.request(config.baseUrl)
                 .post(`/collections/${reference.testCollection.collectionId}/reviews`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
                 .send(postreview)
-              if(user.name === 'collectioncreator') {
+              if(iteration.name === 'collectioncreator') {
                 expect(res).to.have.status(403)
                 return
               }
@@ -268,7 +268,7 @@ describe('POST - Review', () => {
               expect(res.body.validationErrors).to.have.length(distinct.postReviews.targetAssetsAndRule.validationErrors)
               expect(reviews).to.have.lengthOf(distinct.postReviews.targetAssetsAndRule.reviewsLength)
 
-              checkReviews(reviews, postreview, user)
+              checkReviews(reviews, postreview, iteration)
             })
             it(`POST batch review: target stig, whole stig`, async () => {
 
@@ -289,9 +289,9 @@ describe('POST - Review', () => {
 
               const res = await chai.request(config.baseUrl)
                 .post(`/collections/${reference.testCollection.collectionId}/reviews`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
                 .send(postreview)
-              if(user.name === 'collectioncreator') {
+              if(iteration.name === 'collectioncreator') {
                 expect(res).to.have.status(403)
                 return
               }
@@ -308,7 +308,7 @@ describe('POST - Review', () => {
               expect(res.body.validationErrors).to.have.length(distinct.postReviews.targetStigWholeStig.validationErrors)
               expect(reviews).to.have.lengthOf(distinct.postReviews.targetStigWholeStig.reviewsLength)
             
-              checkReviews(reviews, postreview, user)
+              checkReviews(reviews, postreview, iteration)
             })
             it(`POST batch review: target stig, whole stig - ACTION: insert`, async () => {
 
@@ -330,9 +330,9 @@ describe('POST - Review', () => {
 
               const res = await chai.request(config.baseUrl)
                 .post(`/collections/${reference.testCollection.collectionId}/reviews`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
                 .send(postreview)
-              if(user.name === 'collectioncreator') {
+              if(iteration.name === 'collectioncreator') {
                 expect(res).to.have.status(403)
                 return
               }
@@ -350,7 +350,7 @@ describe('POST - Review', () => {
               expect(res.body.validationErrors).to.have.length(distinct.postReviews.targetStigWholeStigInsert.validationErrors)
               expect(reviews).to.have.lengthOf(distinct.postReviews.targetStigWholeStigInsert.reviewsLength)
               
-              checkReviews(reviews, postreview, user)
+              checkReviews(reviews, postreview, iteration)
             })
             it(`POST batch review: target stig, whole stig - ACTION: merge`, async () => {
 
@@ -372,9 +372,9 @@ describe('POST - Review', () => {
 
               const res = await chai.request(config.baseUrl)
                 .post(`/collections/${reference.testCollection.collectionId}/reviews`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
                 .send(postreview)
-              if(user.name === 'collectioncreator') {
+              if(iteration.name === 'collectioncreator') {
                 expect(res).to.have.status(403)
                 return
               }
@@ -397,8 +397,8 @@ describe('POST - Review', () => {
                 if(review.ruleId == reference.testCollection.ruleId && review.assetId == reference.testAsset.assetId){
                   expect(review.resultEngine).to.eql(null)
                   expect(review.status.label).to.eql("saved")
-                  expect(review.status.user.username).to.eql(user.name)
-                  expect(review.username).to.eql(user.name)
+                  expect(review.status.user.username).to.eql(iteration.name)
+                  expect(review.username).to.eql(iteration.name)
                   expect(review.result).to.eql(postreview.source.review.result)
                   expect(review.detail).to.eql(postreview.source.review.detail)
                 }
@@ -407,14 +407,14 @@ describe('POST - Review', () => {
                   expect(review.status.label).to.eql("submitted")
                 
                   expect(review.status.user.username).to.eql("admin")
-                  expect(review.username).to.eql(user.name)
+                  expect(review.username).to.eql(iteration.name)
                   expect(review.result).to.eql(postreview.source.review.result)
                   expect(review.detail).to.eql(postreview.source.review.detail)
               }
               else if (review.ruleId == reference.testCollection.ruleId && review.assetId == 62) {
                   expect(review.status.label).to.eql("saved")
-                  expect(review.status.user.username).to.eql(user.name)
-                  expect(review.username).to.eql(user.name)
+                  expect(review.status.user.username).to.eql(iteration.name)
+                  expect(review.username).to.eql(iteration.name)
                   expect(review.result).to.eql(postreview.source.review.result)
                   expect(review.detail).to.eql(postreview.source.review.detail)
                 }
@@ -446,9 +446,9 @@ describe('POST - Review', () => {
 
               const res = await chai.request(config.baseUrl)
                 .post(`/collections/${reference.testCollection.collectionId}/reviews`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
                 .send(postreview)
-              if(user.name === 'collectioncreator') {
+              if(iteration.name === 'collectioncreator') {
                 expect(res).to.have.status(403)
                 return
               }
@@ -496,9 +496,9 @@ describe('POST - Review', () => {
 
               const res = await chai.request(config.baseUrl)
                 .post(`/collections/${reference.testCollection.collectionId}/reviews`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
                 .send(postreview)
-              if(user.name === 'collectioncreator') {
+              if(iteration.name === 'collectioncreator') {
                 expect(res).to.have.status(403)
                 return
               }
@@ -521,8 +521,8 @@ describe('POST - Review', () => {
                 if(review.ruleId == reference.testCollection.ruleId && review.assetId == reference.testAsset.assetId){
                   expect(review.resultEngine).to.eql(null);
                   expect(review.status.label).to.eql("saved");
-                  expect(review.status.user.username).to.eql(user.name)
-                  expect(review.username).to.eql(user.name);
+                  expect(review.status.user.username).to.eql(iteration.name)
+                  expect(review.username).to.eql(iteration.name);
                   expect(review.result).to.eql(postreview.source.review.result);
                   expect(review.detail).to.eql(postreview.source.review.detail);
                 
@@ -531,15 +531,15 @@ describe('POST - Review', () => {
                   expect(review.resultEngine).to.eql(null);
                   expect(review.status.label).to.eql("submitted");
                   expect(review.status.user.username).to.eql("admin");
-                  expect(review.username).to.eql(user.name);
+                  expect(review.username).to.eql(iteration.name);
                   expect(review.result).to.eql(postreview.source.review.result);
                   expect(review.detail).to.eql(postreview.source.review.detail);
               }
               else if (review.ruleId == reference.testCollection.ruleId && review.assetId == 62) {
                 expect(review.resultEngine).to.eql(null);
                 expect(review.status.label).to.eql("saved");
-                expect(review.status.user.username).to.eql(user.name);
-                expect(review.username).to.eql(user.name);
+                expect(review.status.user.username).to.eql(iteration.name);
+                expect(review.username).to.eql(iteration.name);
                 expect(review.result).to.eql(postreview.source.review.result);
                 expect(review.detail).to.eql(postreview.source.review.detail);
                 }
@@ -572,9 +572,9 @@ describe('POST - Review', () => {
 
               const res = await chai.request(config.baseUrl)
                 .post(`/collections/${reference.testCollection.collectionId}/reviews`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
                 .send(postreview)
-              if(user.name === 'collectioncreator') {
+              if(iteration.name === 'collectioncreator') {
                 expect(res).to.have.status(403)
                 return
               }
@@ -597,8 +597,8 @@ describe('POST - Review', () => {
                 if(review.ruleId == reference.testCollection.ruleId && review.assetId == reference.testAsset.assetId){
                   expect(review.resultEngine).to.eql(null)
                   expect(review.status.label).to.eql("saved")
-                  expect(review.status.user.username).to.eql(user.name)
-                  expect(review.username).to.eql(user.name)
+                  expect(review.status.user.username).to.eql(iteration.name)
+                  expect(review.username).to.eql(iteration.name)
                   expect(review.result).to.eql(postreview.source.review.result)
                   expect(review.detail).to.eql(postreview.source.review.detail)
                 
@@ -612,8 +612,8 @@ describe('POST - Review', () => {
               else if (review.ruleId == reference.testCollection.ruleId && review.assetId == 62) {
                 expect(review.resultEngine).to.eql(null);
                 expect(review.status.label).to.eql("saved");
-                expect(review.status.user.username).to.eql(user.name);
-                expect(review.username).to.eql(user.name);
+                expect(review.status.user.username).to.eql(iteration.name);
+                expect(review.username).to.eql(iteration.name);
                 expect(review.result).to.eql(postreview.source.review.result);
                 expect(review.detail).to.eql(postreview.source.review.detail);
                 }
@@ -647,9 +647,9 @@ describe('POST - Review', () => {
 
               const res = await chai.request(config.baseUrl)
                 .post(`/collections/${reference.testCollection.collectionId}/reviews`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
                 .send(postreview)
-              if(user.name === 'collectioncreator') {
+              if(iteration.name === 'collectioncreator') {
                 expect(res).to.have.status(403)
                 return
               }
@@ -672,8 +672,8 @@ describe('POST - Review', () => {
                 if(review.ruleId == reference.testCollection.ruleId && review.assetId == reference.testAsset.assetId){
                   expect(review.resultEngine).to.eql(null)
                   expect(review.status.label).to.eql("saved")
-                  expect(review.status.user.username).to.eql(user.name)
-                  expect(review.username).to.eql(user.name)
+                  expect(review.status.user.username).to.eql(iteration.name)
+                  expect(review.username).to.eql(iteration.name)
                   expect(review.result).to.eql(postreview.source.review.result)
                   expect(review.detail).to.eql(postreview.source.review.detail)
                 
@@ -688,8 +688,8 @@ describe('POST - Review', () => {
               else if (review.ruleId == reference.testCollection.ruleId && review.assetId == 62) {
                 expect(review.resultEngine).to.eql(null);
                 expect(review.status.label).to.eql("saved");
-                expect(review.status.user.username).to.eql(user.name);
-                expect(review.username).to.eql(user.name);
+                expect(review.status.user.username).to.eql(iteration.name);
+                expect(review.username).to.eql(iteration.name);
                 expect(review.result).to.eql(postreview.source.review.result);
                 expect(review.detail).to.eql(postreview.source.review.detail);
                 }
@@ -721,9 +721,9 @@ describe('POST - Review', () => {
 
               const res = await chai.request(config.baseUrl)
                 .post(`/collections/${reference.testCollection.collectionId}/reviews`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
                 .send(postreview)
-              if(user.name === 'collectioncreator') {
+              if(iteration.name === 'collectioncreator') {
                 expect(res).to.have.status(403)
                 return
               }
@@ -743,7 +743,7 @@ describe('POST - Review', () => {
 
               for(let review of reviews){
                   expect(review.status.label).to.eql("saved")
-                  expect(review.status.user.username).to.eql(user.name)
+                  expect(review.status.user.username).to.eql(iteration.name)
               }
             })
             it(`POST batch review: update with updateFilters - pass only`, async () => {
@@ -771,9 +771,9 @@ describe('POST - Review', () => {
 
                 const res = await chai.request(config.baseUrl)
                   .post(`/collections/${reference.testCollection.collectionId}/reviews`)
-                  .set('Authorization', `Bearer ${user.token}`)
+                  .set('Authorization', `Bearer ${iteration.token}`)
                   .send(postreview)
-                if(user.name === 'collectioncreator') {
+                if(iteration.name === 'collectioncreator') {
                   expect(res).to.have.status(403)
                   return
                 }
@@ -796,8 +796,8 @@ describe('POST - Review', () => {
                   if(review.ruleId == reference.testCollection.ruleId && review.assetId == reference.testAsset.assetId){
                     expect(review.resultEngine).to.eql(null)
                     expect(review.status.label).to.eql("saved")
-                    expect(review.status.user.username).to.eql(user.name)
-                    expect(review.username).to.eql(user.name)
+                    expect(review.status.user.username).to.eql(iteration.name)
+                    expect(review.username).to.eql(iteration.name)
                     expect(review.result).to.eql(postreview.source.review.result)
                     expect(review.detail).to.eql(postreview.source.review.detail)
                   
@@ -812,8 +812,8 @@ describe('POST - Review', () => {
                 else if (review.ruleId == reference.testCollection.ruleId && review.assetId == 62) {
                   expect(review.resultEngine).to.eql(null);
                   expect(review.status.label).to.eql("saved");
-                  expect(review.status.user.username).to.eql(user.name);
-                  expect(review.username).to.eql(user.name);
+                  expect(review.status.user.username).to.eql(iteration.name);
+                  expect(review.username).to.eql(iteration.name);
                   expect(review.result).to.eql(postreview.source.review.result);
                   expect(review.detail).to.eql(postreview.source.review.detail);
                   }
@@ -845,9 +845,9 @@ describe('POST - Review', () => {
 
               const res = await chai.request(config.baseUrl)
                 .post(`/collections/${reference.testCollection.collectionId}/reviews`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
                 .send(postreview)
-              if(user.name === 'collectioncreator') {
+              if(iteration.name === 'collectioncreator') {
                 expect(res).to.have.status(403)
                 return
               }
@@ -858,7 +858,7 @@ describe('POST - Review', () => {
               expect(res.body.failedValidation).to.eql(3)
               expect(res.body.validationErrors).to.have.length(3)
                     
-              if (user.name == "lvl1"){
+              if (iteration.name == "lvl1"){
                 for (review of res.body.validationErrors){
                     expect(review.error).to.be.oneOf(["status is not allowed for the result","no grant for this asset/ruleId"])
                     if (review.assetId == 62) {
@@ -891,9 +891,9 @@ describe('POST - Review', () => {
 
             const res = await chai.request(config.baseUrl)
               .post(`/collections/${reference.testCollection.collectionId}/reviews`)
-              .set('Authorization', `Bearer ${user.token}`)
+              .set('Authorization', `Bearer ${iteration.token}`)
               .send(postreview)
-            if(user.name === 'collectioncreator') {
+            if(iteration.name === 'collectioncreator') {
               expect(res).to.have.status(403)
               return
             }
@@ -926,8 +926,8 @@ describe('POST - Review', () => {
             else if (review.ruleId == reference.testCollection.ruleId && review.assetId == 62) {
                 expect(review.resultEngine).to.eql(null);
                 expect(review.status.label).to.eql("saved");
-                expect(review.status.user.username).to.eql(user.name);
-                expect(review.username).to.eql(user.name);
+                expect(review.status.user.username).to.eql(iteration.name);
+                expect(review.username).to.eql(iteration.name);
                 expect(review.result).to.eql(postreview.source.review.result);
                 expect(review.detail).to.eql(postreview.source.review.detail);
               }
@@ -950,9 +950,9 @@ describe('POST - Review', () => {
 
             const res = await chai.request(config.baseUrl)
               .post(`/collections/${reference.testCollection.collectionId}/reviews`)
-              .set('Authorization', `Bearer ${user.token}`)
+              .set('Authorization', `Bearer ${iteration.token}`)
               .send(postreview)
-            if(user.name === 'collectioncreator') {
+            if(iteration.name === 'collectioncreator') {
               expect(res).to.have.status(403)
               return
             }
@@ -968,13 +968,13 @@ describe('POST - Review', () => {
 
             for (let review of reviews){
               if (review.ruleId == reference.testCollection.ruleId && review.assetId == reference.testAsset.assetId){ 
-                // CASE: Existing review, test reset of resultengine and status - all users can update
+                // CASE: Existing review, test reset of resultengine and status - all iterations can update
                   expect(review.status.label).to.eql("submitted");
                   expect(review.status.user.username).to.eql("admin");
                   expect(review.username).to.eql("admin");
                   expect(review.result).to.eql("pass");
               }
-              // CASE: Existing review, test reset of resultengine and status - all users can update
+              // CASE: Existing review, test reset of resultengine and status - all iterations can update
               else if (review.ruleId == reference.testCollection.ruleId && review.assetId == 154) {
                   expect(review.resultEngine).to.eql(null);
                   expect(review.status.label).to.eql("submitted");
@@ -986,8 +986,8 @@ describe('POST - Review', () => {
             else if (review.ruleId == reference.testCollection.ruleId && review.assetId == 62) {
                 expect(review.resultEngine).to.eql(null);
                 expect(review.status.label).to.eql("saved");
-                expect(review.status.user.username).to.eql(user.name);
-                expect(review.username).to.eql(user.name);
+                expect(review.status.user.username).to.eql(iteration.name);
+                expect(review.username).to.eql(iteration.name);
                 expect(review.result).to.eql(postreview.source.review.result);
                 expect(review.detail).to.eql(postreview.source.review.detail);
               }
@@ -1011,9 +1011,9 @@ describe('POST - Review', () => {
 
           const res = await chai.request(config.baseUrl)
             .post(`/collections/${reference.testCollection.collectionId}/reviews`)
-            .set('Authorization', `Bearer ${user.token}`)
+            .set('Authorization', `Bearer ${iteration.token}`)
             .send(postreview)
-          if(user.name === 'collectioncreator') {
+          if(iteration.name === 'collectioncreator') {
             expect(res).to.have.status(403)
             return
           }
@@ -1029,13 +1029,13 @@ describe('POST - Review', () => {
         
           for (let review of reviews){
             if (review.ruleId == reference.testCollection.ruleId && review.assetId == reference.testAsset.assetId){ 
-              // CASE: Existing review, test reset of resultengine and status - all users can update
+              // CASE: Existing review, test reset of resultengine and status - all iterations can update
                 expect(review.status.label).to.eql("submitted");
                 expect(review.status.user.username).to.eql("admin");
                 expect(review.username).to.eql("admin");
                 expect(review.result).to.eql("pass");
             }
-            // CASE: Existing review, test reset of resultengine and status - all users can update
+            // CASE: Existing review, test reset of resultengine and status - all iterations can update
             else if (review.ruleId == reference.testCollection.ruleId && review.assetId == 154) {
                 expect(review.resultEngine).to.eql(null);
                 expect(review.status.label).to.eql("submitted");
@@ -1047,8 +1047,8 @@ describe('POST - Review', () => {
           else if (review.ruleId == reference.testCollection.ruleId && review.assetId == 62) {
               expect(review.resultEngine).to.eql(null);
               expect(review.status.label).to.eql("saved");
-              expect(review.status.user.username).to.eql(user.name);
-              expect(review.username).to.eql(user.name);
+              expect(review.status.user.username).to.eql(iteration.name);
+              expect(review.username).to.eql(iteration.name);
               expect(review.result).to.eql(postreview.source.review.result);
               expect(review.detail).to.eql(postreview.source.review.detail);
             }
@@ -1071,7 +1071,7 @@ describe('POST - Review', () => {
         it('Import one or more Reviews from a JSON body new ruleId', async () => {
           const res = await chai.request(config.baseUrl)
             .post(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}`)
-            .set('Authorization', `Bearer ${user.token}`)
+            .set('Authorization', `Bearer ${iteration.token}`)
             .send([
               {
               "ruleId": `SV-106191r1_rule`,
@@ -1089,7 +1089,7 @@ describe('POST - Review', () => {
                 updated: 0
             }
           }
-          if(user.name === 'collectioncreator') {
+          if(iteration.name === 'collectioncreator') {
             expect(res).to.have.status(403)
             return
           }
@@ -1100,7 +1100,7 @@ describe('POST - Review', () => {
         it('Import one or more Reviews from a JSON body already used ruleId should be an update', async () => {
           const res = await chai.request(config.baseUrl)
             .post(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}`)
-            .set('Authorization', `Bearer ${user.token}`)
+            .set('Authorization', `Bearer ${iteration.token}`)
             .send([
               {
               "ruleId": `${reference.testCollection.ruleId}`,
@@ -1118,7 +1118,7 @@ describe('POST - Review', () => {
                 updated: 1
             }
           }
-          if(user.name === 'collectioncreator') {
+          if(iteration.name === 'collectioncreator') {
             expect(res).to.have.status(403)
             return
           }
@@ -1129,7 +1129,7 @@ describe('POST - Review', () => {
         it('Import reviews for asset in deleted collection and deleted asset', async () => {
           const res = await chai.request(config.baseUrl)
             .post(`/collections/${deletedCollection.collectionId}/reviews/${deletedAsset.assetId}`)
-            .set('Authorization', `Bearer ${user.token}`)
+            .set('Authorization', `Bearer ${iteration.token}`)
             .send([
               {
               "ruleId": `${reference.testCollection.ruleId}`,
@@ -1145,7 +1145,7 @@ describe('POST - Review', () => {
         it('Import reviews for asset in deleted collection', async () => {
           const res = await chai.request(config.baseUrl)
             .post(`/collections/${deletedCollection.collectionId}/reviews/${reference.testAsset.assetId}`)
-            .set('Authorization', `Bearer ${user.token}`)
+            .set('Authorization', `Bearer ${iteration.token}`)
             .send([
               {
               "ruleId": `${reference.testCollection.ruleId}`,
@@ -1161,7 +1161,7 @@ describe('POST - Review', () => {
         it('Import reviews for deleted asset', async () => {
           const res = await chai.request(config.baseUrl)
             .post(`/collections/${deletedCollection.collectionId}/reviews/${reference.testAsset.assetId}`)
-            .set('Authorization', `Bearer ${user.token}`)
+            .set('Authorization', `Bearer ${iteration.token}`)
             .send([
               {
               "ruleId": `${reference.testCollection.ruleId}`,

@@ -4,7 +4,7 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const users = require('../../iterations.js')
+const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
 
@@ -17,21 +17,21 @@ describe('DELETE - Asset', function () {
     await utils.createDisabledCollectionsandAssets()
   })
 
-  for(const user of users){
-    if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async function () {})
+  for(const iteration of iterations){
+    if (expectations[iteration.name] === undefined){
+      it(`No expectations for this iteration scenario: ${iteration.name}`, async function () {})
       continue
     }
 
-    describe(`user:${user.name}`, function () {
-      const distinct = expectations[user.name]
+    describe(`iteration:${iteration.name}`, function () {
+      const distinct = expectations[iteration.name]
       describe(`deleteAssetMetadataKey - /assets/{assetId}/metadata/keys/{key}`, function () {
         it('Delete one metadata key/value of an Asset', async function () {
           const res = await chai
             .request(config.baseUrl)
             .delete(`/assets/${reference.scrapAsset.assetId}/metadata/keys/${reference.scrapAsset.metadataKey}`)
             .set('Content-Type', 'application/json') 
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send(`${JSON.stringify(reference.scrapAsset.metadataValue)}`)
 
           if(!distinct.canModifyCollection){
@@ -49,7 +49,7 @@ describe('DELETE - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .delete(`/assets/${reference.scrapAsset.assetId}/stigs`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
           if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
@@ -66,7 +66,7 @@ describe('DELETE - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .delete(`/assets/${reference.scrapAsset.assetId}/stigs/${reference.scrapAsset.scrapBenchmark}`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
           if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
@@ -109,7 +109,7 @@ describe('DELETE - Asset', function () {
         const res = await chai
             .request(config.baseUrl)
             .delete(`/assets/${assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
         if(!distinct.canModifyCollection){
           expect(res).to.have.status(403)
           return
@@ -123,7 +123,7 @@ describe('DELETE - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .delete(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
-            .set('Authorization', 'Bearer ' + user.token) 
+            .set('Authorization', 'Bearer ' + iteration.token) 
           if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return

@@ -4,7 +4,7 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const users = require('../../iterations')
+const iterations = require('../../iterations')
 const expectations = require('./expectations')
 const reference = require('../../referenceData.js')
 
@@ -20,23 +20,23 @@ describe('DELETE - Collection ', function () {
       await utils.loadAppData()
   })
 
-  for(const user of users){
+  for(const iteration of iterations){
     
-    if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`,async function () {})
+    if (expectations[iteration.name] === undefined){
+      it(`No expectations for this iteration scenario: ${iteration.name}`,async function () {})
       continue
     }
 
-    describe(`user:${user.name}`, function () {
-      const distinct = expectations[user.name]
+    describe(`iteration:${iteration.name}`, function () {
+      const distinct = expectations[iteration.name]
 
       describe('deleteCollection - /collections/{collectionId}', function () {
-        if (user.name === 'stigmanadmin' ){
+        if (iteration.name === 'stigmanadmin' ){
 
           it('Delete a Collection - elevated stigmanadmin only',async function () {
               const res = await chai.request(config.baseUrl)
                   .delete(`/collections/${reference.deleteCollection.collectionId_adminOnly}?elevate=true&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs`)
-                  .set('Authorization', `Bearer ${user.token}`)
+                  .set('Authorization', `Bearer ${iteration.token}`)
 
               expect(res).to.have.status(200)
 
@@ -51,7 +51,7 @@ describe('DELETE - Collection ', function () {
         it('Delete a Collection no elevate',async function () {
           const res = await chai.request(config.baseUrl)
               .delete(`/collections/${reference.deleteCollection.collectionId}?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs`)
-              .set('Authorization', `Bearer ${user.token}`)
+              .set('Authorization', `Bearer ${iteration.token}`)
 
           if(distinct.canDeleteCollection === false){ 
             expect(res).to.have.status(403)
@@ -72,7 +72,7 @@ describe('DELETE - Collection ', function () {
         it('Delete a Collection Label',async function () {
             const res = await chai.request(config.baseUrl)
                 .delete(`/collections/${reference.scrapCollection.collectionId}/labels/${reference.scrapCollection.scrapLabel}`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
             if(distinct.canModifyCollection === false){
                 expect(res).to.have.status(403)
                 return
@@ -88,7 +88,7 @@ describe('DELETE - Collection ', function () {
         it('Delete a Collection Metadata Key',async function () {
             const res = await chai.request(config.baseUrl)
                 .delete(`/collections/${reference.scrapCollection.collectionId}/metadata/keys/${reference.scrapCollection.collectionMetadataKey}`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
 
               if(distinct.canModifyCollection === false){
                 expect(res).to.have.status(403)
@@ -106,7 +106,7 @@ describe('DELETE - Collection ', function () {
         it('History records - date',async function () {
             const res = await chai.request(config.baseUrl)
                 .delete(`/collections/${reference.testCollection.collectionId}/review-history?retentionDate=${reference.testCollection.reviewHistory.endDate}`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
                 
             if(distinct.canModifyCollection === false){
               expect(res).to.have.status(403)
@@ -120,7 +120,7 @@ describe('DELETE - Collection ', function () {
         it('History records - date and asset',async function () {
             const res = await chai.request(config.baseUrl)
                 .delete(`/collections/${reference.testCollection.collectionId}/review-history?retentionDate=${reference.testCollection.reviewHistory.endDate}&assetId=${reference.testCollection.testAssetId}`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
 
               if(distinct.canModifyCollection === false){
                 expect(res).to.have.status(403)

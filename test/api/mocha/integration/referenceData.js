@@ -2,7 +2,7 @@
 
 const { lvl1 } = require("../data/collection/expectations")
 
-// The standard "testCollection" includes users named after the roles they have for that specific Collection, is used in most "GET" tests or tests not expected to change data that could alter expectations for subsequent tests. "scrapCollection" is used for tests that alter Collection data in some way.
+// The standard "testCollection" includes iterations named after the roles they have for that specific Collection, is used in most "GET" tests or tests not expected to change data that could alter expectations for subsequent tests. "scrapCollection" is used for tests that alter Collection data in some way.
 
 const reference = {
     testStigfile: "U_VPN_SRG_V1R0_Manual-xccdf.xml",
@@ -11,7 +11,9 @@ const reference = {
     benchmark: "VPN_SRG_TEST",
     ruleId: "SV-106179r1_rule",
     ruleIdPinnedRev: "SV-106179r123456789_rule",
+    reviewKeyChangeFile: "U_VPN_SRG_V2R3_Manual-xccdf-reviewKeyChange.xml",
     writeStigPropsByCollectionStig: ['62', '42', '154'],
+    reviewMatchString: "test",
     freshRuleId: "SV-106195r1_rule",
     scrapLabel: "df4e6836-a003-11ec-b1bc-0242ac110002",
     testCollection: {

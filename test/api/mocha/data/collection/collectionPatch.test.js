@@ -4,7 +4,7 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const users = require('../../iterations.js')
+const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
 const requestBodies = require('./requestBodies.js')
@@ -17,14 +17,14 @@ describe('PATCH - Collection', function () {
         await utils.loadAppData()
     })
 
-    for(const user of users) {
-      const distinct = expectations[user.name]
-      if (expectations[user.name] === undefined){
-        it(`No expectations for this iteration scenario: ${user.name}`,async function () {})
+    for(const iteration of iterations) {
+      const distinct = expectations[iteration.name]
+      if (expectations[iteration.name] === undefined){
+        it(`No expectations for this iteration scenario: ${iteration.name}`,async function () {})
         return
       }
 
-      describe(`user:${user.name}`, function () {
+      describe(`iteration:${iteration.name}`, function () {
 
         describe('updateCollection - /collections/{collectionId}', function () {
 
@@ -33,7 +33,7 @@ describe('PATCH - Collection', function () {
             const patchRequest = requestBodies.updateCollection            
             const res = await chai.request(config.baseUrl)
                   .patch(`/collections/${reference.scrapCollection.collectionId}?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs`)
-                  .set('Authorization', `Bearer ${user.token}`)
+                  .set('Authorization', `Bearer ${iteration.token}`)
                   .send(patchRequest)
             
                 if(distinct.canModifyCollection === false){
@@ -71,7 +71,7 @@ describe('PATCH - Collection', function () {
             const body = requestBodies.patchCollectionLabelById
             const res = await chai.request(config.baseUrl)
                 .patch(`/collections/${reference.scrapCollection.collectionId}/labels/${reference.scrapCollection.scrapLabel}`)
-                .set('Authorization', `Bearer ${user.token}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
                 .send(body)
                 
               if(distinct.canModifyCollection === false){
@@ -93,7 +93,7 @@ describe('PATCH - Collection', function () {
               
               const res = await chai.request(config.baseUrl)
                   .patch(`/collections/${reference.scrapCollection.collectionId}/metadata`)
-                  .set('Authorization', `Bearer ${user.token}`)
+                  .set('Authorization', `Bearer ${iteration.token}`)
                   .send({[reference.scrapCollection.collectionMetadataKey]: reference.scrapCollection.collectionMetadataValue})
 
                 if(distinct.canModifyCollection === false){

@@ -4,7 +4,7 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const users = require('../../iterations.js')
+const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
 
@@ -16,20 +16,20 @@ describe('POST - Asset', function () {
     await utils.createDisabledCollectionsandAssets()
   })
 
-  for (const user of users) {
-    if (expectations[user.name] === undefined){
-      it(`No expectations for this iteration scenario: ${user.name}`, async function () {})
+  for (const iteration of iterations) {
+    if (expectations[iteration.name] === undefined){
+      it(`No expectations for this iteration scenario: ${iteration.name}`, async function () {})
       continue
     }
-    describe(`user:${user.name}`, function () {
-      const distinct = expectations[user.name]
+    describe(`iteration:${iteration.name}`, function () {
+      const distinct = expectations[iteration.name]
       describe(`createAsset - /assets`, function () {
 
         it('Create an Asset (with stigs projection)', async function () {
           const res = await chai
             .request(config.baseUrl)
             .post('/assets?projection=stigs')
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send({
               name: 'TestAsset' + Math.floor(Math.random() * 1000),
               collectionId: reference.testCollection.collectionId,
@@ -68,7 +68,7 @@ describe('POST - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .post('/assets?projection=statusStats')
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send({
               name: 'TestAsset' + Math.floor(Math.random() * 1000),
               collectionId: reference.testCollection.collectionId,
@@ -104,7 +104,7 @@ describe('POST - Asset', function () {
           const res = await chai
             .request(config.baseUrl)
             .post('/assets?projection=stigGrants')
-            .set('Authorization', 'Bearer ' + user.token)
+            .set('Authorization', 'Bearer ' + iteration.token)
             .send({
               name: 'TestAsset' + Math.floor(Math.random() * 1000),
               collectionId: reference.testCollection.collectionId,

@@ -2,8 +2,8 @@ const chai = require('chai')
 const chaiHttp = require('chai-http')
 chai.use(chaiHttp)
 const expect = chai.expect
-const config = require('../../testConfig.json')
-const utils = require('../../utils/testUtils')
+const config = require('../testConfig.json')
+const utils = require('../utils/testUtils.js')
 const reference = require('./referenceData.js')
 
 const user =

@@ -6,7 +6,6 @@ const fs = require("fs")
 const path = require("path")
 const config = require("../testConfig.json")
 const utils = require("../utils/testUtils")
-const environment = require("../environment.json")
 const reference = require("./referenceData.js")
 
 const user = {
@@ -37,7 +36,7 @@ describe(`POST - importBenchmark - /stigs`, () => {
     it('Import a new STIG - with new RuleID matching old content', async function () {
       
         const directoryPath = path.join(__dirname, '../../../api/form-data-files/')
-        const testStigfile = environment.reviewKeyChangeFile
+        const testStigfile = reference.reviewKeyChangeFile
         const filePath = path.join(directoryPath, testStigfile)
    
         const res = await chai.request(config.baseUrl)
@@ -50,15 +49,15 @@ describe(`POST - importBenchmark - /stigs`, () => {
     it('Return the Review for an Asset and Rule - rule matches on stigId/checkContent', async function () {
 
         const res = await chai.request(config.baseUrl)
-          .get(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${'SV-106179r1_yyyy'}?projection=stigs&projection=rule`)
+          .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106179r1_yyyy'}?projection=stigs&projection=rule`)
           .set('Authorization', `Bearer ${user.token}`)
         expect(res).to.have.status(200)
         expect(res.body.stigs).to.not.be.null
         expect(res.body.rule).to.exist
-        expect(res.body.ruleId).to.eql(environment.testCollection.ruleId)
+        expect(res.body.ruleId).to.eql(reference.ruleId)
         expect(res.body.ruleIds).to.include("SV-106179r1_yyyy");
-        expect(res.body.ruleIds).to.include(environment.testCollection.ruleId)
-        const regex = new RegExp(environment.reviewMatchString)
+        expect(res.body.ruleIds).to.include(reference.ruleId)
+        const regex = new RegExp(reference.reviewMatchString)
         expect(res.body.detail).to.match(regex)
     })
     it('PUT Review: stigs and rule projections Copy', async () => {
@@ -72,7 +71,7 @@ describe(`POST - importBenchmark - /stigs`, () => {
         }
 
         const res = await chai.request(config.baseUrl)
-            .put(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${'SV-106179r1_yyyy'}`)
+            .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106179r1_yyyy'}`)
             .set('Authorization', `Bearer ${user.token}`)
             .send(putBody)
 
@@ -80,11 +79,11 @@ describe(`POST - importBenchmark - /stigs`, () => {
     })    
     it('Set all properties of an Asset - assign new STIG', async function () {
         const res = await chai.request(config.baseUrl)
-          .put(`/assets/${environment.testAsset.assetId}`)
+          .put(`/assets/${reference.testAsset.assetId}`)
           .set('Authorization', 'Bearer ' + user.token)
           .send({
             "name": 'Collection_X_lvl1_asset-1',
-            "collectionId": environment.testCollection.collectionId,
+            "collectionId": reference.testCollection.collectionId,
             "description": "test desc",
             "ip": "1.1.1.1",
             "noncomputing": true,
@@ -113,7 +112,7 @@ describe(`POST - importBenchmark - /stigs`, () => {
             "status": "submitted"
         }
         const respData = await chai.request(config.baseUrl)
-          .put(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${'SV-106179r1_yyyy'}?projection=stigs&projection=rule`)
+          .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106179r1_yyyy'}?projection=stigs&projection=rule`)
           .set('Authorization', `Bearer ${user.token}`)
           .send(reqData)
 
@@ -171,15 +170,15 @@ describe(`POST - importBenchmark - /stigs`, () => {
     it('Return the Review for an Asset and Rule - rule matches on stigId/checkContent Copy', async function () {
 
         const res = await chai.request(config.baseUrl)
-          .get(`/collections/${environment.testCollection.collectionId}/reviews/${environment.testAsset.assetId}/${'SV-106179r1_yyyy'}?projection=stigs&projection=rule`)
+          .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106179r1_yyyy'}?projection=stigs&projection=rule`)
           .set('Authorization', `Bearer ${user.token}`)
         expect(res).to.have.status(200)
         expect(res.body.stigs).to.not.be.null
         expect(res.body.rule).to.exist
         expect(res.body.ruleId).to.eql("SV-106179r1_yyyy")
         expect(res.body.ruleIds).to.include("SV-106179r1_yyyy");
-        expect(res.body.ruleIds).to.include(environment.testCollection.ruleId)
-        const regex = new RegExp(environment.reviewMatchString)
+        expect(res.body.ruleIds).to.include(reference.ruleId)
+        const regex = new RegExp(reference.reviewMatchString)
         expect(res.body.detail).to.match(regex)
     })
   })

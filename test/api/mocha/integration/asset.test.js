@@ -4,8 +4,7 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require("../testConfig.json")
 const utils = require("../utils/testUtils")
-const environment = require("../environment.json")
-const reference = require("./referenceData")
+const reference = require("./referenceData.js")
 
 const user = {
   name: "admin",
@@ -26,26 +25,26 @@ describe(`PUT - attachAssetsToStig - /collections/{collectionId}/stigs/{benchmar
     })
     it('gh-756 issue (assigning a benchmark in one collection removes all assignements for that benchmark from all other collections) . assign a benchmark used in test Collection in scrap Collection', async function () {
       const res = await chai.request(config.baseUrl)
-      .put(`/collections/${environment.scrapCollection.collectionId}/stigs/${environment.testCollection.benchmark}/assets?projection=restrictedUserAccess`)
+      .put(`/collections/${reference.scrapCollection.collectionId}/stigs/${reference.testCollection.benchmark}/assets?projection=restrictedUserAccess`)
       .set('Authorization', 'Bearer ' + user.token)
-      .send([environment.scrapAsset.assetId])
+      .send([reference.scrapAsset.assetId])
       
       expect(res).to.have.status(200)
       expect(res.body).to.be.an('array')
       expect(res.body).to.be.an('array').of.length(1)
-      expect(res.body[0].assetId).to.equal(environment.scrapAsset.assetId)
+      expect(res.body[0].assetId).to.equal(reference.scrapAsset.assetId)
       expect(res.body[0]).to.have.property('restrictedUserAccess')
     })
     it('Verify that test collection still has expected benchmark assignments', async function () {
         const res = await chai.request(config.baseUrl)
-        .get(`/collections/${environment.testCollection.collectionId}/stigs`)
+        .get(`/collections/${reference.testCollection.collectionId}/stigs`)
         .set('Authorization', 'Bearer ' + user.token)
         expect(res).to.have.status(200)
         let returnedStigs = []
         for (let stig of res.body) {
             returnedStigs.push(stig.benchmarkId)
         }
-        expect(returnedStigs).to.include(environment.testCollection.benchmark);
+        expect(returnedStigs).to.include(reference.testCollection.benchmark);
     })
   })
 })
