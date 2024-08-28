@@ -25,7 +25,7 @@ describe('DELETE - Stig', () => {
                     await utils.loadAppData()
                 })
 
-                it('Deletes a STIG (*** and all revisions ***) - expect fail, stig is assigned', async () => {
+                it('attempts to delete stig and all revisions, fails because no force.', async () => {
                     const res = await chai.request(config.baseUrl)
                     .delete(`/stigs/${reference.benchmark}?elevate=true`)
                     .set('Authorization', `Bearer ${iteration.token}`)
@@ -35,7 +35,7 @@ describe('DELETE - Stig', () => {
                     }
                     expect(res).to.have.status(422)
                 })
-                it('Deletes a STIG (*** and all revisions ***)', async () => {
+                it('Deletes a stig an all revisions', async () => {
                     const res = await chai.request(config.baseUrl)
                     .delete(`/stigs/${reference.scrapBenchmark}?elevate=true&force=true`)
                     .set('Authorization', `Bearer ${iteration.token}`)
@@ -58,7 +58,7 @@ describe('DELETE - Stig', () => {
                     await utils.loadAppData()
                 })
 
-                it('Deletes the specified revision of a STIG latest', async () => {
+                it('attempts to delete latest of test benchmark, fails because latest is not a permitted revision for this endpoint!', async () => {
                     const res = await chai.request(config.baseUrl)
                     .delete(`/stigs/${reference.benchmark}/revisions/latest?elevate=true&force=true`)
                     .set('Authorization', `Bearer ${iteration.token}`)
@@ -66,9 +66,9 @@ describe('DELETE - Stig', () => {
                         expect(res).to.have.status(403)
                         return
                     }
-                    expect(res).to.have.status(400)
+                    expect(res, "fails because latest cannot work in this endpoint").to.have.status(400)
                 })
-                it('Deletes the specified revision of a STIG', async () => {
+                it('Deletes the specified revision of a STIG (v1r1 of test benchmark)', async () => {
                 
                     const res = await chai.request(config.baseUrl)
                     .delete(`/stigs/${reference.benchmark}/revisions/${reference.revisionStr}?elevate=true&force=true`)

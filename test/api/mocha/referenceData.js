@@ -268,6 +268,10 @@ const reference = {
     id: "000015",
     status: "draft",
   },
+  lvl1User:{
+    username: "lvl1",
+    userId: "85"
+  },
   testRule: {
     ruleId: "SV-106179r1_rule",
     groupId: "V-97041",

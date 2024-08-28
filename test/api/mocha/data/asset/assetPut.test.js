@@ -56,9 +56,22 @@ describe('PUT - Asset', function () {
             return
           }
           expect(res).to.have.status(200)
+
+          expect(res.body.collection.collectionId, "expect asset to be in scrap colleciton").to.equal(reference.scrapCollection.collectionId)
+          expect(res.body.name).to.be.a('string')
+          expect(res.body.ip).to.equal('1.1.1.1')
+          expect(res.body.noncomputing).to.equal(true)
+          expect(res.body.labelIds, "Expect asset to have scrap label").to.eql([reference.scrapCollection.scrapLabel])
+          expect(res.body.metadata.pocName).to.equal('poc2Put')
+          expect(res.body.metadata.pocEmail).to.equal('pocEmailPut@email.com')
+          expect(res.body.stigs, "Expect asset to have 3 stigs").to.be.an('array').of.length(3)
+          expect(res.body).to.have.property('statusStats')
+          expect(res.body.statusStats.stigCount, "Expect asset to have 3 stigs").to.equal(3)
+          expect(res.body.statusStats.savedCount).to.equal(0)
+          expect(res.body.statusStats.acceptedCount).to.equal(0)
+          expect(res.body.statusStats.rejectedCount).to.equal(0)
           
-          expect(res.body.statusStats).to.exist
-          expect(res.body.stigs).to.be.an('array').of.length(3)
+          
           for (let stig of res.body.stigs) {
             expect(stig.benchmarkId).to.be.oneOf([
               "VPN_SRG_TEST",
@@ -91,7 +104,7 @@ describe('PUT - Asset', function () {
 
         it('Set all properties of an Asset - assign new STIG', async function () {
           const res = await chai.request(config.baseUrl)
-            .put(`/assets/${reference.testAsset.assetId}`)
+            .put(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + iteration.token)
             .send({
               "name": 'TestAsset' + Math.floor(Math.random() * 1000),
@@ -117,8 +130,28 @@ describe('PUT - Asset', function () {
               return
             }
             expect(res).to.have.status(200)
-            
-       
+
+            expect(res.body.statusStats.stigCount).to.equal(4)
+            expect(res.body.stigs).to.be.an('array').of.length(4)
+            for (const stig of res.body.stigs) {
+              expect(stig.benchmarkId).to.be.oneOf([ "VPN_SRG_TEST",
+                "VPN_SRG_OTHER",
+                "Windows_10_STIG_TEST",
+                "RHEL_7_STIG_TEST"
+            ])
+          }
+          
+          expect(res.body.stigGrants).to.be.an('array').of.length(4)
+            for(const stig of res.body.stigGrants) {
+              expect(stig.benchmarkId).to.be.oneOf([ "VPN_SRG_TEST",
+                "VPN_SRG_OTHER",
+                "Windows_10_STIG_TEST",
+                "RHEL_7_STIG_TEST"
+              ])
+              if(stig.benchmarkId === "VPN_SRG_TEST"){
+                expect(stig.users[0].userId).to.equal(reference.lvl1User.userId)
+              }
+            }
             const effectedAsset = await utils.getAsset(res.body.assetId)
             expect(effectedAsset.collection.collectionId).to.equal(reference.testCollection.collectionId)
             expect(effectedAsset.stigs).to.be.an('array').of.length(4)
@@ -127,7 +160,7 @@ describe('PUT - Asset', function () {
                 "VPN_SRG_OTHER",
                 "Windows_10_STIG_TEST",
                 "RHEL_7_STIG_TEST"
-            ])
+             ])
             }
         })
 

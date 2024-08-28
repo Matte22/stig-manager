@@ -8,6 +8,7 @@ const distinct = {
     canElevate: true,
     canCreateCollection: true,
     collectionCount: 6,
+    collectionIdsAccess: ["21", "83", "1", "84", "85", "92"],
     collectionCountElevated: 7,
     collectionMatch: {
       collectionExactMatchCnt: 1,
@@ -45,6 +46,7 @@ const distinct = {
     canElevate: false,
     canCreateCollection: false,
     collectionCount: 1,
+    collectionIdsAccess: ["21"],
     collectionMatch: {
       collectionExactMatchCnt: 1,
       collectionContainsMatchCnt: 1,
@@ -59,7 +61,7 @@ const distinct = {
     lvl1LabelUses: 1,
     historyResponseStatus: 403,
     checklistCnt: 3,
-    grantCnt: 7,
+    grantCnt: 1,
     assetIds:["42","154"],
     validStigs: ["VPN_SRG_TEST"],
     testBenchmarkAssignedCount: 2,
@@ -80,6 +82,7 @@ const distinct = {
     canElevate: false,
     canCreateCollection: false,
     collectionCount: 2,
+    collectionIdsAccess: ["21", "1"],
     collectionMatch: {
       collectionExactMatchCnt: 1,
       collectionContainsMatchCnt: 1,
@@ -114,6 +117,7 @@ const distinct = {
     userId: "87",
     canElevate: false,
     collectionCount: 2,
+    collectionIdsAccess: ["21", "1"],
     canCreateCollection: false,
     collectionMatch: {
       collectionExactMatchCnt: 1,
@@ -150,6 +154,7 @@ const distinct = {
     canCreateCollection: false,
     canElevate: false,
     collectionCount: 3,
+    collectionIdsAccess: ["21", "1", "85"],
     collectionMatch: {
       collectionExactMatchCnt: 1,
       collectionContainsMatchCnt: 1,
@@ -185,6 +190,7 @@ const distinct = {
       canElevate: false,
       canCreateCollection: true,
       collectionCount: 0,
+      collectionIdsAccess: [],
       collectionMatch: {
         collectionExactMatchCnt: 0,
         collectionContainsMatchCnt: 0,

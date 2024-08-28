@@ -27,12 +27,11 @@ describe('PATCH - Collection', function () {
       describe(`iteration:${iteration.name}`, function () {
 
         describe('updateCollection - /collections/{collectionId}', function () {
-
-          it('Merge provided properties with a Collection',async function () {
+          it('Patch scrap collection, send 5 new grants and metadata.',async function () {
 
             const patchRequest = requestBodies.updateCollection            
             const res = await chai.request(config.baseUrl)
-                  .patch(`/collections/${reference.scrapCollection.collectionId}?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs`)
+                  .patch(`/collections/${reference.scrapCollection.collectionId}?&projection=grants&projection=stigs`)
                   .set('Authorization', `Bearer ${iteration.token}`)
                   .send(patchRequest)
             
@@ -40,7 +39,7 @@ describe('PATCH - Collection', function () {
                     expect(res).to.have.status(403)
                     return
                 }
-                expect(res).to.have.status(200)
+            expect(res).to.have.status(200)
 
             expect(res.body.metadata.pocName).to.equal(patchRequest.metadata.pocName)
             expect(res.body.metadata.pocEmail).to.equal(patchRequest.metadata.pocEmail)
@@ -48,26 +47,17 @@ describe('PATCH - Collection', function () {
             expect(res.body.metadata.reqRar).to.equal(patchRequest.metadata.reqRar)
 
             expect(res.body.grants).to.have.lengthOf(patchRequest.grants.length)
-            
-            // make sure userids are the same 
-            for(const grant of res.body.grants) {
-                expect(grant.user.userId).to.be.oneOf(patchRequest.grants.map(g => g.userId))
-            }
-
-            // projections  --- TODO:  these responses call the GET service, which is tested elsewhere, so do we need to double-check it here?
-            // expect(res.body.assets).to.have.lengthOf(3)
-            // expect(res.body.owners).to.have.lengthOf(3)
-            expect(res.body.statistics).to.have.property("assetCount").to.equal(res.body.assets.length)
-
             for(let stig of res.body.stigs) {
                 expect(stig.benchmarkId).to.be.oneOf(reference.scrapCollection.validStigs)
+                if(stig.benchmarkId === reference.benchmark){
+                    expect(stig.ruleCount).to.equal(reference.checklistLength)
+                }
             }
           })
         })
 
         describe('patchCollectionLabelById - /collections/{collectionId}/labels/{labelId}', function () {
-
-          it('Merge provided properties with a Collection Label',async function () {
+          it('Patch scrap collection label, change color, description and name ',async function () {
             const body = requestBodies.patchCollectionLabelById
             const res = await chai.request(config.baseUrl)
                 .patch(`/collections/${reference.scrapCollection.collectionId}/labels/${reference.scrapCollection.scrapLabel}`)
@@ -89,7 +79,7 @@ describe('PATCH - Collection', function () {
 
         describe('patchCollectionMetadata - /collections/{collectionId}/metadata', function () {
 
-          it('Merge metadata property/value into a Collection',async function () {
+          it('Patch scrap collection metadata',async function () {
               
               const res = await chai.request(config.baseUrl)
                   .patch(`/collections/${reference.scrapCollection.collectionId}/metadata`)

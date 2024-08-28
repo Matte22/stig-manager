@@ -35,7 +35,6 @@ describe('PUT - Collection', function () {
 
             const putRequest = requestBodies.replaceCollection
             const res = await chai.request(config.baseUrl)
-                // .put(`/collections/${reference.testCollection.collectionId}`)
                 .put(`/collections/${reference.testCollection.collectionId}?projection=grants&projection=owners&projection=statistics&projection=stigs&projection=assets`)
                 .set('Authorization', `Bearer ${iteration.token}`)
                 .send(putRequest)
@@ -177,7 +176,7 @@ describe('PUT - Collection', function () {
 
       describe('setStigAssetsByCollectionUser - /collections/{collectionId}/grants/{userId}/access', function () {
 
-        it('set stig-asset grants for a lvl1 iteration in this collection.',async function () {
+        it('set stig-asset grants for a lvl1 user in this collection.',async function () {
 
             const res = await chai.request(config.baseUrl)
                 .put(`/collections/${reference.scrapCollection.collectionId}/grants/${reference.scrapLvl1User.userId}/access`)
@@ -199,7 +198,6 @@ describe('PUT - Collection', function () {
               }
         })
       })
-
 
       describe('putCollectionMetadata - /collections/{collectionId}/metadata', function () {
 

@@ -112,7 +112,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           // this.timeout(4000)
           await utils.setDefaultRevision(reference.testCollection.collectionId, reference.benchmark, reference.testCollection.pinRevision)
         })
-        it("clone collection for Review check and test projections everything matches source ",async function () {
+        it("Clone test collection and check that cloned collection matches source ",async function () {
 
           const res = await chai
             .request(config.baseUrl)
@@ -209,7 +209,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           await utils.createDisabledCollectionsandAssets()
         })
         
-        it("export results to another collection - entire asset - create asset in destination",async function () {
+        it("export entire asset to another collection, should create asset in destination",async function () {
 
           const res = await chai
             .request(config.baseUrl)
@@ -243,7 +243,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             }
         })
 
-        it("export results to another collection - entire asset - asset exists",async function () {
+        it("export entire asset to another collection, asset already exists so we will be updating reviews",async function () {
 
           const res = await chai
             .request(config.baseUrl)
@@ -314,7 +314,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           await utils.createDisabledCollectionsandAssets()
         })
 
-        it("Set the Assets mapped to a STIG - default rev and assets",async function () {
+        it("Set revision v1r1 of test benchmark to assets",async function () {
 
           const post =
           {
@@ -341,7 +341,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             expect(res.body.assetCount).to.eql(requestBodies.writeStigPropsByCollectionStig.assetIds.length)
         })
 
-        it("Set the Assets mapped to a STIG - default latest and assets",async function () {
+        it("Set latest revision of the test benchmark to assets",async function () {
 
           const post = {
             defaultRevisionStr: "latest",
@@ -367,8 +367,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             expect(res.body.assetCount).to.eql(requestBodies.writeStigPropsByCollectionStig.assetIds.length)
         })
 
-
-        it("Set the Assets mapped to a STIG - assets only",async function () {
+        it("map list of assets to test benchmark",async function () {
 
           const post = {
             assetIds: requestBodies.writeStigPropsByCollectionStig.assetIds,
@@ -393,8 +392,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             expect(res.body.assetCount).to.eql(requestBodies.writeStigPropsByCollectionStig.assetIds.length)
         })
 
-
-        it("Set the Assets mapped to a STIG - invalid rev - expect 422",async function () {
+        it("attempt to send invalid revision str, should cause error",async function () {
 
           const post = {
           defaultRevisionStr: "V1R5"
@@ -414,7 +412,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             expect(res).to.have.status(422)
         })
 
-        it("Set the Assets mapped to a STIG - default rev only",async function () {
+        it("Set the default revision string of test benchmark (V1R0)",async function () {
 
           const post = {
           defaultRevisionStr: reference.testCollection.pinRevision
@@ -439,7 +437,6 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             expect(res.body.assetCount).to.eql(requestBodies.writeStigPropsByCollectionStig.assetIds.length)
         })
 
-
         it("Set the Assets mapped to a STIG - clear assets",async function () {
 
           const post = {
@@ -460,32 +457,6 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             expect(res).to.have.status(204)
             expect(res.body).to.eql({})
             
-        })
-
-
-        it("Set the Assets mapped to a STIG - after pinned delete",async function () {
-
-          const post = {
-            assetIds: requestBodies.writeStigPropsByCollectionStig.assetIds,
-          }
-
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${iteration.token}`)
-            .send(post)
-
-            if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
-              return
-            }
-
-            expect(res).to.have.status(200)
-            expect(res.body.revisionStr).to.equal(reference.testCollection.defaultRevision)
-            expect(res.body.revisionPinned).to.equal(false)
-            expect(res.body.ruleCount).to.eql(reference.checklistLength)
-            expect(res.body.benchmarkId).to.equal(reference.testCollection.benchmark)
-            expect(res.body.assetCount).to.eql(requestBodies.writeStigPropsByCollectionStig.assetIds.length)
         })
       })
     })

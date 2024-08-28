@@ -72,6 +72,10 @@ describe('PATCH - Asset', function () {
           expect(res).to.have.status(200)
           expect(res.body.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
           expect(res.body.labelIds).to.have.lengthOf(2)
+          expect(res.body.ip).to.equal("1.1.1.1")
+          expect(res.body.noncomputing).to.equal(true)
+          expect(res.body.metadata).to.deep.equal({})
+          expect(res.body.description).to.equal('test desc')
           for(const stig of res.body.stigs){
             expect(stig.benchmarkId).to.be.oneOf([
               'VPN_SRG_TEST',
@@ -82,7 +86,6 @@ describe('PATCH - Asset', function () {
           for (const stigGrant of res.body.stigGrants) {
             expect(stigGrant.users).to.have.lengthOf(0);
           }
-
           const effectedAsset = await utils.getAsset(res.body.assetId)
           expect(effectedAsset.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
           expect(effectedAsset.description).to.equal('test desc')
@@ -127,13 +130,21 @@ describe('PATCH - Asset', function () {
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('object')
           expect(res.body.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
+          expect(res.body.ip).to.equal("1.1.1.1")
+          expect(res.body.noncomputing).to.equal(true)
           expect(res.body.metadata).to.deep.equal({
             "pocName": "poc2Put",
             "pocEmail": "pocEmailPut@email.com",
             "pocPhone": "12342",
             "reqRar": "true"
           })
-
+          for(const stig of res.body.stigs){
+            expect(stig.benchmarkId).to.be.oneOf([
+              'VPN_SRG_TEST',
+              'Windows_10_STIG_TEST',
+              'RHEL_7_STIG_TEST'
+            ])
+          }
           const effectedAsset = await utils.getAsset(res.body.assetId)
           expect(effectedAsset.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
           expect(effectedAsset.description).to.equal('scrap')
@@ -143,6 +154,13 @@ describe('PATCH - Asset', function () {
             "pocPhone": "12342",
             "reqRar": "true"
           })
+          for(const stig of effectedAsset.stigs){
+            expect(stig.benchmarkId).to.be.oneOf([
+              'VPN_SRG_TEST',
+              'Windows_10_STIG_TEST',
+              'RHEL_7_STIG_TEST'
+            ])
+          }
         })
       })
 
@@ -163,15 +181,17 @@ describe('PATCH - Asset', function () {
             return
           }
           expect(res).to.have.status(200)
-          expect(res.body).to.eql({
+          expect(res.body, "expect assets 29 and 42 to be delted").to.eql({
             "operation": "deleted",
             "assetIds": [
                 "29",
                 "42"
               ]})
-
-          const effectedAsset = await utils.getAsset(res.body.assetId)
-          expect(effectedAsset.response).to.have.status(400)
+          
+          for(const assetID of res.body.assetIds){
+            const effectedAsset = await utils.getAsset(assetID)
+            expect(effectedAsset.response, "response should be 403 due to asset being deleted").to.have.status(403)
+          }
             
         })
         it('Delete Assets - assets not in collection', async function () {
@@ -183,7 +203,7 @@ describe('PATCH - Asset', function () {
                 "operation": "delete",
                 "assetIds": ["258","260"]
               })
-              expect(res).to.have.status(403)
+              expect(res, "assets are not in collection 21.").to.have.status(403)
         })
         it('Delete Assets - collection does not exist', async function () {
           const res = await chai
@@ -194,7 +214,7 @@ describe('PATCH - Asset', function () {
               "operation": "delete",
               "assetIds": ["29","42"]
             })
-            expect(res).to.have.status(403)
+            expect(res, "collecitonId is does not exist").to.have.status(403)
         })
       })  
 
@@ -210,14 +230,14 @@ describe('PATCH - Asset', function () {
             })
 
             if(!distinct.canModifyCollection){
-              expect(res).to.have.status(403)
+              expect(res, "unauthorized").to.have.status(403)
               return
             }
-            expect(res.body).to.deep.equal({
+            expect(res.body, "expect new metadata to take effect").to.deep.equal({
               "testkey": "poc2Patched",
             })
             const effectedAsset = await utils.getAsset(reference.scrapAsset.assetId)
-            expect(effectedAsset.metadata).to.deep.equal({
+            expect(effectedAsset.metadata, "getting asset for double checking").to.deep.equal({
               "testkey": "poc2Patched"
             })
         })
@@ -231,14 +251,14 @@ describe('PATCH - Asset', function () {
             })
 
             if(!distinct.canModifyCollection){
-              expect(res).to.have.status(403)
+              expect(res, "un authorized").to.have.status(403)
               return
             }
-            expect(res.body).to.deep.equal({
+            expect(res.body, "expect new metdata to be returned").to.deep.equal({
               "testkey": "poc2Patched",
             })
             const effectedAsset = await utils.getAsset(reference.scrapAsset.assetId)
-            expect(effectedAsset.metadata).to.deep.equal({
+            expect(effectedAsset.metadata, "getting asset for double check metadata has changed").to.deep.equal({
               "testkey": "poc2Patched"
             })
         })

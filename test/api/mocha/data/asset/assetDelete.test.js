@@ -84,7 +84,6 @@ describe('DELETE - Asset', function () {
           await utils.uploadTestStigs()
           await utils.createDisabledCollectionsandAssets()
         })
-
         it('Delete an Asset in test collection', async function () {
 
           // creating a test asset to delete
@@ -108,7 +107,7 @@ describe('DELETE - Asset', function () {
         const assetId = tempAsset.data.assetId
         const res = await chai
             .request(config.baseUrl)
-            .delete(`/assets/${assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
+            .delete(`/assets/${assetId}`)
             .set('Authorization', 'Bearer ' + iteration.token)
         if(!distinct.canModifyCollection){
           expect(res).to.have.status(403)
@@ -118,7 +117,6 @@ describe('DELETE - Asset', function () {
         expect(res.body).to.have.property('assetId')
         expect(res.body.assetId).to.equal(assetId)
         })
-
         it('Delete test Asset', async function () {
           const res = await chai
             .request(config.baseUrl)
@@ -130,6 +128,22 @@ describe('DELETE - Asset', function () {
           }
           expect(res).to.have.status(200)
           expect(res.body.assetId).to.equal(reference.testAsset.assetId)
+          expect(res.body.statusStats.ruleCount).to.equal(reference.testAsset.stats.ruleCount)
+          expect(res.body.statusStats.stigCount).to.equal(reference.testAsset.stats.stigCount)
+          expect(res.body.statusStats.savedCount).to.equal(reference.testAsset.stats.savedCount)
+          expect(res.body.statusStats.acceptedCount).to.equal(reference.testAsset.stats.acceptedCount)
+          expect(res.body.statusStats.rejectedCount).to.equal(reference.testAsset.stats.rejectedCount)
+          expect(res.body.statusStats.submittedCount).to.equal(reference.testAsset.stats.submittedCount)
+
+          expect(res.body.stigs).to.be.an('array').of.length(reference.testAsset.validStigs.length)
+          for(const stig of res.body.stigs){
+            expect(stig.benchmarkId).to.be.oneOf(reference.testAsset.validStigs)
+          }
+
+          expect(res.body.stigGrants).to.be.an('array').of.length(reference.testAsset.usersWithGrant.length)
+          for(const user of res.body.stigGrants){
+            expect(user.users[0].userId).to.be.oneOf(reference.testAsset.usersWithGrant)
+          }
         })
       })
     })
