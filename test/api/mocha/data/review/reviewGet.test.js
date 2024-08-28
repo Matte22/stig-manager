@@ -5,7 +5,7 @@ const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const expectations = require('./expectations.js')
-const reference = require('./referenceData.js')
+const reference = require('../../referenceData.js')
 const iterations = require('../../iterations.js')
 
 describe('GET - Review', () => {
@@ -96,7 +96,7 @@ describe('GET - Review', () => {
         })
         it('Return a list of reviews accessible to the requester, metadata Projection.', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${reference.testCollection.collectionId}/reviews?projection=rule&projection=stigs&metadata=${reference.testCollection.metadataKey}%3A${reference.testCollection.metadataValue}&projection=metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews?projection=rule&projection=stigs&metadata=${reference.reviewMetadataKey}%3A${reference.reviewMetadataValue}&projection=metadata`)
             .set('Authorization', `Bearer ${iteration.token}`)
           if(iteration.name === 'collectioncreator') {
             expect(res).to.have.status(403)
@@ -108,8 +108,8 @@ describe('GET - Review', () => {
 
           for(let review of res.body){
             expect(review.metadata).to.be.an('object')
-            expect(review.metadata).to.have.property(reference.testCollection.metadataKey)
-            expect(review.metadata[reference.testCollection.metadataKey]).to.be.equal(reference.testCollection.metadataValue)
+            expect(review.metadata).to.have.property(reference.reviewMetadataKey)
+            expect(review.metadata[reference.reviewMetadataKey]).to.be.equal(reference.reviewMetadataValue)
           }
         })
         it('Return a list of reviews accessible to the requester, result projection fail only', async () => {
@@ -198,7 +198,7 @@ describe('GET - Review', () => {
               
             }
             if(review.ruleId === reference.testAsset.testRuleId){
-              expect(review.metadata, "metadata").to.eql({[reference.testAsset.metadataKey]: reference.testAsset.metadataValue})
+              expect(review.metadata, "metadata").to.eql({[reference.reviewMetadataKey]: reference.reviewMetadataValue})
               expect(review.status.label, "expect review to be submitted").to.be.oneOf(['submitted'])
               expect(review.result, "expect result to be pass").to.eql('pass')
               for(const stig of review.stigs){
@@ -231,7 +231,7 @@ describe('GET - Review', () => {
               expect(stig.benchmarkId).to.be.equal(reference.testCollection.benchmark)
             }
             if(review.ruleId === reference.testAsset.testRuleId){
-              expect(review.metadata, "metadata").to.eql({[reference.testAsset.metadataKey]: reference.testAsset.metadataValue})
+              expect(review.metadata, "metadata").to.eql({[reference.reviewMetadataKey]: reference.reviewMetadataValue})
               expect(review.status.label, "expect review to be submitted").to.be.oneOf(['submitted'])
               expect(review.result, "expect result to be pass").to.eql('pass')
               for(const stig of review.stigs){
@@ -244,7 +244,7 @@ describe('GET - Review', () => {
         })
         it('Return a list of Reviews for an Asset , metadata Projection.', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}?projection=rule&projection=stigs&metadata=${reference.testAsset.metadataKey}%3A${reference.testAsset.metadataValue}&projection=metadata`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}?projection=rule&projection=stigs&metadata=${reference.reviewMetadataKey}%3A${reference.reviewMetadataValue}&projection=metadata`)
             .set('Authorization', `Bearer ${iteration.token}`)
           if(iteration.name === 'collectioncreator') {
             expect(res).to.have.status(403)
@@ -257,8 +257,8 @@ describe('GET - Review', () => {
           for(let review of res.body){
             expect(review.assetId).to.be.equal(reference.testAsset.assetId)
             expect(review.metadata).to.be.an('object')
-            expect(review.metadata).to.have.property(reference.testCollection.metadataKey)
-            expect(review.metadata[reference.testCollection.metadataKey]).to.be.equal(reference.testCollection.metadataValue)
+            expect(review.metadata).to.have.property(reference.reviewMetadataKey)
+            expect(review.metadata[reference.reviewMetadataKey]).to.be.equal(reference.reviewMetadataValue)
           }
         })
         it('Return a list of reviews accessible to the requester, result projection pass only', async () => {
@@ -367,8 +367,8 @@ describe('GET - Review', () => {
         
           // checking for basic properties
           expect(review.rule.ruleId).to.be.equal(reference.testCollection.ruleId)
-          expect(review.metadata).to.have.property(reference.testCollection.metadataKey)
-          expect(review.metadata[reference.testCollection.metadataKey]).to.be.equal(reference.testCollection.metadataValue)
+          expect(review.metadata).to.have.property(reference.reviewMetadataKey)
+          expect(review.metadata[reference.reviewMetadataKey]).to.be.equal(reference.reviewMetadataValue)
           for(let stig of review.stigs){
             expect(stig.benchmarkId, "expect stig attached to be test bernchmark").to.be.equal(reference.benchmark)
             expect(stig.ruleCount, "Expect 81 rules for vpn srg test").to.be.equal(reference.checklistLength)
@@ -391,8 +391,8 @@ describe('GET - Review', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('object')
-          expect(res.body).to.have.property(reference.testAsset.metadataKey)
-          expect(res.body[reference.testAsset.metadataKey]).to.be.equal(reference.testAsset.metadataValue)
+          expect(res.body).to.have.property(reference.reviewMetadataKey)
+          expect(res.body[reference.reviewMetadataKey]).to.be.equal(reference.reviewMetadataValue)
         })
       })
       describe('GET - getReviewMetadataKeys - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys', () => {
@@ -408,14 +408,14 @@ describe('GET - Review', () => {
             expect(res).to.have.status(200)
             expect(res.body).to.be.an('array')
             expect(res.body).to.be.lengthOf(1)
-            expect(res.body).to.include(reference.testAsset.metadataKey)
+            expect(res.body).to.include(reference.reviewMetadataKey)
           })
       })
       describe('GET - getReviewMetadataValue - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {
 
         it('Return the Review Metadata VALUE for an Asset/Rule/metadata KEY', async () => {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata/keys/${reference.testAsset.metadataKey}`)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata/keys/${reference.reviewMetadataKey}`)
             .set('Authorization', `Bearer ${iteration.token}`)
           if(iteration.name === 'collectioncreator') {
             expect(res).to.have.status(403)
@@ -423,7 +423,7 @@ describe('GET - Review', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('string')
-          expect(res.body).to.equal(reference.testAsset.metadataValue)  
+          expect(res.body).to.equal(reference.reviewMetadataValue)  
         })
       })
     })

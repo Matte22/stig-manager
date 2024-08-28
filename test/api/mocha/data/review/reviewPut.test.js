@@ -7,7 +7,7 @@ const utils = require('../../utils/testUtils')
 const xml2js = require('xml2js');
 const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
-const reference = require('./referenceData.js')
+const reference = require('../../referenceData.js')
 
 describe('PUT - Review', () => {
 
@@ -208,7 +208,7 @@ describe('PUT - Review', () => {
                         autoResult: false,
                         status: 'submitted',
                         metadata: {
-                            [reference.testCollection.metadataKey]: reference.testCollection.metadataValue
+                            [reference.reviewMetadataKey]: reference.reviewMetadataValue
                         }
                     }))
 
@@ -232,8 +232,8 @@ describe('PUT - Review', () => {
                     expect(res.body.comment).to.equal(putBody.comment)
                     expect(res.body.status.label).to.equal(putBody.status)
                     expect(res.body.metadata).to.be.an('object')
-                    expect(res.body.metadata).to.have.property(reference.testCollection.metadataKey)
-                    expect(res.body.metadata[reference.testCollection.metadataKey]).to.be.equal(reference.testCollection.metadataValue)
+                    expect(res.body.metadata).to.have.property(reference.reviewMetadataKey)
+                    expect(res.body.metadata[reference.reviewMetadataKey]).to.be.equal(reference.reviewMetadataValue)
 
                 })
                 it('PUT Review: asset in deleted collection', async () => {
@@ -277,8 +277,8 @@ describe('PUT - Review', () => {
                     expect(res.body.comment).to.equal(putBody.comment)
                     expect(res.body.status.label).to.equal(putBody.status)
                     expect(res.body.metadata).to.be.an('object')
-                    expect(res.body.metadata).to.have.property(reference.testCollection.metadataKey)
-                    expect(res.body.metadata[reference.testCollection.metadataKey]).to.be.equal(reference.testCollection.metadataValue)
+                    expect(res.body.metadata).to.have.property(reference.reviewMetadataKey)
+                    expect(res.body.metadata[reference.reviewMetadataKey]).to.be.equal(reference.reviewMetadataValue)
 
                     //projections
 
@@ -290,8 +290,8 @@ describe('PUT - Review', () => {
                     expect(res.body.rule.ruleId).to.be.eql(reference.testCollection.ruleId)
                     expect(res.body.history).to.have.lengthOf(6)
                     expect(res.body.stigs).to.have.lengthOf(1)
-                    expect(res.body.metadata).to.have.property(reference.testCollection.metadataKey)
-                    expect(res.body.metadata[reference.testCollection.metadataKey]).to.be.equal(reference.testCollection.metadataValue)
+                    expect(res.body.metadata).to.have.property(reference.reviewMetadataKey)
+                    expect(res.body.metadata[reference.reviewMetadataKey]).to.be.equal(reference.reviewMetadataValue)
 
                     expect(res.body.rule).to.be.an('object')
                     expect(res.body.rule.ruleId).to.be.eql(reference.testCollection.ruleId)
@@ -355,19 +355,18 @@ describe('PUT - Review', () => {
                     this.timeout(4000)
                     await utils.uploadTestStigs()
                     await utils.loadAppData()
-                    await utils.createDisabledCollectionsandAssets()
                 })
                     it('Set all metadata of a Review', async () => {
                         const res = await chai.request(config.baseUrl)
                         .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata`)
                         .set('Authorization', `Bearer ${iteration.token}`)
-                        .send({[reference.testCollection.metadataKey]: reference.testCollection.metadataValue})
+                        .send({[reference.reviewMetadataKey]: reference.reviewMetadataValue})
                         if(iteration.name === 'collectioncreator') {
                             expect(res).to.have.status(403)
                             return
                         }
                         expect(res).to.have.status(200)
-                        expect(res.body).to.eql({[reference.testCollection.metadataKey]: reference.testCollection.metadataValue})
+                        expect(res.body).to.eql({[reference.reviewMetadataKey]: reference.reviewMetadataValue})
 
                     })
                 })
@@ -378,14 +377,13 @@ describe('PUT - Review', () => {
                 this.timeout(4000)
                 await utils.uploadTestStigs()
                 await utils.loadAppData()
-                await utils.createDisabledCollectionsandAssets()
                 })
                     it('Set one metadata key/value of a Review', async () => {
                     const res = await chai.request(config.baseUrl)
-                        .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata/keys/${reference.testCollection.metadataKey}`)
+                        .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata/keys/${reference.reviewMetadataKey}`)
                         .set('Authorization', `Bearer ${iteration.token}`)
                         .set('Content-Type', 'application/json') 
-                        .send(`${JSON.stringify(reference.testCollection.metadataValue)}`)
+                        .send(`${JSON.stringify(reference.reviewMetadataValue)}`)
                     if(iteration.name === 'collectioncreator') {
                         expect(res).to.have.status(403)
                         return

@@ -133,7 +133,6 @@ describe('POST - user', () => {
     this.timeout(4000)
     await utils.loadAppData()
     await utils.uploadTestStigs()
-    await utils.createDisabledCollectionsandAssets()
   })
 
   for(const iteration of iterations) {
@@ -184,7 +183,6 @@ describe('PATCH - user', () => {
     this.timeout(4000)
     await utils.loadAppData()
     await utils.uploadTestStigs()
-    await utils.createDisabledCollectionsandAssets()
   })
 
   for(const iteration of iterations) {
@@ -237,7 +235,6 @@ describe('PUT - user', () => {
     this.timeout(4000)
     await utils.loadAppData()
     await utils.uploadTestStigs()
-    await utils.createDisabledCollectionsandAssets()
   })
 
   for(const iteration of iterations) {
@@ -294,7 +291,6 @@ describe('DELETE - user', () => {
     this.timeout(4000)
     await utils.loadAppData()
     await utils.uploadTestStigs()
-    await utils.createDisabledCollectionsandAssets()
   })
 
   for(const iteration of iterations) {

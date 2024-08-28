@@ -6,7 +6,7 @@ const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
 const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
-const reference = require('./referenceData.js')
+const reference = require('../../referenceData.js')
 
 describe('DELETE - Review', () => {
     
@@ -58,14 +58,13 @@ describe('DELETE - Review', () => {
           this.timeout(4000)
           await utils.loadAppData()
           await utils.uploadTestStigs()
-          await utils.createDisabledCollectionsandAssets()
         })
 
         it('Delete one metadata key/value of a Review', async () => {
           const res = await chai.request(config.baseUrl)
-            .delete(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testAsset.testRuleId}/metadata/keys/${reference.testCollection.collectionMetadataKey}`)
+            .delete(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testAsset.testRuleId}/metadata/keys/${reference.reviewMetadataKey}`)
             .set('Authorization', `Bearer ${iteration.token}`)
-            .send(`${JSON.stringify(reference.testCollection.collectionMetadataValue)}`)
+            .send(`${JSON.stringify(reference.reviewMetadataValue)}`)
           if(iteration.name === 'collectioncreator') {
             expect(res).to.have.status(403)
             return

@@ -27,6 +27,7 @@ const reference = {
     assetsWithHistory: ["42", "154"],
     testAssetId: "42",
     validStigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST"],
+    ruleId: 'SV-106179r1_rule',
     labelCount: 2,
     lvl1LabelName: "test-label-lvl1",
     lvl1Label: "5130dc84-9a68-11ec-b1bc-0242ac110002",
@@ -231,7 +232,7 @@ const reference = {
     assetId: "42",
     collectionId: "21",
     usersWithGrant: ["86","85"],
-    benchmark: "VPN_SRG_TEST",
+    // benchmark: "VPN_SRG_TEST",
     validStigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST"],
     reviewCnt: 9,
     metadataKey: "testkey",
@@ -248,6 +249,23 @@ const reference = {
       rejectedCount: 0,
       submittedCount: 7,
     },
+    testRuleId: 'SV-106179r1_rule',
+    freshRuleId: 'SV-106195r1_rule',
+    testRuleIdHistoryCount: 2,
+    testRuleIdStig: 'VPN_SRG_TEST',
+    testRuleIdStigCount: 1,
+    testBenchmarkReviews: 6,
+    reviewRuleIds: [
+      "SV-106179r1_rule",
+      "SV-106181r1_rule",
+      "SV-106183r1_rule",
+      "SV-106185r1_rule",
+      "SV-106187r1_rule",
+      "SV-106189r1_rule",
+      'SV-77813r6_rule',
+      'SV-77811r1_rule',
+      'SV-77809r3_rule'
+    ],    
   },
   testAssetNoStigs: {
     name: "ACHERNAR_Collection_X_asset",
@@ -306,6 +324,12 @@ const reference = {
     'VPN_SRG_TEST',
     'Windows_10_STIG_TEST'
   ],  
+  stigmanadmin: {
+    username: 'stigmanadmin',
+    userId: '1'
+  },
+  reviewMetadataKey: 'testkey',
+  reviewMetadataValue: 'testvalue',  
 };
 
 module.exports = reference;

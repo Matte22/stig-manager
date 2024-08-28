@@ -206,7 +206,6 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           // this.timeout(4000)
           await utils.uploadTestStigs()
           await utils.loadAppData()
-          await utils.createDisabledCollectionsandAssets()
         })
         
         it("export entire asset to another collection, should create asset in destination",async function () {
@@ -311,7 +310,6 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           this.timeout(4000)
           await utils.uploadTestStigs()
           await utils.loadAppData()
-          await utils.createDisabledCollectionsandAssets()
         })
 
         it("Set revision v1r1 of test benchmark to assets",async function () {
