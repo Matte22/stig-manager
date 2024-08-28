@@ -822,11 +822,12 @@ describe('POST - Review', () => {
         })
         describe(`Batch Review Editing - Validation Errors, expect failure. `, () => {
               
-          // beforeEach(async function () {
-          //   this.timeout(4000)
-          //   await utils.uploadTestStigs()
-          //   await utils.loadAppData("batch-test-data.json")
-          // })
+          beforeEach(async function () {
+            this.timeout(4000)
+            await utils.uploadTestStigs()
+            await utils.loadAppData("batch-test-data.json")
+          })
+
             it(`POST batch Review: target by assets, and one rule, expect validation failure - invalid result for status`, async () => {
                 const postreview = {
                   source: {
