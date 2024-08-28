@@ -3,11 +3,11 @@ const chaiHttp = require('chai-http')
 chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
-const utils = require('../../utils/testUtils')
+const utils = require('../../utils/testUtils.js')
 const iterations = require('../../iterations.js')
 const reference = require('../../referenceData.js')
 
-describe('GET - iteration', () => {
+describe('GET - user', () => {
   before(async function () {
     this.timeout(4000)
     await utils.uploadTestStigs()
@@ -90,7 +90,7 @@ describe('GET - iteration', () => {
             expect(user.userId, "expect userId to be one of the users the system").to.be.oneOf(reference.allUserIds)
           }
         })
-        it('Return a list of users accessible to the requester no projections for lvl1 sucess. ', async () => {
+        it('Return a list of users accessible to the requester no projections for lvl1 success. ', async () => {
 
           const res = await chai
               .request(config.baseUrl)
@@ -177,7 +177,6 @@ describe('POST - user', () => {
     })
   }
 })
-
 
 describe('PATCH - user', () => {
   before(async function () {
