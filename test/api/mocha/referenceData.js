@@ -12,6 +12,8 @@ const reference = {
   checklistLength: 81,
   revisionStr: "V1R1",
   grantCheckUserId: "85",
+  lvl1ValidStigs: ["VPN_SRG_TEST"],
+  testAssetLvl1NoAccess: "62",
   testCollection: {
     name: "Collection X",
     collectionId: "21",

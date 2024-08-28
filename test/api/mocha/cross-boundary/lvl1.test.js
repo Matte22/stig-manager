@@ -113,7 +113,7 @@ describe("lvl1 cross-boundary tests", () => {
               .set("Authorization", `Bearer ${admin.token}`)
               .send([
                 {
-                  ruleId: reference.testCollection.ruleId,
+                  ruleId: reference.testRule.ruleId,
                   result: "pass",
                   detail: "ADMIN POSTED THIS",
                   comment: "sure",
@@ -140,7 +140,7 @@ describe("lvl1 cross-boundary tests", () => {
             .set("Authorization", `Bearer ${admin.token}`)
             .send([
             {
-                ruleId: reference.testCollection.ruleId,
+                ruleId: reference.testRule.ruleId,
                 result: "pass",
                 detail: "ADMIN POSTED THIS",
                 comment: "sure",
@@ -244,7 +244,7 @@ describe("lvl1 cross-boundary tests", () => {
               .set("Authorization", `Bearer ${user.token}`)
               .send([
                 {
-                "ruleId": reference.testCollection.ruleId,
+                "ruleId": reference.testRule.ruleId,
                 "result": "pass",
                 "detail": "LVL1 POSTED THIS",
                 "comment": "sure",
@@ -364,7 +364,7 @@ describe("lvl1 cross-boundary tests", () => {
         it('Set all properties of a Review - lvl1 should work', async () => {
 
             const res = await chai.request(config.baseUrl)
-                .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}?projection=rule&projection=history&projection=stigs&projection=metadata`)
+                .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testRule.ruleId}?projection=rule&projection=history&projection=stigs&projection=metadata`)
                 .set('Authorization', `Bearer ${user.token}`)
                 .send({
                     "result": "pass",
