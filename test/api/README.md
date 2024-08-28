@@ -48,13 +48,13 @@ Run ***ONE*** of the following:
 
 ## Installation
 
-To install the dependencies required to run the test suite, run:
+To install the dependencies required to run the test suite, run this command from the test folder:
 
 ```
 npm install
 ```
 
-Ensure that the necessary configuration files have been configured:
+Ensure that testConfig.json is configured correctly. This file contains the base URL for the API and access token for the admin test user. 
 ```test/api/mocha/testConfig.json```
 
 
@@ -75,13 +75,14 @@ In CI/CD use ```npm test``` to run tests.
 
 The test suite follows these conventions:
 
+- All access tokens used in the tests are valid when using the ["test" keycloak container maintained here.](https://github.com/NUWCDIVNPT/stig-manager-auth). 
 - The main directory for all testing files is located at ```test/api/mocha```.
 - Tests validating the basic functionality of our endpoints are found in ```test/api/mocha/data```.
 - Each subdirectory within ```test/api/mocha/data``` is organized by API tag
 - Test files generally adhere to the naming convention ```<apiTag><HTTPMethod>.test.js``` (e.g., ```assetPatch.test.js```).
 - The ```test/api/mocha/crossBoundary``` directory contains tests for Level 1 cross-boundary scenarios.
-- Integration tests are located in ```test/api/mocha/integration```. Integration tests, as defined here, involve calling a set of related endpoints together to validate major application functionalities. These differ from the more focused, unit-like data tests that target individual API 
-- ```iterations.js``` defines the various iterations a test or group of tests will execute. This structure supports running the same test across multiple scenarios.
+- Integration tests are located in ```test/api/mocha/integration```. Integration tests, as defined here, involve calling a set of related endpoints together to validate major application functionalities. These differ from the more focused, unit-like data tests that target individual API endpoints.
+- ```iterations.js``` defines the various iterations a test or group of tests will execute. This structure supports running the same test across multiple scenarios. Iterations contain an iteration name (often the test user name), a user Id as found in the test data set, and a test access token for that user.
 - Most tests reference corresponding ```referenceData.js``` and ```expectations.js``` files. These files contain the "answers" or expected data against which the API responses are validated.
   - ```referenceData.js``` typically contains static or more global data about the tests or API paths.
    - ```expectations.js``` contains data specific to the current test iterations (e.g., different user scenarios) and controls whether a test should run for a particular iteration.
