@@ -105,7 +105,7 @@ describe('GET - user', () => {
         })
       })
 
-      describe(`GET - getUserByUserId - /users{userId}}`, async () => {
+      describe(`GET - getUserByUserId - /users{userId}`, async () => {
 
         it('Return a user', async () => {
           const res = await chai

@@ -79,6 +79,30 @@ describe('POST - Asset', function () {
 
         })
 
+        it('should fail, duplicate asset name', async function () {
+
+          const res = await chai
+            .request(config.baseUrl)
+            .post('/assets')
+            .set('Authorization', 'Bearer ' + iteration.token)
+            .send({
+              name: reference.testAsset.name,
+              collectionId: reference.testCollection.collectionId,
+              description: 'test',
+              ip: '1.1.1.1',
+              noncomputing: true,
+              labelIds: [reference.testCollection.fullLabel],
+              metadata: {
+                pocName: 'pocName',
+              },
+              stigs: reference.testCollection.validStigs
+          })
+          if(!distinct.canModifyCollection){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(422)
+        })
         it('Create an Asset (with stigGrants projection)', async function () {
           const res = await chai
             .request(config.baseUrl)
