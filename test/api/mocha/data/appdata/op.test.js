@@ -3,7 +3,7 @@ const chaiHttp = require('chai-http')
 chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
-const utils = require('../../utils/testUtils')
+const utils = require('../../utils/testUtils.js')
 const iterations = require('../../iterations.js')
 
 describe('Appdata', () => {
