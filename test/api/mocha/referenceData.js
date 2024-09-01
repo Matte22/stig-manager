@@ -295,7 +295,13 @@ const reference = {
     groupId: "V-97041",
     version: "SRG-NET-000019-VPN-000040",
   },
+  ruleId: "SV-106179r1_rule",
+  ruleIdPinnedRev: "SV-106179r123456789_rule",
+  reviewKeyChangeFile: "U_VPN_SRG_V2R3_Manual-xccdf-reviewKeyChange.xml",
   ruleIdLvl1NoAccess: "SV-77809r3_rule",
+  writeStigPropsByCollectionStig: ['62', '42', '154'],
+  reviewMatchString: "test",
+  freshRuleId: "SV-106195r1_rule",
   testGroupId: "V-97041",
   allUserIds: ['87', '86', '82', '85', '21', '44', '45', '1', '22', '43'],
   wfTest: {
@@ -309,6 +315,7 @@ const reference = {
   testBenchmarkAllRevisions: ['V1R1', 'V1R0'],
   scrapBenchmark: 'RHEL_7_STIG_TEST',
   testStigfile: 'U_VPN_SRG_V1R1_Manual-xccdf.xml',
+  rulesMatchingFingerprints: "U_VPN_SRG-OTHER_V1R1_twoRules-matchingFingerprints.xml",  
   vpnStigs: [
     'VPN_SRG_TEST',
     'VPN_SRG_OTHER',

@@ -6,7 +6,7 @@ const fs = require("fs")
 const path = require("path")
 const config = require("../testConfig.json")
 const utils = require("../utils/testUtils")
-const reference = require("./referenceData.js")
+const reference = require("../referenceData.js")
 
 const user = {
   name: "stigmanadmin",
