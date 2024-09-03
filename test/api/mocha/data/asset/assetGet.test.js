@@ -548,6 +548,40 @@ describe(`GET - Asset`, function () {
               }
             }
         })
+
+        it('should return 204, asset does not have checklists', async function () {
+
+          //create asset with no checklists 
+          const res = await chai
+            .request(config.baseUrl)
+            .post(`/assets`)
+            .set(`Authorization`, `Bearer ` + iteration.token)
+            .send({
+              name: `assetNoChecklists` + Math.floor(Math.random() * 10000),
+              collectionId: reference.testCollection.collectionId,
+              description: `test`,
+              ip: `1.1.1.1`,
+              noncomputing: true,
+              labelIds: [],
+              metadata: {
+                pocName: `pocName`,
+              },
+              stigs: []
+            })
+            if(!distinct.canModifyCollection){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res).to.have.status(201)
+
+            const assetId = res.body.assetId
+
+            const res2 = await chai
+              .request(config.baseUrl)
+              .get(`/assets/${assetId}/checklists`)
+              .set(`Authorization`, `Bearer ` + iteration.token)
+            expect(res2).to.have.status(204)
+        })
       })
       describe(`getChecklistByAssetStig - /assets/{assetId}/checklists/{benchmarkId}/{revisionStr}`, function () {
 
