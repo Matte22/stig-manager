@@ -489,6 +489,49 @@ describe('GET - Collection', function () {
             }
             expect(res).to.have.status(200)
         })
+
+        it('Return an EMASS formatted POAM-like spreadsheet aggregated by groupId',async function () {
+          const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.testCollection.collectionId}/poam?format=EMASS&aggregator=groupId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing&acceptedOnly=true&mccastPackageId=PackageID&mccastAuthName=AuthPackageName`)
+            .set('Authorization', `Bearer ${iteration.token}`)
+            if (distinct.grant === "none"){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res).to.have.status(200)
+        })
+
+        it('Return an EMASS formatted POAM-like spreadsheet aggregated by ruleId',async function () {
+          const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.testCollection.collectionId}/poam?format=EMASS&aggregator=ruleId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing&mccastPackageId=PackageID&mccastAuthName=AuthPackageName`)
+            .set('Authorization', `Bearer ${iteration.token}`)
+            if (distinct.grant === "none"){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res).to.have.status(200)
+        })
+
+        it('Return an MCCAST formatted POAM-like spreadsheet aggregated by groupId',async function () {
+          const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.testCollection.collectionId}/poam?format=MCCAST&aggregator=groupId&date=01%2F01%2F1970&office=MyOffice&status=Started&acceptedOnly=true&mccastPackageId=PackageID&mccastAuthName=AuthPackageName`)
+            .set('Authorization', `Bearer ${iteration.token}`)
+            if (distinct.grant === "none"){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res).to.have.status(200)
+        })
+        it('Return an MCCAST formatted POAM-like spreadsheet aggregated by ruleId',async function () {
+          const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.testCollection.collectionId}/poam?format=MCCAST&aggregator=ruleId&date=01%2F01%2F1970&office=MyOffice&status=Started&mccastPackageId=PackageID&mccastAuthName=AuthPackageName`)
+            .set('Authorization', `Bearer ${iteration.token}`)
+            if (distinct.grant === "none"){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res).to.have.status(200)
+        })
       })
 
       describe('getReviewHistoryByCollection - /collections/{collectionId}/review-history', function () {
