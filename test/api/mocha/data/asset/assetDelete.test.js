@@ -82,7 +82,6 @@ describe('DELETE - Asset', function () {
           this.timeout(4000)
           await utils.loadAppData()
           await utils.uploadTestStigs()
-          await utils.createDisabledCollectionsandAssets()
         })
         it('Delete an Asset in test collection', async function () {
 

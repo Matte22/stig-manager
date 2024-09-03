@@ -340,7 +340,7 @@ describe('GET - Collection', function () {
 
         it('Return stig-asset grants for a lvl1 iteration in this collection.',async function () {
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${reference.testCollection.collectionId}/grants/${reference.grantCheckUserId}/access`)
+            .get(`/collections/${reference.testCollection.collectionId}/grants/${reference.testCollection.grantCheckUserId}/access`)
             .set('Authorization', `Bearer ${iteration.token}`)
             if (distinct.grant === "none"){
               expect(res).to.have.status(403)

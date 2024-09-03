@@ -6,7 +6,7 @@ const fs = require("fs")
 const path = require("path")
 const config = require("../testConfig.json")
 const utils = require("../utils/testUtils")
-const reference = require("./referenceData")
+const reference = require("../referenceData")
 const user = {
   name: "admin",
   grant: "Owner",
@@ -330,7 +330,7 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
         describe('clone data prep - set cloned collection default rev for test benchmark to non-"latest"', () => {
             it('Import a new STIG - VPN R1V0 copy', async () => {
                 const directoryPath = path.join(__dirname, '../../form-data-files/')
-                const testStigfile = reference.testStigfile
+                const testStigfile = reference.testStigfileNonLatest
                 const filePath = path.join(directoryPath, testStigfile)
             
                 const res = await chai
@@ -406,12 +406,12 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
 
                             //owners 
                             expect(messageObject.collection).to.have.property('owners');
-                            let ownerProjectedResponse = []
-                            for (owner of messageObject.collection.owners){
-                                let {email, ...ownerCheckProps} = owner
-                                ownerProjectedResponse.push(ownerCheckProps)
-                            }
-                            expect(ownerProjectedResponse, "checking owners were cloned").to.eql(reference.testCollection.ownersProjected)
+                            // let ownerProjectedResponse = []
+                            // for (owner of messageObject.collection.owners){
+                            //     let {email, ...ownerCheckProps} = owner
+                            //     ownerProjectedResponse.push(ownerCheckProps)
+                            // }
+                            expect(messageObject.collection.owners, "checking owners were cloned").to.eql(reference.testCollection.ownersProjected)
 
                             //assets
                             let assetsProjectedResponse = []
@@ -419,7 +419,10 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                                 let {assetId, ...assetCheckProps} = asset
                                 assetsProjectedResponse.push(assetCheckProps)
                             }                    
-                            expect(assetsProjectedResponse, "checking assets were cloned").to.eql(reference.testCollection.assetsProjected)
+                            
+                            const assetsProjectedWithoutId = reference.testCollection.assetsProjected.map(({ name }) => ({ name }));
+
+                            expect(assetsProjectedResponse, "checking assets were cloned").to.eql(assetsProjectedWithoutId)
 
                             //stigs 
                             expect(messageObject.collection.stigs).to.eql(reference.testCollection.stigsProjected)
@@ -504,8 +507,10 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                                 let {assetId, ...assetCheckProps} = asset
                                 assetsProjectedResponse.push(assetCheckProps)
                             }                    
-                            expect(assetsProjectedResponse, "checking assets were cloned").to.eql(reference.testCollection.assetsProjected)
+                            const assetsProjectedWithoutId = reference.testCollection.assetsProjected.map(({ name }) => ({ name }));
 
+                            expect(assetsProjectedResponse, "checking assets were cloned").to.eql(assetsProjectedWithoutId)       
+                            
                             //stigs 
                             expect(messageObject.collection.stigs).to.eql(reference.testCollection.stigsProjected)
                         }
@@ -558,20 +563,22 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
 
                             //owners 
                             expect(messageObject.collection).to.have.property('owners');
-                            let ownerProjectedResponse = []
-                            for (owner of messageObject.collection.owners){
-                                let {email, ...ownerCheckProps} = owner
-                                ownerProjectedResponse.push(ownerCheckProps)
-                            }
-                            expect(ownerProjectedResponse, "checking owners were cloned").to.eql(reference.testCollection.ownersProjected)
+                            // let ownerProjectedResponse = []
+                            // for (owner of messageObject.collection.owners){
+                            //     let {email, ...ownerCheckProps} = owner
+                            //     ownerProjectedResponse.push(ownerCheckProps)
+                            // }
+                            expect(messageObject.collection.owners, "checking owners were cloned").to.eql(reference.testCollection.ownersProjected)
 
                             //assets
                             let assetsProjectedResponse = []
                             for (asset of messageObject.collection.assets){
                                 let {assetId, ...assetCheckProps} = asset
                                 assetsProjectedResponse.push(assetCheckProps)
-                            }                    
-                            expect(assetsProjectedResponse, "checking assets were cloned").to.eql(reference.testCollection.assetsProjected)
+                            }        
+                            const assetsProjectedWithoutId = reference.testCollection.assetsProjected.map(({ name }) => ({ name }));
+
+                            expect(assetsProjectedResponse, "checking assets were cloned").to.eql(assetsProjectedWithoutId)            
 
                             //stigs 
                             expect(messageObject.collection.stigs).to.eql(reference.testCollection.stigsProjected)
@@ -642,12 +649,12 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
 
                             //owners 
                             expect(messageObject.collection).to.have.property('owners');
-                            let ownerProjectedResponse = []
-                            for (owner of messageObject.collection.owners){
-                                let {email, ...ownerCheckProps} = owner
-                                ownerProjectedResponse.push(ownerCheckProps)
-                            }
-                            expect(ownerProjectedResponse, "checking owners were cloned").to.eql(reference.testCollection.ownersProjected)
+                            // let ownerProjectedResponse = []
+                            // for (owner of messageObject.collection.owners){
+                            //     let {email, ...ownerCheckProps} = owner
+                            //     ownerProjectedResponse.push(ownerCheckProps)
+                            // }
+                            expect(messageObject.collection.owners, "checking owners were cloned").to.eql(reference.testCollection.ownersProjected)
 
                             //assets
                             let assetsProjectedResponse = []
@@ -710,12 +717,12 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
 
                             //owners 
                             expect(messageObject.collection).to.have.property('owners');
-                            let ownerProjectedResponse = []
-                            for (owner of messageObject.collection.owners){
-                                let {email, ...ownerCheckProps} = owner
-                                ownerProjectedResponse.push(ownerCheckProps)
-                            }
-                            expect(ownerProjectedResponse, "checking owners were cloned").to.eql(reference.testCollection.ownersProjected)
+                            // let ownerProjectedResponse = []
+                            // for (owner of messageObject.collection.owners){
+                            //     let {email, ...ownerCheckProps} = owner
+                            //     ownerProjectedResponse.push(ownerCheckProps)
+                            // }
+                            expect(messageObject.collection.owners, "checking owners were cloned").to.eql(reference.testCollection.ownersProjected)
 
                             //assets
                             let assetsProjectedResponse = []
@@ -723,7 +730,9 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                                 let {assetId, ...assetCheckProps} = asset
                                 assetsProjectedResponse.push(assetCheckProps)
                             }                    
-                            expect(assetsProjectedResponse, "checking assets were cloned").to.eql(reference.testCollection.assetsProjected)
+                            const assetsProjectedWithoutId = reference.testCollection.assetsProjected.map(({ name }) => ({ name }));
+
+                            expect(assetsProjectedResponse, "checking assets were cloned").to.eql(assetsProjectedWithoutId)       
 
                             //stigs 
                             expect(messageObject.collection.stigs).to.eql(stigsProjected)
@@ -775,12 +784,12 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
 
                             //owners 
                             expect(messageObject.collection).to.have.property('owners');
-                            let ownerProjectedResponse = []
-                            for (owner of messageObject.collection.owners){
-                                let {email, ...ownerCheckProps} = owner
-                                ownerProjectedResponse.push(ownerCheckProps)
-                            }
-                            expect(ownerProjectedResponse, "checking owners were cloned").to.eql(reference.testCollection.ownersProjected)
+                            // let ownerProjectedResponse = []
+                            // for (owner of messageObject.collection.owners){
+                            //     let {email, ...ownerCheckProps} = owner
+                            //     ownerProjectedResponse.push(ownerCheckProps)
+                            // }
+                            expect(messageObject.collection.owners, "checking owners were cloned").to.eql(reference.testCollection.ownersProjected)
 
                             //assets
                             let assetsProjectedResponse = []
@@ -788,7 +797,9 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                                 let {assetId, ...assetCheckProps} = asset
                                 assetsProjectedResponse.push(assetCheckProps)
                             }                    
-                            expect(assetsProjectedResponse, "checking assets were cloned").to.eql(reference.testCollection.assetsProjected)
+                            const assetsProjectedWithoutId = reference.testCollection.assetsProjected.map(({ name }) => ({ name }));
+
+                            expect(assetsProjectedResponse, "checking assets were cloned").to.eql(assetsProjectedWithoutId)       
 
                             //stigs 
                             expect(messageObject.collection.stigs).to.eql(reference.testCollection.stigsProjected)
@@ -844,12 +855,12 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
 
                             //owners 
                             expect(messageObject.collection).to.have.property('owners');
-                            let ownerProjectedResponse = []
-                            for (owner of messageObject.collection.owners){
-                                let {email, ...ownerCheckProps} = owner
-                                ownerProjectedResponse.push(ownerCheckProps)
-                            }
-                            expect(ownerProjectedResponse, "checking owners were cloned").to.eql(reference.testCollection.ownersProjected)
+                            // let ownerProjectedResponse = []
+                            // for (owner of messageObject.collection.owners){
+                            //     let {email, ...ownerCheckProps} = owner
+                            //     ownerProjectedResponse.push(ownerCheckProps)
+                            // }
+                            expect(messageObject.collection.owners, "checking owners were cloned").to.eql(reference.testCollection.ownersProjected)
 
                             //assets
                             let assetsProjectedResponse = []
@@ -857,8 +868,10 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {
                                 let {assetId, ...assetCheckProps} = asset
                                 assetsProjectedResponse.push(assetCheckProps)
                             }                    
-                            expect(assetsProjectedResponse, "checking assets were cloned").to.eql(reference.testCollection.assetsProjected)
+                            const assetsProjectedWithoutId = reference.testCollection.assetsProjected.map(({ name }) => ({ name }));
 
+                            expect(assetsProjectedResponse, "checking assets were cloned").to.eql(assetsProjectedWithoutId)       
+                            
                             //stigs 
                             expect(messageObject.collection.stigs).to.eql(stigsProjected)
                         }
@@ -1533,7 +1546,7 @@ describe('GET - putAssetsByCollectionLabelId - /collections/{collectionId}/label
         it('Replace an assets label', async () => {
 
             const res = await chai.request(config.baseUrl)
-                .put(`/collections/${reference.testCollection.collectionId}/labels/${reference.scrapLabel}/assets`)
+                .put(`/collections/${reference.testCollection.collectionId}/labels/${reference.scrapCollection.scrapLabel}/assets`)
                 .set('Authorization', `Bearer ${user.token}`)
                 .send([
                         `${reference.testAsset.assetId}`

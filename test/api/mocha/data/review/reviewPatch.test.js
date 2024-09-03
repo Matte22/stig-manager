@@ -4,7 +4,7 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils')
-const reference = require('./referenceData.js')
+const reference = require('../../referenceData.js')
 const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
 
@@ -121,23 +121,22 @@ describe('PATCH - Review', () => {
 
       describe('PATCH - patchReviewMetadata - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata', () => {
 
-        before(async function () {
-          this.timeout(4000)
-          await utils.loadAppData()
-          await utils.uploadTestStigs()
-          await utils.createDisabledCollectionsandAssets()
-        })
+        // before(async function () {
+        //   this.timeout(4000)
+        //   await utils.loadAppData()
+        //   await utils.uploadTestStigs()
+        // })
         it('Merge metadata property/value into a Review', async () => {
           const res = await chai.request(config.baseUrl)
             .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata`)
             .set('Authorization', `Bearer ${iteration.token}`)
-            .send({[reference.testCollection.metadataKey]: reference.testCollection.metadataValue})
+            .send({[reference.reviewMetadataKey]: reference.reviewMetadataValue})
           if(iteration.name === 'collectioncreator') {
             expect(res).to.have.status(403)
             return
           }
           expect(res).to.have.status(200)
-          expect(res.body).to.eql({[reference.testCollection.metadataKey]: reference.testCollection.metadataValue})
+          expect(res.body).to.eql({[reference.reviewMetadataKey]: reference.reviewMetadataValue})
         
         })
       })
