@@ -299,7 +299,7 @@ describe('DELETE - user', () => {
         it('Delete a user - fail due to user access record', async () => {
           const res = await chai
             .request(config.baseUrl)
-            .delete(`/users/${reference.collectionOwnerID}?elevate=true&projection=collectionGrants&projection=statistics`)
+            .delete(`/users/${reference.testCollection.collectionOwnerID}?elevate=true&projection=collectionGrants&projection=statistics`)
             .set('Authorization', 'Bearer ' + iteration.token)
             if(iteration.name != "stigmanadmin"){
               expect(res).to.have.status(403)

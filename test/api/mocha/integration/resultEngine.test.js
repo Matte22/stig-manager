@@ -4,7 +4,7 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require("../testConfig.json")
 const utils = require("../utils/testUtils")
-const reference = require("./referenceData")
+const reference = require("../referenceData")
 const iterations = require("../iterations")
 
 describe('PATCH - patchReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId} - PUT - putReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId}', () => {

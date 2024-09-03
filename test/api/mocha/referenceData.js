@@ -6,14 +6,14 @@ const reference = {
   // collectionId: "21",
   // collectionName: "Test Collection",
   // collectionDescription: "This is a test collection",
-  collectionOwner: "admin",
-  collectionOwnerID: "87",
-  benchmark: "VPN_SRG_TEST",
-  checklistLength: 81,
-  revisionStr: "V1R1",
-  grantCheckUserId: "85",
-  lvl1ValidStigs: ["VPN_SRG_TEST"],
-  testAssetLvl1NoAccess: "62",
+  // collectionOwner: "admin",
+  //
+  // benchmark: "VPN_SRG_TEST",
+  // checklistLength: 81,
+  // revisionStr: "V1R1",
+  // grantCheckUserId: "85",
+  // lvl1ValidStigs: ["VPN_SRG_TEST"],
+  // testAssetLvl1NoAccess: "62",
   testCollection: {
     name: "Collection X",
     collectionId: "21",
@@ -22,12 +22,14 @@ const reference = {
     pinRevision: "V1R0",    
     collectionMetadataKey: "pocName",
     collectionMetadataValue: "poc2Patched",
+    collectionOwnerID: "87",
     owners: ["87", "1", "45"],
+    grantCheckUserId: "85",
     assetIds: ["29", "62", "42", "154"],
     assetsWithHistory: ["42", "154"],
     testAssetId: "42",
-    validStigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST"],
     ruleId: 'SV-106179r1_rule',
+    validStigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST"],
     labelCount: 2,
     lvl1LabelName: "test-label-lvl1",
     lvl1Label: "5130dc84-9a68-11ec-b1bc-0242ac110002",
@@ -217,16 +219,11 @@ const reference = {
     collectionMetadataKey: "pocName",
     collectionMetadataValue: "poc2Patched"
   },
-  scrapLvl1User: {
-    userId: "86",
-    username: "bizarroLvl1"
-  },
-  scrapAsset: {
-    assetId: "34",
-    scrapBenchmark: "RHEL_7_STIG_TEST",
-    metadataKey: "testkey",
-    metadataValue: "testvalue"
-  },
+
+
+  // Reference Asset data
+
+  testAssetLvl1NoAccess: "62",
   testAsset: {
     name: "Collection_X_lvl1_asset-1",
     assetId: "42",
@@ -267,6 +264,12 @@ const reference = {
       'SV-77809r3_rule'
     ],    
   },
+  scrapAsset: {
+    assetId: "34",
+    scrapBenchmark: "RHEL_7_STIG_TEST",
+    metadataKey: "testkey",
+    metadataValue: "testvalue"
+  },  
   testAssetNoStigs: {
     name: "ACHERNAR_Collection_X_asset",
     assetId: "29",
@@ -282,28 +285,19 @@ const reference = {
         submittedCount: null,
       },
   },  
-  testCci: {
-    id: "000015",
-    status: "draft",
-  },
+
+
+
+  //Reference User data
+  allUserIds: ['87', '86', '82', '85', '21', '44', '45', '1', '22', '43'],
   lvl1User:{
     username: "lvl1",
     userId: "85"
   },
-  testRule: {
-    ruleId: "SV-106179r1_rule",
-    groupId: "V-97041",
-    version: "SRG-NET-000019-VPN-000040",
+  stigmanadmin: {
+    username: 'stigmanadmin',
+    userId: '1'
   },
-  ruleId: "SV-106179r1_rule",
-  ruleIdPinnedRev: "SV-106179r123456789_rule",
-  reviewKeyChangeFile: "U_VPN_SRG_V2R3_Manual-xccdf-reviewKeyChange.xml",
-  ruleIdLvl1NoAccess: "SV-77809r3_rule",
-  writeStigPropsByCollectionStig: ['62', '42', '154'],
-  reviewMatchString: "test",
-  freshRuleId: "SV-106195r1_rule",
-  testGroupId: "V-97041",
-  allUserIds: ['87', '86', '82', '85', '21', '44', '45', '1', '22', '43'],
   wfTest: {
     username: 'wf-test',
     userId: '22'
@@ -312,10 +306,40 @@ const reference = {
     username: 'workforce-60',
     userId: '43'
   },  
+
+  scrapLvl1User: {
+    userId: "86",
+    username: "bizarroLvl1"
+  },
+
+  //review data
+  ruleId: "SV-106179r1_rule",
+  ruleIdPinnedRev: "SV-106179r123456789_rule",
+  reviewKeyChangeFile: "U_VPN_SRG_V2R3_Manual-xccdf-reviewKeyChange.xml",
+  ruleIdLvl1NoAccess: "SV-77809r3_rule",
+  writeStigPropsByCollectionStig: ['62', '42', '154'],
+  reviewMatchString: "test",
+  freshRuleId: "SV-106195r1_rule",
+  testGroupId: "V-97041",
+  reviewMetadataKey: 'testkey',
+  reviewMetadataValue: 'testvalue',    
+
+  //Reference Stig and Rule data
+  benchmark: "VPN_SRG_TEST",
+  revisionStr: "V1R1",
+  checklistLength: 81,
   testBenchmarkAllRevisions: ['V1R1', 'V1R0'],
+  lvl1ValidStigs: ["VPN_SRG_TEST"],
   scrapBenchmark: 'RHEL_7_STIG_TEST',
   testStigfile: 'U_VPN_SRG_V1R1_Manual-xccdf.xml',
+  testStigfileNonLatest: 'U_VPN_SRG_V1R0_Manual-xccdf.xml',
   rulesMatchingFingerprints: "U_VPN_SRG-OTHER_V1R1_twoRules-matchingFingerprints.xml",  
+  testRule: {
+    ruleId: "SV-106179r1_rule",
+    groupId: "V-97041",
+    version: "SRG-NET-000019-VPN-000040",
+  },
+
   vpnStigs: [
     'VPN_SRG_TEST',
     'VPN_SRG_OTHER',
@@ -331,12 +355,16 @@ const reference = {
     'VPN_SRG_TEST',
     'Windows_10_STIG_TEST'
   ],  
-  stigmanadmin: {
-    username: 'stigmanadmin',
-    userId: '1'
-  },
-  reviewMetadataKey: 'testkey',
-  reviewMetadataValue: 'testvalue',  
+  testCci: {
+    id: "000015",
+    status: "draft",
+  },  
+  // stigmanadmin: {
+  //   username: 'stigmanadmin',
+  //   userId: '1'
+  // },
+  // reviewMetadataKey: 'testkey',
+  // reviewMetadataValue: 'testvalue',  
 };
 
 module.exports = reference;

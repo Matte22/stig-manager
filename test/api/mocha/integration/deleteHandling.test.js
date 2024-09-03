@@ -4,7 +4,7 @@ chai.use(chaiHttp)
 const expect = chai.expect
 const config = require("../testConfig.json")
 const utils = require("../utils/testUtils")
-const reference = require("./referenceData")
+const reference = require("../referenceData")
 const user = {
   name: "admin",
   grant: "Owner",
