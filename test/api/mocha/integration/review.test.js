@@ -5,7 +5,7 @@ const expect = chai.expect
 const config = require('../testConfig.json')
 const utils = require('../utils/testUtils')
 const xml2js = require('xml2js')
-const reference = require('./referenceData.js')
+const reference = require('../referenceData.js')
 const iterations = require('../iterations.js')
 
 const user =
