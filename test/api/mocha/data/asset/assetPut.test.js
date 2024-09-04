@@ -7,6 +7,7 @@ const utils = require('../../utils/testUtils')
 const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
+const { v4: uuidv4 } = require('uuid')
 
 describe('PUT - Asset', function () {
 
@@ -309,12 +310,51 @@ describe('PUT - Asset', function () {
           expect(effectedAsset).to.have.lengthOf(1)
           expect(effectedAsset[0].assetId).to.equal(reference.testAsset.assetId)
         })
-        
         it('Replace a Labels Asset Mappings in a Collection assign to an asset that does not exist', async function () {
           const res = await chai.request(config.baseUrl)
             .put(`/collections/${reference.testCollection.collectionId}/labels/${reference.testCollection.fullLabel}/assets`)
             .set('Authorization', 'Bearer ' + iteration.token)
             .send(["9999"])
+          expect(res).to.have.status(403)
+        })
+        it("should throw SmError.NotFoundError when updating a label that doesn't exist.",async function () {
+          const labelId = uuidv4()
+          const res = await chai.request(config.baseUrl)
+              .put(`/collections/${reference.testCollection.collectionId}/labels/${labelId}/assets`)
+              .set('Authorization', `Bearer ${iteration.token}`)
+              .send([reference.testAsset.assetId])
+            if(distinct.canModifyCollection === false){
+                expect(res).to.have.status(403)
+                return
+            }
+            expect(res).to.have.status(403)
+            expect(res.body.error).to.equal("User has insufficient privilege to complete this request.")
+            expect(res.body.detail).to.equal("The labelId is not associated with this Collection.")
+        })
+      })
+      describe(`attachAssetsToStig - /collections/{collectionId}/stigs/{benchmarkId}/assets`, function () {
+        it('Set the Assets mapped to a STIG', async function () {
+          const res = await chai.request(config.baseUrl)
+          .put(`/collections/${reference.scrapCollection.collectionId}/stigs/${reference.scrapAsset.scrapBenchmark}/assets?projection=restrictedUserAccess`)
+          .set('Authorization', 'Bearer ' + iteration.token)
+          .send([reference.scrapAsset.assetId])
+
+          if(!distinct.canModifyCollection){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array')
+          expect(res.body).to.be.an('array').of.length(1)
+          expect(res.body[0].assetId).to.equal(reference.scrapAsset.assetId)
+          expect(res.body[0].collectionId).to.equal(reference.scrapCollection.collectionId)
+          expect(res.body[0]).to.have.property('restrictedUserAccess')
+        })
+        it('should throw SM privilege error due to assetId not being apart of collection.', async function () {
+          const res = await chai.request(config.baseUrl)
+          .put(`/collections/${reference.scrapCollection.collectionId}/stigs/${reference.scrapAsset.scrapBenchmark}/assets?projection=restrictedUserAccess`)
+          .set('Authorization', 'Bearer ' + iteration.token)
+          .send([`${Math.floor(Math.random() * 123456)}`])
           expect(res).to.have.status(403)
         })
       })

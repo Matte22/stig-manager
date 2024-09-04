@@ -50,57 +50,62 @@ const loadAppData = async (appdataFileName = 'appdata.json') => {
   }
 }
 
-const createTempCollection = async () => {
+const createTempCollection = async (collectionPost) => {
   try {
-    const res = await axios.post(
-      `${config.baseUrl}/collections?elevate=true&projection=grants&projection=labels`,
-      {
-        name: 'temoCollection',
-        description: 'Collection TEST description',
-        settings: {
-          fields: {
-            detail: {
-              enabled: 'always',
-              required: 'findings'
+    // if no collecitonPost is passed in, use the default
+    if (!collectionPost) {
+      collectionPost = 
+        {
+          name: 'temoCollection',
+          description: 'Collection TEST description',
+          settings: {
+            fields: {
+              detail: {
+                enabled: 'always',
+                required: 'findings'
+              },
+              comment: {
+                enabled: 'always',
+                required: 'findings'
+              }
             },
-            comment: {
-              enabled: 'always',
-              required: 'findings'
+            status: {
+              canAccept: true,
+              minAcceptGrant: 2,
+              resetCriteria: 'result'
+            },
+            history: {
+              maxReviews: 11
             }
           },
-          status: {
-            canAccept: true,
-            minAcceptGrant: 2,
-            resetCriteria: 'result'
+          metadata: {
+            pocName: 'poc2Put',
+            pocEmail: 'pocEmailPut@email.com',
+            pocPhone: '12342',
+            reqRar: 'true'
           },
-          history: {
-            maxReviews: 11
-          }
-        },
-        metadata: {
-          pocName: 'poc2Put',
-          pocEmail: 'pocEmailPut@email.com',
-          pocPhone: '12342',
-          reqRar: 'true'
-        },
-        grants: [
-          {
-            userId: '1',
-            accessLevel: 4
-          },
-          {
-            userId: '85',
-            accessLevel: 1
-          }
-        ],
-        labels: [
-          {
-            name: 'TEST',
-            description: 'Collection label description',
-            color: 'ffffff'
-          }
-        ]
-      },
+          grants: [
+            {
+              userId: '1',
+              accessLevel: 4
+            },
+            {
+              userId: '85',
+              accessLevel: 1
+            }
+          ],
+          labels: [
+            {
+              name: 'TEST',
+              description: 'Collection label description',
+              color: 'ffffff'
+            }
+          ]
+        }
+    }
+    const res = await axios.post(
+      `${config.baseUrl}/collections?elevate=true&projection=grants&projection=labels`,
+      collectionPost,
       {
         headers: {
           Authorization: `Bearer ${adminToken}`,
@@ -564,10 +569,12 @@ module.exports = {
   loadAppData,
   deleteCollection,
   uploadTestStigs,
+  deleteAsset,
   getStigByCollectionBenchmarkId,
   setDefaultRevision,
   createTempAsset,
   createDisabledCollectionsandAssets,
+  createTempCollection,
   getAsset,
   getAssetsByLabel,
   getUser,

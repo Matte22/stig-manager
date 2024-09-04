@@ -211,6 +211,17 @@ describe(`GET - Asset`, function () {
           expect(res.body).to.be.an(`array`)
           expect(res.body).to.include(reference.testAsset.metadataKey)
         })
+        it(`should throw not found error, metadata keys not found`, async function () {
+          const res = await chai
+            .request(config.baseUrl)
+            .get(`/assets/${reference.testAssetNoMetadata.assetId}/metadata/keys`)
+            .set(`Authorization`, `Bearer ` + iteration.token)
+          if(!distinct.hasAccessToTestAsset){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200)
+        })
       })
       describe(`getAssetMetadataValue - /assets/{assetId}/metadata/keys/{key}`, function () {
         it(`Return the Metadata VALUE for test asset metadata key: testkey`, async function () {
@@ -225,6 +236,17 @@ describe(`GET - Asset`, function () {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.include(reference.testAsset.metadataValue)
+        })
+        it(`should throw not found error, metadata keys not found`, async function () {
+          const res = await chai
+            .request(config.baseUrl)
+            .get(`/assets/${reference.testAssetNoMetadata.assetId}/metadata/keys/test`)
+            .set(`Authorization`, `Bearer ` + iteration.token)
+          if(!distinct.hasAccessToTestAsset){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(404)
         })
       })
       describe(`getAssets - /assets`, function () {
@@ -320,6 +342,35 @@ describe(`GET - Asset`, function () {
           for(let asset of res.body){
             expect(asset.labelIds).to.include(reference.testCollection.fullLabel)
           }
+        })
+
+        it(`should return assets accessible to the requester, testing metadata query. (issue 1357)`, async function () {
+          const assetWithMetadata = await utils.createTempAsset({
+            name: 'tempAsset' + Math.floor(Math.random() * 10000),
+            collectionId: reference.scrapCollection.collectionId,
+            description: 'temp',
+            ip: '1.1.1.1',
+            noncomputing: true,
+            labelIds: [],
+            metadata: {
+              testKey: 'test:value',
+            },
+            stigs: []
+          })
+
+          const res = await chai
+            .request(config.baseUrl).get(`/assets?collectionId=${reference.scrapCollection.collectionId}&metadata=testKey%3Atest%3Avalue`)
+            .set(`Authorization`, `Bearer ` + iteration.token)
+          
+          if(iteration.name === 'lvl1' || iteration.name === 'collectioncreator'){
+            expect(res).to.have.status(403)
+            await utils.deleteAsset(assetWithMetadata.data.assetId)
+            return
+          }
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an(`array`).of.length(1)
+          expect(res.body[0].assetId).to.eql(assetWithMetadata.data.assetId)
+          await utils.deleteAsset(assetWithMetadata.data.assetId)
         })
 
         it(`Assets accessible to the requester - No StigGrants projection(for lvl1 iteration success)`, async function () {
@@ -581,6 +632,8 @@ describe(`GET - Asset`, function () {
               .get(`/assets/${assetId}/checklists`)
               .set(`Authorization`, `Bearer ` + iteration.token)
             expect(res2).to.have.status(204)
+            
+            await utils.deleteAsset(assetId)
         })
       })
       describe(`getChecklistByAssetStig - /assets/{assetId}/checklists/{benchmarkId}/{revisionStr}`, function () {

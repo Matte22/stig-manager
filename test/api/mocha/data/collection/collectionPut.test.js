@@ -80,6 +80,24 @@ describe('PUT - Collection', function () {
             expect(res.body.stigs).to.have.lengthOf(reference.testCollection.validStigs.length)              
         })
 
+        it("should throw SmError.UnprocessableError when replacing due to duplicate user in grant array.",async function () {
+
+          const putRequest = JSON.parse(JSON.stringify(requestBodies.replaceCollection))
+          putRequest.grants.push(putRequest.grants[0])
+          putRequest.name = "TEST" + Math.floor(Math.random() * 100) + "-" + Math.floor(Math.random() * 100)
+          const res = await chai.request(config.baseUrl)
+              .put(`/collections/${reference.testCollection.collectionId}`)
+              .set('Authorization', `Bearer ${iteration.token}`)
+              .send(putRequest)
+            if(distinct.canModifyCollection === false){
+                expect(res).to.have.status(403)
+                return
+            }
+            expect(res).to.have.status(422)
+            expect(res.body.error).to.equal("Unprocessable Entity.")
+            expect(res.body.detail).to.equal("Duplicate user in grant array")
+        })
+
         // it('Set all properties of a Collection- with metadata',async function () {
 
         //     const putRequest = {
@@ -177,25 +195,41 @@ describe('PUT - Collection', function () {
       describe('setStigAssetsByCollectionUser - /collections/{collectionId}/grants/{userId}/access', function () {
 
         it('set stig-asset grants for a lvl1 user in this collection.',async function () {
+          const res = await chai.request(config.baseUrl)
+              .put(`/collections/${reference.scrapCollection.collectionId}/grants/${reference.scrapLvl1User.userId}/access`)
+              .set('Authorization', `Bearer ${iteration.token}`)
+              .send([{
+                    "benchmarkId": reference.scrapAsset.scrapBenchmark,
+                    "assetId": reference.scrapAsset.assetId,
+                }])
 
-            const res = await chai.request(config.baseUrl)
-                .put(`/collections/${reference.scrapCollection.collectionId}/grants/${reference.scrapLvl1User.userId}/access`)
-                .set('Authorization', `Bearer ${iteration.token}`)
-                .send([{
-                      "benchmarkId": reference.scrapAsset.scrapBenchmark,
-                      "assetId": reference.scrapAsset.assetId,
-                  }])
-
-              if(distinct.canModifyCollection === false){
-                expect(res).to.have.status(403)
-                return
-              }
-              expect(res).to.have.status(200)
-              expect(res.body).to.have.lengthOf(1)
-              for(const item of res.body){
-                  expect(item.benchmarkId).to.equal(reference.scrapAsset.scrapBenchmark)
-                  expect(item.asset.assetId).to.equal(reference.scrapAsset.assetId)
-              }
+            if(distinct.canModifyCollection === false){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res).to.have.status(200)
+            expect(res.body).to.have.lengthOf(1)
+            for(const item of res.body){
+                expect(item.benchmarkId).to.equal(reference.scrapAsset.scrapBenchmark)
+                expect(item.asset.assetId).to.equal(reference.scrapAsset.assetId)
+            }
+        })
+        it("should throw SmError.NotFoundError when attempting to set asset stig for a user that does not exist with access level 1",async function () {
+          const randomUserId = Math.floor(Math.random() * 1002230)
+          const res = await chai.request(config.baseUrl)
+              .put(`/collections/${reference.scrapCollection.collectionId}/grants/${randomUserId}/access`)
+              .set('Authorization', `Bearer ${iteration.token}`)
+              .send([{
+                    "benchmarkId": reference.scrapAsset.scrapBenchmark,
+                    "assetId": reference.scrapAsset.assetId,
+                }])
+            if(distinct.canModifyCollection === false){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res).to.have.status(404)
+            expect(res.body.error).to.equal("Resource not found.")
+            expect(res.body.detail).to.equal("User not found in this Collection with accessLevel === 1.")
         })
       })
 

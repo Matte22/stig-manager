@@ -318,7 +318,7 @@ describe('DELETE - user', () => {
             }
             expect(res).to.have.status(200)
             const userEffected = await utils.getUser("43")
-            expect(userEffected, "expect empty response (user delete worked)").to.be.empty
+            expect(userEffected.response.status, "expect 404 response (user delete worked)").to.equal(404)
         })
         it('Delete a user - not elevated', async () => {
           const res = await chai

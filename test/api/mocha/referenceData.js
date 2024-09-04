@@ -285,7 +285,10 @@ const reference = {
         submittedCount: null,
       },
   },  
-
+  testAssetNoMetadata: {
+    "collectionId": "21",
+    "assetId": "154",
+  },
 
 
   //Reference User data
@@ -322,7 +325,8 @@ const reference = {
   freshRuleId: "SV-106195r1_rule",
   testGroupId: "V-97041",
   reviewMetadataKey: 'testkey',
-  reviewMetadataValue: 'testvalue',    
+  reviewMetadataValue: 'testvalue',
+  scrapRuleIdWindows10: "SV-77809r3_rule",
 
   //Reference Stig and Rule data
   benchmark: "VPN_SRG_TEST",
@@ -338,6 +342,9 @@ const reference = {
     ruleId: "SV-106179r1_rule",
     groupId: "V-97041",
     version: "SRG-NET-000019-VPN-000040",
+  },
+  testRuleNoMetadata: {
+    ruleId: "SV-106191r1_rule",
   },
 
   vpnStigs: [

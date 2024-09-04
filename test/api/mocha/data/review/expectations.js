@@ -2,6 +2,7 @@
 
 const distinct = {
     stigmanadmin: {
+      canPatchReview: true,
       testAsset: {
         reviewsAvailableToUser: 9,
         reviewsForResultPass: 4,
@@ -17,6 +18,9 @@ const distinct = {
         reviewsForStatusSaved: 6,
         reviewsForStigmanadmin: 14,
         reviewsForResultPass: 4,
+        reviewsForTestGroup: 3,
+        reviewsForRulesAll: 17,
+        reviewsDefaultMapped: 11
       },
       postReviews:{
         targetAssetsWholeStig:{
@@ -79,6 +83,7 @@ const distinct = {
       },
     },
     lvl1: {
+      canPatchReview: false,
       testAssetStats: {
         ruleCount: 81,
         stigCount: 1,
@@ -160,9 +165,13 @@ const distinct = {
         reviewsForStatusSaved: 4,
         reviewsForStigmanadmin: 9,
         reviewsForResultPass: 2,
+        reviewsForTestGroup: 2,
+        reviewsForRulesAll: 11,
+        reviewsDefaultMapped: 9
       },
     },
     lvl2: {
+      canPatchReview: true,
       testAssetStats: {
         ruleCount: 368,
         stigCount: 2,
@@ -245,9 +254,13 @@ const distinct = {
         reviewsForStatusSaved: 6,
         reviewsForStigmanadmin: 14,
         reviewsForResultPass: 4,
+        reviewsForTestGroup: 3,
+        reviewsForRulesAll: 17,
+        reviewsDefaultMapped: 11
       },
     },
     lvl3: {
+      canPatchReview: true,
       testAssetStats: {
         ruleCount: 368,
         stigCount: 2,
@@ -270,6 +283,9 @@ const distinct = {
         reviewsForStatusSaved: 6,
         reviewsForStigmanadmin: 14,
         reviewsForResultPass: 4,
+        reviewsForTestGroup: 3,
+        reviewsForRulesAll: 17,
+        reviewsDefaultMapped: 11
       },
       postReviews:{
         targetAssetsWholeStig:{
@@ -331,6 +347,7 @@ const distinct = {
       },
     },
     lvl4: {
+      canPatchReview: true,
       testAssetStats: {
         ruleCount: 368,
         stigCount: 2,
@@ -353,6 +370,9 @@ const distinct = {
         reviewsForTestRuleId: 3,
         reviewsForStatusSaved: 6,
         reviewsForStigmanadmin: 14,
+        reviewsForTestGroup: 3,
+        reviewsForRulesAll: 17,
+        reviewsDefaultMapped: 11
       
       },
       postReviews:{
@@ -420,8 +440,7 @@ const distinct = {
           reviewsLength: 2
         },
       },
-    },
-    collectioncreator: {}
+    }
 }
   module.exports = distinct
   

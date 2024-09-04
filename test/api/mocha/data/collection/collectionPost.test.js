@@ -30,7 +30,6 @@ describe('POST - Collection - not all tests run for all iterations', function ()
     await utils.deleteStigByRevision("VPN_SRG_TEST", "V1R0")
   })
 
-
   for(const iteration of iterations) {
     if (expectations[iteration.name] === undefined){
       it(`No expectations for this iteration scenario: ${iteration.name}`,async function () {})
@@ -121,6 +120,44 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             // just an extra check to make sure the collection was created
             const createdCollection = await utils.getCollection(res.body.collectionId)
             expect(createdCollection).to.exist
+        })
+        it("should throw SmError.UnprocessableError due to duplicate user in grant array.",async function () {
+
+          const post = JSON.parse(JSON.stringify(requestBodies.createCollection))
+          post.grants.push(post.grants[0])
+          post.name = "TEST" + Math.floor(Math.random() * 100) + "-" + Math.floor(Math.random() * 100)
+          const res = await chai
+            .request(config.baseUrl)
+            .post(`/collections?elevate=${distinct.canElevate}`)
+            .set("Authorization", `Bearer ${iteration.token}`)
+            .send(post)
+            if(distinct.canCreateCollection === false){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res).to.have.status(422)
+            expect(res.body.error).to.equal("Unprocessable Entity.")
+            expect(res.body.detail).to.equal("Duplicate user in grant array")
+        })
+        it("should throw SmError.UnprocessableError due to duplicate name exists ",async function () {
+          const post = requestBodies.createCollection
+          const res = await chai
+           .request(config.baseUrl)
+           .post(`/collections?elevate=${distinct.canElevate}&projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`)
+           .set("Authorization", `Bearer ${iteration.token}`)
+           .send(post)
+          if(distinct.canCreateCollection === false){
+            expect(res).to.have.status(403)
+            return
+          }
+          if (distinct.grant === 'none') {  
+            // grant = none iteration can create a collection, but does not give itself access to the collection
+            // TODO: Should eventually be changed to respond with empty object
+            return
+          }
+          expect(res).to.have.status(422)
+          expect(res.body.error).to.equal("Unprocessable Entity.")
+          expect(res.body.detail).to.equal("Duplicate name exists.")
         })
       })
 
