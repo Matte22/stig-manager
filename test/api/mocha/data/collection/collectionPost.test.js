@@ -12,7 +12,7 @@ const reference = require('../../referenceData.js')
 const requestBodies = require('./requestBodies.js')
 
 describe('POST - Collection - not all tests run for all iterations', function () {
-  
+
   before(async function () {
     // this.timeout(4000)
     await utils.uploadTestStigs()
@@ -161,7 +161,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
         })
       })
 
-      describe("cloneCollection - /collections/{collectionId}/clone", function () {
+      describe("cloneCollection - /collections/{collectionId}/clone - test basic clone permissions (ie. must have owner grant + createCollection priv", function () {
 
         before(async function () {
           // this.timeout(4000)

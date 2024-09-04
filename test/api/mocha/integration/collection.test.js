@@ -318,7 +318,7 @@ describe('PUT - setStigAssetsByCollectionUser - /collections/{collectionId}/gran
         })
     })
 })
-describe('POST - cloneCollection - /collections/{collectionId}/clone', () => {    
+describe('POST - cloneCollection - /collections/{collectionId}/clone - test various clone params', () => {    
 
     describe('Collection Cloning', () =>{
 
