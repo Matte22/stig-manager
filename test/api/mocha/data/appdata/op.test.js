@@ -6,17 +6,16 @@ const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils.js')
 const iterations = require('../../iterations.js')
 
-describe('Appdata', () => {
+describe('Op', () => {
+  before(async function () {
+    this.timeout(4000)
+    await utils.loadAppData()
+    await utils.uploadTestStigs()
+    await utils.createDisabledCollectionsandAssets()
+  })
 
   for(const iteration of iterations){
-  
     describe(`iteration:${iteration.name}`, () => {
-      before(async function () {
-        this.timeout(4000)
-        await utils.loadAppData()
-        await utils.uploadTestStigs()
-        await utils.createDisabledCollectionsandAssets()
-      })
       describe('GET - getAppData - /op/appdata', () => {
         it('Export application data', async () => {
         const res = await chai.request(config.baseUrl)

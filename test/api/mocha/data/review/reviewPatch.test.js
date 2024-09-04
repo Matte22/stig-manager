@@ -36,10 +36,7 @@ describe('PATCH - Review', () => {
             .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
             .set('Authorization', `Bearer ${iteration.token}`)
             .send({detail:"these details have changed, but the status remains"})
-          if(iteration.name === 'collectioncreator') {
-            expect(res).to.have.status(403)
-            return
-          }
+       
           expect(res).to.have.status(200)
           expect(res.body.status).to.have.property('label').that.equals('submitted')
         })
@@ -48,10 +45,7 @@ describe('PATCH - Review', () => {
               .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
               .set('Authorization', `Bearer ${iteration.token}`)
               .send({result: "pass"})
-            if(iteration.name === 'collectioncreator') {
-              expect(res).to.have.status(403)
-              return
-            }
+           
             expect(res).to.have.status(200)
             expect(res.body.result).to.eql("pass")
             expect(res.body.status).to.have.property('label').that.equals('saved')
@@ -61,10 +55,7 @@ describe('PATCH - Review', () => {
               .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
               .set('Authorization', `Bearer ${iteration.token}`)
               .send({status: "submitted"})
-            if(iteration.name === 'collectioncreator') {
-              expect(res).to.have.status(403)
-              return
-            }
+           
             expect(res).to.have.status(200)
             expect(res.body.status).to.have.property('label').that.equals('submitted')
         })
@@ -73,10 +64,7 @@ describe('PATCH - Review', () => {
               .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
               .set('Authorization', `Bearer ${iteration.token}`)
               .send({result: "fail"})
-            if(iteration.name === 'collectioncreator') {
-              expect(res).to.have.status(403)
-              return
-            }
+           
             expect(res).to.have.status(200)
             expect(res.body.result).to.eql("fail")
             expect(res.body.status).to.have.property('label').that.equals('saved')
@@ -87,7 +75,7 @@ describe('PATCH - Review', () => {
             .set('Authorization', `Bearer ${iteration.token}`)
             .send({status: "accepted"})
           
-          if(iteration.name === "lvl1" || iteration.name === "lvl2" || iteration.name === "collectioncreator") {
+          if(iteration.name === "lvl1" || iteration.name === "lvl2") {
             expect(res).to.have.status(403)
             return
           }
@@ -107,10 +95,7 @@ describe('PATCH - Review', () => {
               comment: "sure",
               status: "submitted",
             })
-          if(iteration.name === 'collectioncreator') {
-            expect(res).to.have.status(403)
-            return
-          }
+          
           expect(res).to.have.status(200)
           expect(res.body.status.label).to.eql("submitted")    
           expect(res.body.result).to.eql("pass")
@@ -118,7 +103,6 @@ describe('PATCH - Review', () => {
           expect(res.body.comment).to.eql("sure")
         })
       })
-
       describe('PATCH - patchReviewMetadata - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata', () => {
 
         // before(async function () {
@@ -131,13 +115,21 @@ describe('PATCH - Review', () => {
             .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata`)
             .set('Authorization', `Bearer ${iteration.token}`)
             .send({[reference.reviewMetadataKey]: reference.reviewMetadataValue})
-          if(iteration.name === 'collectioncreator') {
-            expect(res).to.have.status(403)
-            return
-          }
+        
           expect(res).to.have.status(200)
           expect(res.body).to.eql({[reference.reviewMetadataKey]: reference.reviewMetadataValue})
         
+        })
+        it("should return SmError.PrivilegeError if user cannot modify review", async () => {
+          const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata`)
+            .set('Authorization', `Bearer ${iteration.token}`)
+          if(distinct.canPatchReview){
+            expect(res).to.have.status(200)
+            return
+          }
+          expect(res).to.have.status(403)
+          expect(res.body.error).to.be.equal("User has insufficient privilege to complete this request.")
         })
       })
     })

@@ -63,10 +63,7 @@ describe('PUT - Review', () => {
                         .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`)
                         .set('Authorization', `Bearer ${iteration.token}`)
                         .send(putBody)
-                    if(iteration.name === 'collectioncreator') {
-                        expect(res).to.have.status(403)
-                        return
-                    }
+                 
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('object')
                     expect(res.body).to.have.property("result")
@@ -129,10 +126,7 @@ describe('PUT - Review', () => {
                         .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}?projection=rule&projection=history&projection=stigs`)
                         .set('Authorization', `Bearer ${iteration.token}`)
                         .send(putBody)
-                    if(iteration.name === 'collectioncreator') {
-                        expect(res).to.have.status(403)
-                        return
-                    }
+                  
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('object')
                     expect(res.body).to.have.property("result")
@@ -216,10 +210,7 @@ describe('PUT - Review', () => {
                         .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}?projection=rule&projection=history&projection=stigs&projection=metadata`)
                         .set('Authorization', `Bearer ${iteration.token}`)
                         .send(putBody)
-                    if(iteration.name === 'collectioncreator') {
-                        expect(res).to.have.status(403)
-                        return
-                    }
+                   
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('object')
                     expect(res.body).to.have.property("result")
@@ -266,10 +257,7 @@ describe('PUT - Review', () => {
                         .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}?projection=rule&projection=history&projection=stigs&projection=metadata`)
                         .set('Authorization', `Bearer ${iteration.token}`)
                         .send(putBody)
-                    if(iteration.name === 'collectioncreator') {
-                        expect(res).to.have.status(403)
-                        return
-                    }
+                   
                     expect(res).to.have.status(200)
                     expect(res.body).to.be.an('object')
                     expect(res.body.result).to.equal(putBody.result)
@@ -333,10 +321,7 @@ describe('PUT - Review', () => {
                     .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}?projection=rule&projection=history&projection=stigs&projection=metadata`)
                     .set('Authorization', `Bearer ${iteration.token}`)
                     .send(putBody)
-                    if(iteration.name === 'collectioncreator') {
-                        expect(res).to.have.status(403)
-                        return
-                    }
+                   
                     expect(res).to.have.status(200)
                     expect(res.body.assetId).to.be.eql(reference.testAsset.assetId)
                     expect(res.body.result).to.be.eql(putBody.result)
@@ -361,15 +346,23 @@ describe('PUT - Review', () => {
                         .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata`)
                         .set('Authorization', `Bearer ${iteration.token}`)
                         .send({[reference.reviewMetadataKey]: reference.reviewMetadataValue})
-                        if(iteration.name === 'collectioncreator') {
-                            expect(res).to.have.status(403)
-                            return
-                        }
+                      
                         expect(res).to.have.status(200)
                         expect(res.body).to.eql({[reference.reviewMetadataKey]: reference.reviewMetadataValue})
 
                     })
-                })
+                    it("should return SmError.PrivilegeError if user cannot put review", async () => {
+                        const res = await chai.request(config.baseUrl)
+                          .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata`)
+                          .set('Authorization', `Bearer ${iteration.token}`)
+                        if(distinct.canPatchReview){
+                          expect(res).to.have.status(200)
+                          return
+                        }
+                        expect(res).to.have.status(403)
+                        expect(res.body.error).to.be.equal("User has insufficient privilege to complete this request.")
+                    })
+            })
 
             describe('PUT - putReviewMetadataValue - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {
 
@@ -384,13 +377,10 @@ describe('PUT - Review', () => {
                         .set('Authorization', `Bearer ${iteration.token}`)
                         .set('Content-Type', 'application/json') 
                         .send(`${JSON.stringify(reference.reviewMetadataValue)}`)
-                    if(iteration.name === 'collectioncreator') {
-                        expect(res).to.have.status(403)
-                        return
-                    }
+                   
                     expect(res).to.have.status(204)
                     })
-                })
+            })
         })
     }
 })

@@ -1,5 +1,6 @@
 const chai = require('chai')
 const chaiHttp = require('chai-http')
+const { v4: uuidv4 } = require('uuid')
 chai.use(chaiHttp)
 const expect = chai.expect
 const deepEqualInAnyOrder = require('deep-equal-in-any-order')
@@ -62,7 +63,6 @@ describe('GET - Collection', function () {
               expect(collection.collectionId).to.be.oneOf(distinct.collectionIdsAccess)
             }
         })
-
         it('Return a list of Collections accessible to the requester METADATA',async function () {
             const res = await chai.request(config.baseUrl)
               .get(`/collections?metadata=${reference.testCollection.collectionMetadataKey}%3A${reference.testCollection.collectionMetadataValue}`)
@@ -79,6 +79,60 @@ describe('GET - Collection', function () {
             expect(res.body[0].metadata[reference.testCollection.collectionMetadataKey]).to.equal(reference.testCollection.collectionMetadataValue)
 
         })
+        it('Return a list of Collections accessible to the requester METADATA param but with a colon character (see issue 1357)',async function () {
+          const tempCollectionWithMetadata = await utils.createTempCollection(
+            {
+              name: 'tempCollection' + Math.floor(Math.random() * 1000),
+              description: 'Collection TEST description',
+              settings: {
+                fields: {
+                  detail: {
+                    enabled: 'always',
+                    required: 'findings'
+                  },
+                  comment: {
+                    enabled: 'always',
+                    required: 'findings'
+                  }
+                },
+                status: {
+                  canAccept: true,
+                  minAcceptGrant: 2,
+                  resetCriteria: 'result'
+                },
+                history: {
+                  maxReviews: 11
+                }
+              },
+              metadata: {
+                testKey: 'test:value',
+              },
+              grants: [
+                {
+                  userId: '1',
+                  accessLevel: 4
+                },
+                {
+                  userId: '85',
+                  accessLevel: 1
+                }
+              ],
+              labels: [
+              ]
+            })
+          
+          const res = await chai.request(config.baseUrl)
+            .get(`/collections?metadata=testKey%3Atest%3Avalue`)
+            .set('Authorization', `Bearer ${iteration.token}`)
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array')
+          if(iteration.name !== 'stigmanadmin'){
+            expect(res.body).to.have.lengthOf(0)
+            return
+          }
+          expect(res.body).to.have.lengthOf(1)
+          expect(res.body[0].collectionId).to.equal(tempCollectionWithMetadata.data.collectionId)
+        })
         it('Return a list of Collections accessible to the requester NAME exact',async function () {
         const res = await chai.request(config.baseUrl)
             .get(`/collections?name=${reference.testCollection.name}&name-match=exact`)
@@ -93,7 +147,6 @@ describe('GET - Collection', function () {
         expect(res.body[0].name).to.match(regex)
         expect(res.body[0].collectionId).to.equal(reference.testCollection.collectionId)
         })
-
         it('Return a list of Collections accessible to the requester NAME starts With',async function () {
         const res = await chai.request(config.baseUrl)
             .get(`/collections?name=${'Collection'}&name-match=startsWith`)
@@ -109,7 +162,6 @@ describe('GET - Collection', function () {
             expect(collection.name).to.have.string('Collection')
         }
         })
-
         it('Return a list of Collections accessible to the requester NAME ends With',async function () {
         const res = await chai.request(config.baseUrl)
             .get(`/collections?name=${'X'}&name-match=endsWith`)
@@ -122,7 +174,6 @@ describe('GET - Collection', function () {
         }
         expect(res.body[0].name).to.have.string('X')
         })
-
         it('Return a list of Collections accessible to the requester NAME contains elevated',async function () {
         const res = await chai.request(config.baseUrl)
             .get(`/collections?name=${'delete'}&name-match=contains&elevate=true`)
@@ -136,7 +187,6 @@ describe('GET - Collection', function () {
         expect(res.body).to.have.lengthOf(distinct.collectionMatch.collectionDeleteMatchCntElevated)
         expect(res.body[0].name).to.have.string('delete')
         })
-
         it('Return a list of Collections accessible to the requester NAME contains no elevate',async function () {
           const res = await chai.request(config.baseUrl)
               .get(`/collections?name=${'delete'}&name-match=contains`)
@@ -403,6 +453,20 @@ describe('GET - Collection', function () {
 
             expect(res.body.name).to.equal(reference.testCollection.fullLabelName)
         })
+        it("should return SmError.NotFoundError because the label does not exist",async function () {
+
+          const randomUUID = uuidv4()
+
+          const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.testCollection.collectionId}/labels/${randomUUID}`)
+            .set('Authorization', `Bearer ${iteration.token}`)
+            if (distinct.grant === "none"){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res).to.have.status(404)
+            expect(res.body.error).to.equal("Resource not found.")
+        })
       })
 
       describe('getCollectionMetadata - /collections/{collectionId}/metadata', function () {
@@ -445,6 +509,80 @@ describe('GET - Collection', function () {
               expect(keys).to.include(key)
             }
         })
+        // it('should throw SmError.NotFoundError due to metadataKeys not found.',async function () {
+          
+        //   const collectionNoMetadata = await utils.createTempCollection( {
+        //     name: 'temoCollection' + Math.floor(Math.random() * 1000),
+        //     description: 'Collection TEST description',
+        //     settings: {
+        //       fields: {
+        //         detail: {
+        //           enabled: 'always',
+        //           required: 'findings'
+        //         },
+        //         comment: {
+        //           enabled: 'always',
+        //           required: 'findings'
+        //         }
+        //       },
+        //       status: {
+        //         canAccept: true,
+        //         minAcceptGrant: 2,
+        //         resetCriteria: 'result'
+        //       },
+        //       history: {
+        //         maxReviews: 11
+        //       }
+        //     },
+        //     metadata: {},
+        //     grants: [
+        //       {
+        //         userId: '1',
+        //         accessLevel: 4
+        //       },
+        //       {
+        //         userId: '85',
+        //         accessLevel: 1
+        //       },
+        //       {
+        //         userId: '21',
+        //         accessLevel: 2
+        //       },
+        //       {
+        //         userId: '44',
+        //         accessLevel: 3
+        //       },
+        //       {
+        //         userId: '45',
+        //         accessLevel: 4
+        //       }
+        //     ],
+        //     labels: [
+        //       {
+        //         name: 'TEST',
+        //         description: 'Collection label description',
+        //         color: 'ffffff'
+        //       }
+        //     ]
+        //   })
+        //   const res = await chai.request(config.baseUrl)
+        //     .get(`/collections/${collectionNoMetadata.data.collectionId}/metadata/keys`)
+        //     .set('Authorization', `Bearer ${iteration.token}`)
+        //     if (distinct.grant === "none"){
+        //       expect(res).to.have.status(403)
+        //       utils.deleteCollection(collectionNoMetadata.data.collectionId)
+        //       return
+        //     }
+        //     if(distinct.canModifyCollection === false){
+        //       expect(res).to.have.status(403)
+        //       utils.deleteCollection(collectionNoMetadata.data.collectionId)
+        //       return
+        //     }
+        //     expect(res).to.have.status(404)
+        //     expect(res.body.error).to.equal("Resource not found.")
+        //     expect(res.body.detail).to.equal("metadata keys not found")
+        //     utils.deleteCollection(collectionNoMetadata.data.collectionId)
+        // })
       })
 
       describe('getCollectionMetadataValue - /collections/{collectionId}/metadata/keys/{key}', function () {
@@ -463,6 +601,22 @@ describe('GET - Collection', function () {
             }
             expect(res).to.have.status(200)
             expect(res.body).to.equal(reference.testCollection.collectionMetadataValue)
+        })
+        it('should throw SmError.NotFoundError because the collection does not contain the key',async function () {
+          const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.testCollection.collectionId}/metadata/keys/trashkey`)
+            .set('Authorization', `Bearer ${iteration.token}`)
+            if (distinct.grant === "none"){
+              expect(res).to.have.status(403)
+              return
+            }
+            if(distinct.canModifyCollection === false){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res).to.have.status(404)
+            expect(res.body.error).to.equal("Resource not found.")
+            expect(res.body.detail).to.equal("metadata key not found")
         })
       })
 
@@ -522,6 +676,7 @@ describe('GET - Collection', function () {
             }
             expect(res).to.have.status(200)
         })
+  
         it('Return an MCCAST formatted POAM-like spreadsheet aggregated by ruleId',async function () {
           const res = await chai.request(config.baseUrl)
             .get(`/collections/${reference.testCollection.collectionId}/poam?format=MCCAST&aggregator=ruleId&date=01%2F01%2F1970&office=MyOffice&status=Started&mccastPackageId=PackageID&mccastAuthName=AuthPackageName`)
@@ -927,7 +1082,17 @@ describe('GET - Collection', function () {
                 expect(res.body.revisionStr).to.equal(reference.revisionStr)
                 expect(res.body.revisionPinned).to.equal(false)
                 expect(res.body.assetCount).to.eql(distinct.testBenchmarkAssignedCount)
+            })
 
+            it('Should return 204, no stig available (this probably needs to be 404? idk',async function () {
+              const res = await chai.request(config.baseUrl)
+                .get(`/collections/${reference.testCollection.collectionId}/stigs/notastig`)
+                .set('Authorization', `Bearer ${iteration.token}`)
+                if (distinct.grant === "none"){
+                  expect(res).to.have.status(403)
+                  return
+                }
+                expect(res).to.have.status(204)
             })
 
             it('Return the info about the specified STIG from the specified Collection - asset projection',async function () {

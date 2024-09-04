@@ -1,5 +1,6 @@
 const chai = require('chai')
 const chaiHttp = require('chai-http')
+const { v4: uuidv4 } = require('uuid');
 chai.use(chaiHttp)
 const expect = chai.expect
 const deepEqualInAnyOrder = require('deep-equal-in-any-order')
@@ -101,6 +102,18 @@ describe('DELETE - Collection ', function () {
             expect(res).to.have.status(204)
             const collection = await utils.getCollection(reference.scrapCollection.collectionId)
             expect(collection.labels).to.not.include(reference.scrapCollection.scrapLabel)
+        })
+        it("should throw SmError.NotFoundError when deleting a non-existent label.",async function () {
+          const labelId = uuidv4()
+          const res = await chai.request(config.baseUrl)
+              .delete(`/collections/${reference.scrapCollection.collectionId}/labels/${labelId}`)
+              .set('Authorization', `Bearer ${iteration.token}`)
+          if(distinct.canModifyCollection === false){
+              expect(res).to.have.status(403)
+              return
+          }
+          expect(res).to.have.status(404)
+          expect(res.body.error).to.equal("Resource not found.")
         })
       })
 

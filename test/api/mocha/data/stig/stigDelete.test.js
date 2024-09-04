@@ -24,7 +24,6 @@ describe('DELETE - Stig', () => {
                     await utils.uploadTestStigs()
                     await utils.loadAppData()
                 })
-
                 it('attempts to delete stig and all revisions, fails because no force.', async () => {
                     const res = await chai.request(config.baseUrl)
                     .delete(`/stigs/${reference.benchmark}?elevate=true`)
@@ -46,7 +45,7 @@ describe('DELETE - Stig', () => {
                     expect(res).to.have.status(200)
 
                     const response = await utils.getStigByBenchmarkId(reference.scrapBenchmark)
-                    expect(response).to.be.empty
+                    expect(response.response.status).to.equal(404)
 
                 })
             })

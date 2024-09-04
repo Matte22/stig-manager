@@ -1,5 +1,6 @@
 const chai = require('chai')
 const chaiHttp = require('chai-http')
+const { v4: uuidv4 } = require('uuid')
 chai.use(chaiHttp)
 const expect = chai.expect
 const config = require('../../testConfig.json')
@@ -54,6 +55,23 @@ describe('PATCH - Collection', function () {
                 }
             }
           })
+          it("should throw SmError.UnprocessableError when updating due to duplicate user in grant array.",async function () {
+
+            const patchRequest = JSON.parse(JSON.stringify(requestBodies.updateCollection))
+            patchRequest.grants.push(patchRequest.grants[0])
+            patchRequest.name = "TEST" + Math.floor(Math.random() * 100) + "-" + Math.floor(Math.random() * 100)
+            const res = await chai.request(config.baseUrl)
+                .patch(`/collections/${reference.testCollection.collectionId}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
+                .send(patchRequest)
+              if(distinct.canModifyCollection === false){
+                  expect(res).to.have.status(403)
+                  return
+              }
+              expect(res).to.have.status(422)
+              expect(res.body.error).to.equal("Unprocessable Entity.")
+              expect(res.body.detail).to.equal("Duplicate user in grant array")
+          })
         })
 
         describe('patchCollectionLabelById - /collections/{collectionId}/labels/{labelId}', function () {
@@ -74,6 +92,20 @@ describe('PATCH - Collection', function () {
               expect(res.body.description).to.equal(body.description)
               expect(res.body.color).to.equal(body.color)
               expect(res.body.name).to.equal(body.name)
+          })
+          it("should throw SmError.NotFoundError when updating a label that doesn't exist.",async function () {
+
+            const body = requestBodies.patchCollectionLabelById
+            const res = await chai.request(config.baseUrl)
+                .patch(`/collections/${reference.scrapCollection.collectionId}/labels/${uuidv4()}`)
+                .set('Authorization', `Bearer ${iteration.token}`)
+                .send(body)
+              if(distinct.canModifyCollection === false){
+                  expect(res).to.have.status(403)
+                  return
+              }
+              expect(res).to.have.status(404)
+              expect(res.body.error).to.equal("Resource not found.")
           })
         })
 

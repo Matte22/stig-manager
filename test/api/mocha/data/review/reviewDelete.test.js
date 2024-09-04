@@ -35,10 +35,6 @@ describe('DELETE - Review', () => {
             .delete(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testAsset.testRuleId}?projection=rule&projection=history&projection=stigs`)
             .set('Authorization', `Bearer ${iteration.token}`)
 
-          if(iteration.name === 'collectioncreator') {
-            expect(res).to.have.status(403)
-            return
-          }
           expect(res).to.have.status(200)
 
           expect(res.body.assetId).to.equal(reference.testAsset.assetId)
@@ -70,10 +66,7 @@ describe('DELETE - Review', () => {
             .delete(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testAsset.testRuleId}/metadata/keys/${reference.reviewMetadataKey}`)
             .set('Authorization', `Bearer ${iteration.token}`)
             .send(`${JSON.stringify(reference.reviewMetadataValue)}`)
-          if(iteration.name === 'collectioncreator') {
-            expect(res).to.have.status(403)
-            return
-          }
+        
           expect(res).to.have.status(204)
         })
       })
