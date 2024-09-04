@@ -50,6 +50,36 @@ describe('POST - Stig', () => {
                     expect(res).to.have.status(200)
                     expect(res.body).to.deep.eql(expectedRevData)
                 })
+                it('should throw SmError.PrivilegeError() no elevate', async () => {
+                
+                    const directoryPath = path.join(__dirname, '../../../form-data-files/')
+                    const testStigfile = reference.testStigfile
+                    const filePath = path.join(directoryPath, testStigfile)
+            
+                    const res = await chai.request(config.baseUrl)
+                    .post('/stigs?clobber=false')
+                    .set('Authorization', `Bearer ${iteration.token}`)
+                    .set('Content-Type', `multipart/form-data`)
+                    .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
+                    expect(res).to.have.status(403)
+                })
+                it('should throw SmError.ClientError not xml file', async () => {
+                
+                    const directoryPath = path.join(__dirname, '../../../form-data-files/')
+                    const testStigfile = 'appdata.json'
+                    const filePath = path.join(directoryPath, testStigfile)
+            
+                    const res = await chai.request(config.baseUrl)
+                    .post('/stigs?elevate=true&clobber=false')
+                    .set('Authorization', `Bearer ${iteration.token}`)
+                    .set('Content-Type', `multipart/form-data`)
+                    .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
+                    if(iteration.name !== "stigmanadmin"){
+                        expect(res).to.have.status(403)
+                        return
+                    }
+                    expect(res).to.have.status(400)
+                })
                 it('Import a new STIG - preserve', async () => {
                 
                     const directoryPath = path.join(__dirname, '../../../form-data-files/')

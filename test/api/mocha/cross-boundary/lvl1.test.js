@@ -448,6 +448,39 @@ describe("lvl1 cross-boundary tests", () => {
             expect(res).to.have.status(403)
         })
     })
+    describe('GET - getReviewMetadataValue - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {
+   
+      it('Should throw SmError.PriviledgeError no access to review rule', async () => {
+        const res = await chai.request(config.baseUrl)
+          .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata/keys/notakey`)
+          .set('Authorization', `Bearer ${user.token}`)
+        expect(res).to.have.status(403)
+        expect(res.body.error).to.be.equal("User has insufficient privilege to complete this request.")
+      })
+    })
+    describe('PUT - putReviewMetadataValue - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {
+
+      it('should throw SmError.PriviledgeError User has insufficient privilege to put the review of this rule. no acess to review rule', async () => {
+          const res = await chai.request(config.baseUrl)
+              .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata/keys/${reference.reviewMetadataKey}`)
+              .set('Authorization', `Bearer ${user.token}`)
+              .set('Content-Type', 'application/json') 
+              .send(`${JSON.stringify(reference.reviewMetadataValue)}`)
+          expect(res).to.have.status(403)
+          expect(res.body.error).to.be.equal("User has insufficient privilege to complete this request.")
+      })
+    })
+    describe('DELETE - deleteReviewMetadataKey - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {
+
+      it('should throw SmError.PriviledgeError User has insufficient privilege to delete the review of this rule. no acess to review rule', async () => {
+        const res = await chai.request(config.baseUrl)
+          .delete(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata/keys/${reference.reviewMetadataKey}`)
+          .set('Authorization', `Bearer ${user.token}`)
+          .send(`${JSON.stringify(reference.reviewMetadataValue)}`)
+        expect(res).to.have.status(403)
+        expect(res.body.error).to.be.equal("User has insufficient privilege to complete this request.")
+      })
+    })
 
 })
 

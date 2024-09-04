@@ -48,6 +48,16 @@ describe('DELETE - Stig', () => {
                     expect(response.response.status).to.equal(404)
 
                 })
+                it('should throw SmError.NotFoundError No matching benchmarkId found.', async () => {
+                    const res = await chai.request(config.baseUrl)
+                    .delete(`/stigs/${'trashdata'}?elevate=true&force=true`)
+                    .set('Authorization', `Bearer ${iteration.token}`)
+                    if(iteration.name !== "stigmanadmin"){
+                        expect(res).to.have.status(403)
+                        return
+                    }
+                    expect(res).to.have.status(404)
+                })
             })
             describe('DELETE - deleteRevisionByString - /stigs/{benchmarkId}/revisions/{revisionStr}', () => {
 

@@ -502,7 +502,15 @@ describe('GET - Review', () => {
           expect(res.body).to.be.an('string')
           expect(res.body).to.equal(reference.reviewMetadataValue)  
         })
+        it('Should throw SmError.NotFoundError no metadatakey found', async () => {
+          const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata/keys/notakey`)
+            .set('Authorization', `Bearer ${iteration.token}`)
+          expect(res).to.have.status(404)
+          expect(res.body.error).to.be.equal("Resource not found.")
+        })
       })
+      
     })
   }
 })
