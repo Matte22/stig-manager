@@ -103,6 +103,14 @@ describe('GET - user', () => {
             expect(user.userId, "expect userId to be one of the users the system").to.be.oneOf(reference.allUserIds)
           }
         })
+        it("should throw SmError.PrivilegeError no elevate with projections.", async () => {
+
+          const res = await chai
+              .request(config.baseUrl)
+              .get(`/users?projection=collectionGrants`)
+              .set('Authorization', 'Bearer ' + iteration.token)
+          expect(res).to.have.status(403)
+        })
       })
 
       describe(`GET - getUserByUserId - /users{userId}`, async () => {
@@ -138,13 +146,14 @@ describe('POST - user', () => {
   for(const iteration of iterations) {
     describe(`iteration:${iteration.name}`, () => {
       describe(`POST - createUser - /users`, () => {
+        const randomValue= Math.floor(Math.random() * 1000)
         it('Create a user', async () => {
           const res = await chai
               .request(config.baseUrl)
               .post(`/users?elevate=true&projection=collectionGrants&projection=statistics`)
               .set('Authorization', 'Bearer ' + iteration.token)
               .send({
-                "username": "TEST_USER" +  Math.floor(Math.random() * 1000),
+                "username": "TEST_USER" +  randomValue,
                 "collectionGrants": [
                     {
                         "collectionId": `${reference.scrapCollection.collectionId}`,
@@ -172,6 +181,49 @@ describe('POST - user', () => {
             expect(createdUser.collectionGrants).to.be.an('array')
             expect(createdUser.collectionGrants, "expect created user to have a single grant to scrap collection").to.have.lengthOf(1)
         })
+        if(iteration.name == "stigmanadmin"){
+        
+          it('should throw SmError.UnprocessableError collectionIds are invalid.', async () => {
+            const res = await chai
+                .request(config.baseUrl)
+                .post(`/users?elevate=true`)
+                .set('Authorization', 'Bearer ' + iteration.token)
+                .send({
+                  "username": "TEST_USER" + randomValue,
+                  "collectionGrants": [
+                      {
+                          "collectionId": `${randomValue}`,
+                          "accessLevel": 1
+                      }
+                  ]
+              })
+              if(iteration.name != "stigmanadmin"){
+                expect(res).to.have.status(403)
+                return
+              }
+              expect(res).to.have.status(422)
+          })
+          it('should throw SmError.UnprocessableError Duplicate name exists.', async () => {
+            const res = await chai
+                .request(config.baseUrl)
+                .post(`/users?elevate=true`)
+                .set('Authorization', 'Bearer ' + iteration.token)
+                .send({
+                  "username": "TEST_USER"+ randomValue,
+                  "collectionGrants": [
+                      {
+                          "collectionId": `${reference.scrapCollection.collectionId}`,
+                          "accessLevel": 1
+                      }
+                  ]
+              })
+              if(iteration.name != "stigmanadmin"){
+                expect(res).to.have.status(403)
+                return
+              }
+              expect(res).to.have.status(422)
+          })
+        }
       })
     })
   }
@@ -224,6 +276,26 @@ describe('PATCH - user', () => {
               expect(userEffected.userId,"expectthe effected user to be the one returned by the api").to.equal(res.body.userId)
               expect(userEffected.collectionGrants).to.be.an('array')
         })
+        it("should throw SmError.UnprocessableError collectionIds are invalid.", async () => {
+          const res = await chai
+              .request(config.baseUrl)
+              .patch(`/users/${reference.scrapLvl1User.userId}?elevate=true`)
+              .set('Authorization', 'Bearer ' + iteration.token)
+              .send({
+                "username": "PatchTest",
+                "collectionGrants": [
+                    {
+                        "collectionId": `${Math.floor(Math.random() * 100022)}`,
+                        "accessLevel": 1
+                    }
+                ]
+              })
+              if(iteration.name != "stigmanadmin"){
+                expect(res).to.have.status(403)
+                return
+              }
+              expect(res).to.have.status(422)
+        })
       })
     })
   }
@@ -239,7 +311,6 @@ describe('PUT - user', () => {
   for(const iteration of iterations) {
     describe(`iteration:${iteration.name}`, () => {
       describe(`PUT - replaceUser - /users{userId}`, async () => {
-
 
         it(`Set all properties of a user - Change Username`, async () => {
         const res = await chai
@@ -279,6 +350,27 @@ describe('PUT - user', () => {
           expect(userEffected.userId, "user effected to have Id returned by API").to.equal(res.body.userId)
           expect(userEffected.collectionGrants).to.be.an('array')
 
+        })
+
+        it("should throw SmError.UnprocessableError collectionIds are invalid.", async () => {
+          const res = await chai
+              .request(config.baseUrl)
+              .put(`/users/${reference.scrapLvl1User.userId}?elevate=true`)
+              .set('Authorization', 'Bearer ' + iteration.token)
+              .send({
+                "username": "putTesting",
+                "collectionGrants": [
+                    {
+                        "collectionId": `${Math.floor(Math.random() * 100022)}`,
+                        "accessLevel": 1
+                    }
+                ]
+              })
+              if(iteration.name != "stigmanadmin"){
+                expect(res).to.have.status(403)
+                return
+              }
+              expect(res).to.have.status(422)
         })
       })
     })

@@ -367,19 +367,19 @@ describe('PUT - Review', () => {
             describe('PUT - putReviewMetadataValue - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {
 
                 before(async function () {
-                this.timeout(4000)
-                // await utils.uploadTestStigs()
-                await utils.loadAppData()
+                    this.timeout(4000)
+                    // await utils.uploadTestStigs()
+                    await utils.loadAppData()
                 })
-                    it('Set one metadata key/value of a Review', async () => {
+                it('Set one metadata key/value of a Review', async () => {
                     const res = await chai.request(config.baseUrl)
                         .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata/keys/${reference.reviewMetadataKey}`)
                         .set('Authorization', `Bearer ${iteration.token}`)
                         .set('Content-Type', 'application/json') 
                         .send(`${JSON.stringify(reference.reviewMetadataValue)}`)
-                   
+                    
                     expect(res).to.have.status(204)
-                    })
+                })
             })
         })
     }
