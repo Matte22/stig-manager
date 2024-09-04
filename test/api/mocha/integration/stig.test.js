@@ -22,10 +22,10 @@ describe(`POST - importBenchmark - /stigs`, () => {
 
     before(async function () {
       this.timeout(4000)
-      await utils.loadAppData()
       await utils.uploadTestStigs()
+      await utils.loadAppData()
       await utils.uploadTestStig('U_VPN_SRG_V2R3_Manual-xccdf-reviewKeyChange.xml')
-      await utils.createDisabledCollectionsandAssets()
+      // await utils.createDisabledCollectionsandAssets()
     })
 
     after(async function () {

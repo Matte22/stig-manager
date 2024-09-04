@@ -33,9 +33,9 @@ describe('PATCH - updateCollection - /collections/{collectionId}', () => {
 
         before(async function () {
             this.timeout(4000)
-            await utils.loadAppData()
             await utils.uploadTestStigs()
-            await utils.createDisabledCollectionsandAssets()
+            await utils.loadAppData()
+            // await utils.createDisabledCollectionsandAssets()
         })
         it('should make admin user a manager', async () => {
             const patchRequest = {
@@ -263,8 +263,8 @@ describe('PUT - setStigAssetsByCollectionUser - /collections/{collectionId}/gran
         before(async function () {
             this.timeout(4000)
             await utils.loadAppData()
-            await utils.uploadTestStigs()
-            await utils.createDisabledCollectionsandAssets()
+            // await utils.uploadTestStigs()
+            // await utils.createDisabledCollectionsandAssets()
         })
         it('set stig-asset grant to create conditions leading to issue gh-761', async () => {
 
@@ -324,8 +324,8 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone - test vari
 
         before(async function () {
             this.timeout(4000)
+            // await utils.uploadTestStigs()
             await utils.loadAppData()
-            await utils.uploadTestStigs()
         })
         describe('clone data prep - set cloned collection default rev for test benchmark to non-"latest"', () => {
             it('Import a new STIG - VPN R1V0 copy', async () => {
@@ -970,8 +970,8 @@ describe('POST - exportToCollection - /collections/{collectionId}/export-to/{dst
 
         before(async function () {
             this.timeout(4000)
+            // await utils.uploadTestStigs()
             await utils.loadAppData()
-            await utils.uploadTestStigs()
         })
         let exportedAsset = null
         let exportedAssetResults = null
@@ -1421,7 +1421,7 @@ describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{asset
         })
         it('Import and overwrite application data (as elevated Admin) Copy 2', async () => {
             try{
-                await utils.uploadTestStigs()
+                // await utils.uploadTestStigs()
                 await utils.loadAppData()
             }
             catch(err){
@@ -1512,8 +1512,8 @@ describe('GET - putAssetsByCollectionLabelId - /collections/{collectionId}/label
 
         before(async function () {
             this.timeout(4000)
-            await utils.loadAppData()
             await utils.uploadTestStigs()
+            await utils.loadAppData()
         })
 
         it('Merge provided properties with an Asset Copy', async () => {

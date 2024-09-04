@@ -19,7 +19,7 @@ describe('DELETE - Stig', () => {
             const distinct = expectations[iteration.name]
             describe('DELETE - deleteStigById - /stigs/{benchmarkId}', () => {
 
-                beforeEach(async function () {
+                before(async function () {
                     this.timeout(4000)
                     await utils.uploadTestStigs()
                     await utils.loadAppData()
@@ -51,7 +51,7 @@ describe('DELETE - Stig', () => {
             })
             describe('DELETE - deleteRevisionByString - /stigs/{benchmarkId}/revisions/{revisionStr}', () => {
 
-                beforeEach(async function () {
+                before(async function () {
                     this.timeout(4000)
                     await utils.uploadTestStigs()
                     await utils.loadAppData()

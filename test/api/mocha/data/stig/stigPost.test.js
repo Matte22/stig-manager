@@ -15,7 +15,7 @@ describe('POST - Stig', () => {
     this.timeout(4000)
     await utils.uploadTestStigs()
     await utils.loadAppData()
-    await utils.createDisabledCollectionsandAssets()
+    // await utils.createDisabledCollectionsandAssets()
     await utils.deleteStig(reference.benchmark)
     })
 

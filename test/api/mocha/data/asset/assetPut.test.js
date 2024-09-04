@@ -15,7 +15,7 @@ describe('PUT - Asset', function () {
     this.timeout(4000)
     await utils.uploadTestStigs()
     await utils.loadAppData()
-    await utils.createDisabledCollectionsandAssets()
+    // await utils.createDisabledCollectionsandAssets()
   })
   for (const iteration of iterations) {
     if (expectations[iteration.name] === undefined){

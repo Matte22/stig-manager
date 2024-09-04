@@ -18,15 +18,17 @@ const user =
   }
 
 describe('PUT - putReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId}', () => {
-
-    describe('Check that "informational" results are represented as NotReviewed with Finding Details data in .ckls', () => {
-
-        before(async function () {
+ 
+    before(async function () {
             this.timeout(4000)
             await utils.uploadTestStigs()
             await utils.loadAppData()
-            await utils.createDisabledCollectionsandAssets()
+            // await utils.createDisabledCollectionsandAssets()
         })
+
+    describe('Check that "informational" results are represented as NotReviewed with Finding Details data in .ckls', () => {
+
+
         it('Set all properties of a Review with informational and a result comment', async () => {
             const putBody = {
                 "result": "informational",
@@ -100,9 +102,9 @@ describe('PATCH - patchReviewByAssetRule - /collections/{collectionId}/reviews/{
 
         before(async function () {
             this.timeout(4000)
+            // await utils.uploadTestStigs()
             await utils.loadAppData()
-            await utils.uploadTestStigs()
-            await utils.createDisabledCollectionsandAssets()
+            // await utils.createDisabledCollectionsandAssets()
         })
 
         it('PATCH Review with new details, expect status to remain', async () => {

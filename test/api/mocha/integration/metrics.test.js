@@ -19,8 +19,8 @@ describe('GET - getMetricsDetailByCollection - /collections/{collectionId}/metri
   describe('transfer metrics recalculation', () => {
     before(async function () {
       this.timeout(4000)
-      await utils.loadAppData()
       await utils.uploadTestStigs()
+      await utils.loadAppData()
       await utils.createDisabledCollectionsandAssets()
     })
     it('Import a new STIG - VPN R1V0 Copy 2', async () => {
@@ -197,8 +197,8 @@ describe('GET - getMetricsSummaryByCollectionAggStig - /collections/{collectionI
     describe('default-rev-recalc', function () {
         before(async function () {
             this.timeout(4000)
-            await utils.loadAppData()
             await utils.uploadTestStigs()
+            await utils.loadAppData()
             await utils.createDisabledCollectionsandAssets()
         })
 

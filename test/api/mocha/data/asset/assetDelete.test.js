@@ -12,9 +12,9 @@ describe('DELETE - Asset', function () {
 
   before(async function () {
     this.timeout(4000)
-    await utils.loadAppData()
     await utils.uploadTestStigs()
-    await utils.createDisabledCollectionsandAssets()
+    await utils.loadAppData()
+    // await utils.createDisabledCollectionsandAssets()
   })
 
   for(const iteration of iterations){
