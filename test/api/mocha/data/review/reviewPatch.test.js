@@ -28,7 +28,7 @@ describe('PATCH - Review', () => {
         beforeEach(async function () {
           this.timeout(4000)
           await utils.loadAppData()
-          await utils.uploadTestStigs()
+          // await utils.uploadTestStigs()
         })
         
         it('PATCH Review with new details, expect status to remain', async () => {

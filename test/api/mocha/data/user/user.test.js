@@ -132,7 +132,7 @@ describe('POST - user', () => {
   before(async function () {
     this.timeout(4000)
     await utils.loadAppData()
-    await utils.uploadTestStigs()
+    // await utils.uploadTestStigs()
   })
 
   for(const iteration of iterations) {
@@ -181,7 +181,7 @@ describe('PATCH - user', () => {
   before(async function () {
     this.timeout(4000)
     await utils.loadAppData()
-    await utils.uploadTestStigs()
+    // await utils.uploadTestStigs()
   })
 
   for(const iteration of iterations) {
@@ -233,7 +233,7 @@ describe('PUT - user', () => {
   before(async function () {
     this.timeout(4000)
     await utils.loadAppData()
-    await utils.uploadTestStigs()
+    // await utils.uploadTestStigs()
   })
 
   for(const iteration of iterations) {
@@ -289,7 +289,7 @@ describe('DELETE - user', () => {
   before(async function () {
     this.timeout(4000)
     await utils.loadAppData()
-    await utils.uploadTestStigs()
+    // await utils.uploadTestStigs()
   })
 
   for(const iteration of iterations) {

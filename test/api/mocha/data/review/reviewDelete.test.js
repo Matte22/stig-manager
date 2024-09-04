@@ -9,6 +9,11 @@ const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
 
 describe('DELETE - Review', () => {
+  before(async function () {
+    // this.timeout(4000)
+    // await utils.loadAppData()
+    await utils.uploadTestStigs()
+  })
     
   for(const iteration of iterations) {
     if (expectations[iteration.name] === undefined){
@@ -22,7 +27,7 @@ describe('DELETE - Review', () => {
         beforeEach(async function () {
           this.timeout(4000)
           await utils.loadAppData()
-          await utils.uploadTestStigs()
+          // await utils.uploadTestStigs()
         })
         
         it('Delete a Review', async () => {
@@ -57,7 +62,7 @@ describe('DELETE - Review', () => {
         before(async function () {
           this.timeout(4000)
           await utils.loadAppData()
-          await utils.uploadTestStigs()
+          // await utils.uploadTestStigs()
         })
 
         it('Delete one metadata key/value of a Review', async () => {

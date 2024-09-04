@@ -12,7 +12,25 @@ const reference = require('../../referenceData.js')
 const requestBodies = require('./requestBodies.js')
 
 describe('POST - Collection - not all tests run for all iterations', function () {
- 
+  
+  before(async function () {
+    // this.timeout(4000)
+    await utils.uploadTestStigs()
+    try{
+      await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
+    }
+    catch(err){
+        console.log("no stig to upload")
+    }
+    await utils.loadAppData()
+    await utils.createDisabledCollectionsandAssets()
+  })
+
+  after(async function () {
+    await utils.deleteStigByRevision("VPN_SRG_TEST", "V1R0")
+  })
+
+
   for(const iteration of iterations) {
     if (expectations[iteration.name] === undefined){
       it(`No expectations for this iteration scenario: ${iteration.name}`,async function () {})
@@ -21,22 +39,22 @@ describe('POST - Collection - not all tests run for all iterations', function ()
     describe(`iteration:${iteration.name}`, function () {
       const distinct = expectations[iteration.name]
       
-      before(async function () {
-        // this.timeout(4000)
-        await utils.uploadTestStigs()
-        try{
-          await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
-        }
-        catch(err){
-            console.log("no stig to upload")
-        }
-        await utils.loadAppData()
-        await utils.createDisabledCollectionsandAssets()
-      })
+      // before(async function () {
+      //   // this.timeout(4000)
+      //   await utils.uploadTestStigs()
+      //   try{
+      //     await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
+      //   }
+      //   catch(err){
+      //       console.log("no stig to upload")
+      //   }
+      //   await utils.loadAppData()
+      //   await utils.createDisabledCollectionsandAssets()
+      // })
 
-      after(async function () {
-        await utils.deleteStigByRevision("VPN_SRG_TEST", "V1R0")
-      })
+      // after(async function () {
+      //   await utils.deleteStigByRevision("VPN_SRG_TEST", "V1R0")
+      // })
   
       describe("createCollection - /collections", function () {
 
@@ -204,7 +222,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
 
         before(async function () {
           // this.timeout(4000)
-          await utils.uploadTestStigs()
+          // await utils.uploadTestStigs()
           await utils.loadAppData()
         })
         
@@ -308,7 +326,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
       describe("writeStigPropsByCollectionStig - /collections/{collectionId}/stigs/{benchmarkId}", function () {
         before(async function () {
           this.timeout(4000)
-          await utils.uploadTestStigs()
+          // await utils.uploadTestStigs()
           await utils.loadAppData()
         })
 

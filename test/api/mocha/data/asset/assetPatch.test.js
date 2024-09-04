@@ -9,6 +9,10 @@ const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
 
 describe('PATCH - Asset', function () {
+  before(async function () {
+    await utils.createDisabledCollectionsandAssets()
+  })
+
 
   for(const iteration of iterations){
     if (expectations[iteration.name] === undefined){
@@ -20,9 +24,8 @@ describe('PATCH - Asset', function () {
       const distinct = expectations[iteration.name]
       beforeEach(async function () {
         this.timeout(4000)
-        await utils.uploadTestStigs()
+        // await utils.uploadTestStigs()
         await utils.loadAppData()
-        await utils.createDisabledCollectionsandAssets()
       })
 
       describe(`updateAsset - /assets/{assetId}`, function () {

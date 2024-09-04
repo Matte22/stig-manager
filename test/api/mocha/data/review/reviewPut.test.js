@@ -353,7 +353,7 @@ describe('PUT - Review', () => {
 
                 before(async function () {
                     this.timeout(4000)
-                    await utils.uploadTestStigs()
+                    // await utils.uploadTestStigs()
                     await utils.loadAppData()
                 })
                     it('Set all metadata of a Review', async () => {
@@ -375,7 +375,7 @@ describe('PUT - Review', () => {
 
                 before(async function () {
                 this.timeout(4000)
-                await utils.uploadTestStigs()
+                // await utils.uploadTestStigs()
                 await utils.loadAppData()
                 })
                     it('Set one metadata key/value of a Review', async () => {

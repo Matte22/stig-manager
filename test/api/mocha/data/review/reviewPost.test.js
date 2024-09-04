@@ -55,6 +55,9 @@ const checkReviews = (reviews, postreview, iteration) => {
 }
 
 describe('POST - Review', () => {
+  before(async function () {
+      await utils.uploadTestStigs()
+  })
 
   for(const iteration of iterations){
     if (expectations[iteration.name] === undefined){
@@ -68,7 +71,7 @@ describe('POST - Review', () => {
 
             beforeEach(async function () {
               this.timeout(4000)
-                await utils.uploadTestStigs()
+                // await utils.uploadTestStigs()
                 await utils.loadAppData("batch-test-data.json")
             })
             it(`POST batch review: target assets, whole stig`, async () => {
@@ -824,7 +827,7 @@ describe('POST - Review', () => {
               
           beforeEach(async function () {
             this.timeout(4000)
-            await utils.uploadTestStigs()
+            // await utils.uploadTestStigs()
             await utils.loadAppData("batch-test-data.json")
           })
 
@@ -1063,7 +1066,7 @@ describe('POST - Review', () => {
         before(async function () {
           this.timeout(4000)
           await utils.loadAppData()
-          await utils.uploadTestStigs()
+          // await utils.uploadTestStigs()
           const deletedItems = await utils.createDisabledCollectionsandAssets()
           deletedCollection = deletedItems.collection
           deletedAsset = deletedItems.asset
