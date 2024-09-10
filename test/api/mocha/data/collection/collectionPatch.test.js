@@ -72,6 +72,7 @@ describe('PATCH - Collection', function () {
               expect(res.body.error).to.equal("Unprocessable Entity.")
               expect(res.body.detail).to.equal("Duplicate user in grant array")
           })
+          
         })
 
         describe('patchCollectionLabelById - /collections/{collectionId}/labels/{labelId}', function () {

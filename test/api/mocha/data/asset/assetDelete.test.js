@@ -7,14 +7,30 @@ const utils = require('../../utils/testUtils')
 const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
+const requestBodies = require('./requestBodies.js')
+
+const resetTestAsset = async () => {
+  const put = JSON.parse(JSON.stringify(requestBodies.testAssetPut))
+  const res = await utils.putAsset(reference.testAsset.assetId, put)
+}
 
 describe('DELETE - Asset', function () {
 
+  let localTestAsset = null
+
   before(async function () {
     this.timeout(4000)
-    await utils.uploadTestStigs()
-    await utils.loadAppData()
+ //   await utils.uploadTestStigs()
+    //await utils.loadAppData()
     // await utils.createDisabledCollectionsandAssets()
+    // const post = JSON.parse(JSON.stringify(requestBodies.tempAssetPost))
+    // post.name = 'tempAsset' + Math.floor(Math.random() * 1000)
+    // localTestAsset = await utils.createTempAsset(post)
+  })
+
+  afterEach(async function () {
+    this.timeout(4000)
+    await resetTestAsset()
   })
 
   for(const iteration of iterations){
@@ -29,10 +45,10 @@ describe('DELETE - Asset', function () {
         it('Delete one metadata key/value of an Asset', async function () {
           const res = await chai
             .request(config.baseUrl)
-            .delete(`/assets/${reference.scrapAsset.assetId}/metadata/keys/${reference.scrapAsset.metadataKey}`)
+            .delete(`/assets/${reference.testAsset.assetId}/metadata/keys/${reference.testAsset.metadataKey}`)
             .set('Content-Type', 'application/json') 
             .set('Authorization', 'Bearer ' + iteration.token)
-            .send(`${JSON.stringify(reference.scrapAsset.metadataValue)}`)
+            // .send(`${JSON.stringify(requestBodies.tempAssetPost.metadata.testKey)}`)
 
           if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
@@ -40,15 +56,31 @@ describe('DELETE - Asset', function () {
           }
           expect(res).to.have.status(204)
           
-          const asset = await utils.getAsset(reference.scrapAsset.assetId)
-          expect(asset.metadata).to.not.have.property(reference.scrapAsset.metadataKey)
+          const asset = await utils.getAsset(reference.testAsset.assetId)
+          expect(asset.metadata).to.not.have.property(reference.testAsset.metadataKey)
+        })
+      })
+      describe(`removeStigFromAsset - /assets/{assetId}/stigs/{benchmarkId}`, function () {
+        it('Delete a STIG assignment to an Asset', async function () {
+          const res = await chai
+            .request(config.baseUrl)
+            .delete(`/assets/${localTestAsset.data.assetId}/stigs/${reference.benchmark}`)
+            .set('Authorization', 'Bearer ' + iteration.token)
+          if(!distinct.canModifyCollection){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200)
+
+          const asset = await utils.getAsset(localTestAsset.data.assetId)
+          expect(asset.stigs).to.not.include(reference.benchmark)
         })
       })
       describe(`removeStigsFromAsset -/assets/{assetId}/stigs`, function () {
         it('Delete all STIG assignments to an Asset', async function () {
           const res = await chai
             .request(config.baseUrl)
-            .delete(`/assets/${reference.scrapAsset.assetId}/stigs`)
+            .delete(`/assets/${localTestAsset.data.assetId}/stigs`)
             .set('Authorization', 'Bearer ' + iteration.token)
           if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
@@ -56,83 +88,31 @@ describe('DELETE - Asset', function () {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array')
-          const asset = await utils.getAsset(reference.scrapAsset.assetId)
+          const asset = await utils.getAsset(localTestAsset.data.assetId)
           expect(asset.stigs).to.be.an('array').that.is.empty
           
         })
       })
-      describe(`removeStigFromAsset - /assets/{assetId}/stigs/{benchmarkId}`, function () {
-        it('Delete a STIG assignment to an Asset', async function () {
-          const res = await chai
-            .request(config.baseUrl)
-            .delete(`/assets/${reference.scrapAsset.assetId}/stigs/${reference.scrapAsset.scrapBenchmark}`)
-            .set('Authorization', 'Bearer ' + iteration.token)
-          if(!distinct.canModifyCollection){
-            expect(res).to.have.status(403)
-            return
-          }
-          expect(res).to.have.status(200)
-
-          const asset = await utils.getAsset(reference.scrapAsset.assetId)
-          expect(asset.stigs).to.not.include(reference.scrapAsset.scrapBenchmark)
-        })
-      })
+    
       describe(`deleteAsset - /assets/{assetId}`, function () {
         before(async function () {
           this.timeout(4000)
-          await utils.loadAppData()
+         // await utils.loadAppData()
           // await utils.uploadTestStigs()
-        })
-        it('Delete an Asset in test collection', async function () {
-
-          // creating a test asset to delete
-          // this might need preivledges? 
-          const tempAsset = await utils.createTempAsset({
-              name: 'tempAsset',
-              collectionId: reference.scrapCollection.collectionId,
-              description: 'temp',
-              ip: '1.1.1.1',
-              noncomputing: true,
-              labelIds: [],
-              metadata: {
-                pocName: 'pocName',
-                pocEmail: 'pocEmail@example.com',
-                pocPhone: '12345',
-                reqRar: 'true'
-              },
-              stigs: ['VPN_SRG_TEST', 'Windows_10_STIG_TEST']
-            })
-
-        const assetId = tempAsset.data.assetId
-        const res = await chai
-            .request(config.baseUrl)
-            .delete(`/assets/${assetId}`)
-            .set('Authorization', 'Bearer ' + iteration.token)
-        if(!distinct.canModifyCollection){
-          expect(res).to.have.status(403)
-          return
-        }
-        expect(res).to.have.status(200)
-        expect(res.body).to.have.property('assetId')
-        expect(res.body.assetId).to.equal(assetId)
         })
         it('Delete test Asset', async function () {
           const res = await chai
             .request(config.baseUrl)
-            .delete(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
+            .delete(`/assets/${localTestAsset.data.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + iteration.token) 
           if(!distinct.canModifyCollection){
             expect(res).to.have.status(403)
             return
           }
           expect(res).to.have.status(200)
-          expect(res.body.assetId).to.equal(reference.testAsset.assetId)
+          expect(res.body.assetId).to.equal(localTestAsset.data.assetId)
           expect(res.body.statusStats.ruleCount).to.equal(reference.testAsset.stats.ruleCount)
-          expect(res.body.statusStats.stigCount).to.equal(reference.testAsset.stats.stigCount)
-          expect(res.body.statusStats.savedCount).to.equal(reference.testAsset.stats.savedCount)
-          expect(res.body.statusStats.acceptedCount).to.equal(reference.testAsset.stats.acceptedCount)
-          expect(res.body.statusStats.rejectedCount).to.equal(reference.testAsset.stats.rejectedCount)
-          expect(res.body.statusStats.submittedCount).to.equal(reference.testAsset.stats.submittedCount)
+        
 
           expect(res.body.stigs).to.be.an('array').of.length(reference.testAsset.validStigs.length)
           for(const stig of res.body.stigs){

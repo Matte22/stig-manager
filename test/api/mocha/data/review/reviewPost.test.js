@@ -1008,111 +1008,111 @@ describe('POST - Review', () => {
         }
           })
         })
-        // describe('Batch Review Editing - In code errors', () => {
-        //   let tempCollectionCanAcceptFalse
-        //   before(async function () {
-        //     this.timeout(4000)
-        //     await utils.loadAppData()
-        //     tempCollectionCanAcceptFalse = await utils.createTempCollection({
-        //       name: 'temoCollection',
-        //       description: 'Collection TEST description',
-        //       settings: {
-        //         fields: {
-        //           detail: {
-        //             enabled: 'always',
-        //             required: 'findings'
-        //           },
-        //           comment: {
-        //             enabled: 'always',
-        //             required: 'findings'
-        //           }
-        //         },
-        //         status: {
-        //           canAccept: false,
-        //           minAcceptGrant: 2,
-        //           resetCriteria: 'result'
-        //         },
-        //         history: {
-        //           maxReviews: 11
-        //         }
-        //       },
-        //       metadata: {
-        //         pocName: 'poc2Put',
-        //         pocEmail: 'pocEmailPut@email.com',
-        //         pocPhone: '12342',
-        //         reqRar: 'true'
-        //       },
-        //       grants: [
-        //         {
-        //           userId: '1',
-        //           accessLevel: 4
-        //         },
-        //         {
-        //           userId: '85',
-        //           accessLevel: 1
-        //         }
-        //       ],
-        //       labels: [
-        //         {
-        //           name: 'TEST',
-        //           description: 'Collection label description',
-        //           color: 'ffffff'
-        //         }
-        //       ]
-        //     })
-        //   })
+        describe('Batch Review Editing - In code errors', () => {
+          let tempCollectionCanAcceptFalse
+          before(async function () {
+            this.timeout(4000)
+            await utils.loadAppData()
+            tempCollectionCanAcceptFalse = await utils.createTempCollection({
+              name: 'temoCollection',
+              description: 'Collection TEST description',
+              settings: {
+                fields: {
+                  detail: {
+                    enabled: 'always',
+                    required: 'findings'
+                  },
+                  comment: {
+                    enabled: 'always',
+                    required: 'findings'
+                  }
+                },
+                status: {
+                  canAccept: false,
+                  minAcceptGrant: 2,
+                  resetCriteria: 'result'
+                },
+                history: {
+                  maxReviews: 11
+                }
+              },
+              metadata: {
+                pocName: 'poc2Put',
+                pocEmail: 'pocEmailPut@email.com',
+                pocPhone: '12342',
+                reqRar: 'true'
+              },
+              grants: [
+                {
+                  userId: '1',
+                  accessLevel: 4
+                },
+                {
+                  userId: '85',
+                  accessLevel: 1
+                }
+              ],
+              labels: [
+                {
+                  name: 'TEST',
+                  description: 'Collection label description',
+                  color: 'ffffff'
+                }
+              ]
+            })
+          })
 
-        //   after(async function () {
-        //     await utils.deleteCollection(tempCollectionCanAcceptFalse.data.collectionId)
-        //   })
+          after(async function () {
+            await utils.deleteCollection(tempCollectionCanAcceptFalse.data.collectionId)
+          })
 
-        //   it(`should throw SmError.PriviledgeError`, async () => {
+          it(`should throw SmError.PriviledgeError`, async () => {
 
-        //     const postreview = {
-        //       source: {
-        //         review: {
-        //           status: 'accepted'
-        //         }
-        //       },
-        //       assets: {
-        //         assetIds: ['62', '42', '154']
-        //       },
-        //       rules: {
-        //         benchmarkIds: ['VPN_SRG_TEST']
-        //       }
-        //     }
-        //     const res = await chai.request(config.baseUrl)
-        //       .post(`/collections/${tempCollectionCanAcceptFalse.data.collectionId}/reviews`)
-        //       .set('Authorization', `Bearer ${iteration.token}`)
-        //       .send(postreview)
+            const postreview = {
+              source: {
+                review: {
+                  status: 'accepted'
+                }
+              },
+              assets: {
+                assetIds: ['62', '42', '154']
+              },
+              rules: {
+                benchmarkIds: ['VPN_SRG_TEST']
+              }
+            }
+            const res = await chai.request(config.baseUrl)
+              .post(`/collections/${tempCollectionCanAcceptFalse.data.collectionId}/reviews`)
+              .set('Authorization', `Bearer ${iteration.token}`)
+              .send(postreview)
             
-        //     expect(res).to.have.status(403)
-        //     expect(res.body.details).to.eql('"Reviews cannot be accepted/rejected in this Collection"')
-        //   })
-        //   it(`should throw SmError.PriviledgeError`, async () => {
+            expect(res).to.have.status(403)
+            expect(res.body.details).to.eql('"Reviews cannot be accepted/rejected in this Collection"')
+          })
+          it(`should throw SmError.PriviledgeError`, async () => {
 
-        //     const postreview = {
-        //       source: {
-        //         review: {
-        //           status: 'accepted'
-        //         }
-        //       },
-        //       assets: {
-        //         assetIds: ['62', '42', '154']
-        //       },
-        //       rules: {
-        //         benchmarkIds: ['VPN_SRG_TEST']
-        //       }
-        //     }
-        //     const res = await chai.request(config.baseUrl)
-        //       .post(`/collections/${tempCollection.data.collectionId}/reviews`)
-        //       .set('Authorization', `Bearer ${iteration.token}`)
-        //       .send(postreview)
+            const postreview = {
+              source: {
+                review: {
+                  status: 'accepted'
+                }
+              },
+              assets: {
+                assetIds: ['62', '42', '154']
+              },
+              rules: {
+                benchmarkIds: ['VPN_SRG_TEST']
+              }
+            }
+            const res = await chai.request(config.baseUrl)
+              .post(`/collections/${tempCollection.data.collectionId}/reviews`)
+              .set('Authorization', `Bearer ${iteration.token}`)
+              .send(postreview)
             
-        //     expect(res).to.have.status(403)
-        //     expect(res.body.details).to.eql('"Reviews cannot be accepted/rejected in this Collection"')
-        //   })
-        // })
+            expect(res).to.have.status(403)
+            expect(res.body.details).to.eql('"Reviews cannot be accepted/rejected in this Collection"')
+          })
+        })
       })
       describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{assetId}', () => {
 

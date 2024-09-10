@@ -54,6 +54,79 @@ describe('GET - user', () => {
           expect(res.body[0].username, "expect user to be wf-test").to.equal('wf-test')
           expect(res.body[0].userId, "expect userId to be wfTest userId").to.equal(reference.wfTest.userId)
         })
+        it('Return a list of users accessible to the requester username with match=exact', async () => {
+
+          const res = await chai
+              .request(config.baseUrl)
+              .get(`/users?elevate=true&username=${reference.wfTest.username}&username-match=exact&projection=collectionGrants&projection=statistics`)
+              .set('Authorization', 'Bearer ' + iteration.token)
+
+          if(iteration.name != "stigmanadmin"){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array')
+          expect(res.body[0].username, "expect user to be wf-test").to.equal('wf-test')
+          expect(res.body[0].userId, "expect userId to be wfTest userId").to.equal(reference.wfTest.userId)
+        })
+        it('Return a list of users accessible to the requester username with match=startsWith', async () => {
+
+          // get first 3 characters of username
+          const username = reference.wfTest.username.substring(0, 3)
+
+          const res = await chai
+              .request(config.baseUrl)
+              .get(`/users?elevate=true&username=${username}&username-match=startsWith&projection=collectionGrants&projection=statistics`)
+              .set('Authorization', 'Bearer ' + iteration.token)
+
+          if(iteration.name != "stigmanadmin"){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array')
+          expect(res.body[0].username, "expect user to be wf-test").to.equal('wf-test')
+          expect(res.body[0].userId, "expect userId to be wfTest userId").to.equal(reference.wfTest.userId)
+        })
+        it('Return a list of users accessible to the requester username with match=endsWith', async () => {
+
+          // get last 3 characters of username
+          const username = reference.wfTest.username.substring(reference.wfTest.username.length - 3)
+
+          const res = await chai
+              .request(config.baseUrl)
+              .get(`/users?elevate=true&username=${username}&username-match=endsWith&projection=collectionGrants&projection=statistics`)
+              .set('Authorization', 'Bearer ' + iteration.token)
+
+          if(iteration.name != "stigmanadmin"){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array')
+          expect(res.body[0].username, "expect user to be wf-test").to.equal('wf-test')
+          expect(res.body[0].userId, "expect userId to be wfTest userId").to.equal(reference.wfTest.userId)
+        })
+        it('Return a list of users accessible to the requester username with match=contains', async () => {
+
+          // get middle 3 characters of username
+          const username = reference.wfTest.username.substring(3, 6)
+
+          const res = await chai
+              .request(config.baseUrl)
+              .get(`/users?elevate=true&username=${username}&username-match=contains&projection=collectionGrants&projection=statistics`)
+              .set('Authorization', 'Bearer ' + iteration.token)
+
+          if(iteration.name != "stigmanadmin"){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array')
+          expect(res.body[0].username, "expect user to be wf-test").to.equal('wf-test')
+          expect(res.body[0].userId, "expect userId to be wfTest userId").to.equal(reference.wfTest.userId)
+        })
         it('Return a list of user accessible to the requester USERNAME no projections', async () => {
 
           const res = await chai

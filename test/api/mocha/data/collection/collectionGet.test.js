@@ -509,80 +509,78 @@ describe('GET - Collection', function () {
               expect(keys).to.include(key)
             }
         })
-        // it('should throw SmError.NotFoundError due to metadataKeys not found.',async function () {
+        it('should return empty 200 reponse, collection does not have metadata',async function () {
           
-        //   const collectionNoMetadata = await utils.createTempCollection( {
-        //     name: 'temoCollection' + Math.floor(Math.random() * 1000),
-        //     description: 'Collection TEST description',
-        //     settings: {
-        //       fields: {
-        //         detail: {
-        //           enabled: 'always',
-        //           required: 'findings'
-        //         },
-        //         comment: {
-        //           enabled: 'always',
-        //           required: 'findings'
-        //         }
-        //       },
-        //       status: {
-        //         canAccept: true,
-        //         minAcceptGrant: 2,
-        //         resetCriteria: 'result'
-        //       },
-        //       history: {
-        //         maxReviews: 11
-        //       }
-        //     },
-        //     metadata: {},
-        //     grants: [
-        //       {
-        //         userId: '1',
-        //         accessLevel: 4
-        //       },
-        //       {
-        //         userId: '85',
-        //         accessLevel: 1
-        //       },
-        //       {
-        //         userId: '21',
-        //         accessLevel: 2
-        //       },
-        //       {
-        //         userId: '44',
-        //         accessLevel: 3
-        //       },
-        //       {
-        //         userId: '45',
-        //         accessLevel: 4
-        //       }
-        //     ],
-        //     labels: [
-        //       {
-        //         name: 'TEST',
-        //         description: 'Collection label description',
-        //         color: 'ffffff'
-        //       }
-        //     ]
-        //   })
-        //   const res = await chai.request(config.baseUrl)
-        //     .get(`/collections/${collectionNoMetadata.data.collectionId}/metadata/keys`)
-        //     .set('Authorization', `Bearer ${iteration.token}`)
-        //     if (distinct.grant === "none"){
-        //       expect(res).to.have.status(403)
-        //       utils.deleteCollection(collectionNoMetadata.data.collectionId)
-        //       return
-        //     }
-        //     if(distinct.canModifyCollection === false){
-        //       expect(res).to.have.status(403)
-        //       utils.deleteCollection(collectionNoMetadata.data.collectionId)
-        //       return
-        //     }
-        //     expect(res).to.have.status(404)
-        //     expect(res.body.error).to.equal("Resource not found.")
-        //     expect(res.body.detail).to.equal("metadata keys not found")
-        //     utils.deleteCollection(collectionNoMetadata.data.collectionId)
-        // })
+          const collectionNoMetadata = await utils.createTempCollection( {
+            name: 'temoCollection' + Math.floor(Math.random() * 1000),
+            description: 'Collection TEST description',
+            settings: {
+              fields: {
+                detail: {
+                  enabled: 'always',
+                  required: 'findings'
+                },
+                comment: {
+                  enabled: 'always',
+                  required: 'findings'
+                }
+              },
+              status: {
+                canAccept: true,
+                minAcceptGrant: 2,
+                resetCriteria: 'result'
+              },
+              history: {
+                maxReviews: 11
+              }
+            },
+            metadata: {},
+            grants: [
+              {
+                userId: '1',
+                accessLevel: 4
+              },
+              {
+                userId: '85',
+                accessLevel: 1
+              },
+              {
+                userId: '21',
+                accessLevel: 2
+              },
+              {
+                userId: '44',
+                accessLevel: 3
+              },
+              {
+                userId: '45',
+                accessLevel: 4
+              }
+            ],
+            labels: [
+              {
+                name: 'TEST',
+                description: 'Collection label description',
+                color: 'ffffff'
+              }
+            ]
+          })
+          const res = await chai.request(config.baseUrl)
+            .get(`/collections/${collectionNoMetadata.data.collectionId}/metadata/keys`)
+            .set('Authorization', `Bearer ${iteration.token}`)
+            if (distinct.grant === "none"){
+              expect(res).to.have.status(403)
+              utils.deleteCollection(collectionNoMetadata.data.collectionId)
+              return
+            }
+            if(distinct.canModifyCollection === false){
+              expect(res).to.have.status(403)
+              utils.deleteCollection(collectionNoMetadata.data.collectionId)
+              return
+            }
+            expect(res).to.have.status(200)
+            expect(res.body).to.be.an('array').of.length(0)
+         })
       })
 
       describe('getCollectionMetadataValue - /collections/{collectionId}/metadata/keys/{key}', function () {
@@ -1065,6 +1063,39 @@ describe('GET - Collection', function () {
               }
             }
         })
+        it("return the stigs mapped to test collection label names predicate",async function () {
+
+          const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.testCollection.collectionId}/stigs?labelName=${reference.testCollection.fullLabelName}`)
+            .set('Authorization', `Bearer ${iteration.token}`)
+            if (distinct.grant === "none"){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res).to.have.status(200)
+            expect(res.body).to.be.an('array').of.length(distinct.fullLabelUses)
+
+            for(const stig of res.body){
+              expect(distinct.validStigs).to.include(stig.benchmarkId)
+              //expect just 1 asset with this label
+              expect(stig.assetCount).to.equal(distinct.fullLabelUses)
+              if(stig.benchmarkId === reference.benchmark){
+                expect(stig.revisionStr).to.equal(reference.revisionStr)
+                expect(stig.ruleCount).to.equal(reference.checklistLength)
+              }
+            }
+          })
+          it("return the stigs mapped to test colleciton label match = null",async function () {
+            const res = await chai.request(config.baseUrl)
+              .get(`/collections/${reference.testCollection.collectionId}/stigs?labelName=null`)
+              .set('Authorization', `Bearer ${iteration.token}`)
+              if (distinct.grant === "none"){
+                expect(res).to.have.status(403)
+                return
+              }
+              expect(res).to.have.status(200)
+              expect(res.body).to.be.an('array').of.length(0)
+          })
       })
 
       describe('getStigByCollection - /collections/{collectionId}/stigs/{benchmarkId}', function () {

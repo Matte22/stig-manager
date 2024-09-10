@@ -62,6 +62,13 @@ const requestBodies = {
       pocPhone: '12342',
       reqRar: 'true'
     },
+    labels: [
+      {
+        name: 'TEST',
+        description: 'Collection label description',
+        color: 'ffffff'
+      }
+    ],
     grants: [
       {
         userId: '1',

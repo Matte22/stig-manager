@@ -211,7 +211,7 @@ describe(`GET - Asset`, function () {
           expect(res.body).to.be.an(`array`)
           expect(res.body).to.include(reference.testAsset.metadataKey)
         })
-        it(`should throw not found error, metadata keys not found`, async function () {
+        it(`should return emoty 200 response no metadata for asset`, async function () {
           const res = await chai
             .request(config.baseUrl)
             .get(`/assets/${reference.testAssetNoMetadata.assetId}/metadata/keys`)
@@ -404,6 +404,126 @@ describe(`GET - Asset`, function () {
               })
             }
           }
+        })
+
+        it("assets accessible to the requester labels predicate for label name, full label.", async function () {
+
+          const res  =  await chai
+            .request(config.baseUrl)
+            .get(`/assets?collectionId=${reference.testCollection.collectionId}&labelName=${reference.testCollection.fullLabelName}`)
+            .set(`Authorization`, `Bearer ` + iteration.token)
+          if(!distinct.hasAccessToTestAsset){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200) 
+
+          expect(res.body).to.be.an(`array`).of.length(distinct.assetsAvailableFullLabel.length)
+          for(let asset of res.body){
+            expect(asset.labelIds).to.include(reference.testCollection.fullLabel)
+            expect(asset.assetId).to.be.oneOf(distinct.assetsAvailableFullLabel)
+            expect(asset.collection.collectionId).to.eql(reference.testCollection.collectionId)
+          }
+        })
+
+        it("assets accessible to the requester label match predicate is null, should return assets without metadata", async function () {
+
+          const res  =  await chai
+            .request(config.baseUrl)
+            .get(`/assets?collectionId=${reference.testCollection.collectionId}&labelMatch=null`)
+            .set(`Authorization`, `Bearer ` + iteration.token)
+          if(!distinct.hasAccessToTestAsset){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200) 
+
+          expect(res.body).to.be.an(`array`).of.length(distinct.assetsAvailableNoMetadata.length)
+          for(let asset of res.body){
+            expect(asset.labelIds).to.be.empty
+            expect(asset.assetId).to.be.oneOf(distinct.assetsAvailableNoMetadata)
+            expect(asset.collection.collectionId).to.eql(reference.testCollection.collectionId)
+          }
+        })
+
+        it("assets accessible to the requester name match predicate where asset name is exact should return test asset", async function () {
+
+          const res = await chai
+            .request(config.baseUrl)
+            .get(`/assets?collectionId=${reference.testCollection.collectionId}&name=${reference.testAsset.name}&name-match=exact`)
+            .set(`Authorization`, `Bearer ` + iteration.token)
+          if(!distinct.hasAccessToTestAsset){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an(`array`).of.length(1)
+          expect(res.body[0].assetId).to.eql(reference.testAsset.assetId)
+        })
+        it("assets accessible to the requester name match predicate where asset name starts with should return assets start with Co", async function () {
+
+          const res = await chai
+            .request(config.baseUrl)
+            .get(`/assets?collectionId=${reference.testCollection.collectionId}&name=${"Co"}&name-match=startsWith`)
+            .set(`Authorization`, `Bearer ` + iteration.token)
+          if(!distinct.hasAccessToTestAsset){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200)
+          const assetNamesStartWithCo = distinct.AssetNamesAvailable.filter(asset => asset.name.startsWith("Co"))
+          expect(res.body).to.be.an(`array`).of.length(assetNamesStartWithCo.length)
+          for(const asset of res.body){
+            expect(asset.name).to.match(/^Co/)
+            expect(asset.assetId).to.be.oneOf(assetNamesStartWithCo.map(asset => asset.assetId))
+          }
+        })
+        it("assets accessible to the requester name match predicate where asset name ends with should return assets with `asset`", async function () {
+
+          const res = await chai
+            .request(config.baseUrl)
+            .get(`/assets?collectionId=${reference.testCollection.collectionId}&name=${"asset"}&name-match=endsWith`)
+            .set(`Authorization`, `Bearer ` + iteration.token)
+          if(!distinct.hasAccessToTestAsset){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200)
+          const names = distinct.AssetNamesAvailable.filter(asset => asset.name.endsWith("asset"))
+          expect(res.body).to.be.an(`array`).of.length(names.length)
+          for(const asset of res.body){
+            expect(asset.assetId).to.be.oneOf(names.map(asset => asset.assetId))
+          }
+        })
+        it("assets accessible to the requester name match predicate where asset name contains should return assets containg `lvl`", async function () {
+
+          const res = await chai
+            .request(config.baseUrl)
+            .get(`/assets?collectionId=${reference.testCollection.collectionId}&name=${"lvl"}&name-match=contains`)
+            .set(`Authorization`, `Bearer ` + iteration.token)
+          if(!distinct.hasAccessToTestAsset){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200)
+          const names = distinct.AssetNamesAvailable.filter(asset => asset.name.includes("lvl"))
+          expect(res.body).to.be.an(`array`).of.length(names.length)
+          for(const asset of res.body){
+            expect(asset.assetId).to.be.oneOf(names.map(asset => asset.assetId))
+          }
+        })
+        it("should not filter on name even with name-match=exact because no name predicate was passed.", async function () {
+
+          const res = await chai
+            .request(config.baseUrl)
+            .get(`/assets?collectionId=${reference.testCollection.collectionId}&name-match=exact`)
+            .set(`Authorization`, `Bearer ` + iteration.token)
+          if(!distinct.hasAccessToTestAsset){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an(`array`).of.length(distinct.assetIds.length)
         })
       })
       describe(`getChecklistByAsset - /assets/{assetId}/checklists`, function () {
@@ -824,7 +944,7 @@ describe(`GET - Asset`, function () {
             expect(asset.name).to.match(regex)
           }   
         })
-        it(`Assets in a Collection attached to a STIG - label`, async function () {
+        it(`Assets in a Collection attached to a STIG - labelId`, async function () {
 
           const res = await chai
             .request(config.baseUrl)
@@ -848,6 +968,47 @@ describe(`GET - Asset`, function () {
               expect(label).to.be.oneOf(reference.testCollection.labels, `Label should be one of the valid labels`)
             }            
           }   
+        })
+        it(`Assets in a Collection attached to a STIG - labelName`, async function () {
+
+          const res = await chai
+            .request(config.baseUrl)
+            .get(`/collections/${reference.testCollection.collectionId}/stigs/${reference.benchmark}/assets?labelName=${reference.testCollection.fullLabelName}`)
+            .set(`Authorization`, `Bearer ` + iteration.token)
+            if(!distinct.hasAccessToTestAsset){
+              expect(res).to.have.status(403)
+              return
+            }
+  
+            expect(res).to.have.status(200)
+            expect(res.body).to.be.an(`array`).of.length(distinct.assetsAvailableFullLabel.length)
+  
+            const regex = new RegExp(distinct.assetMatchString)
+            for(let asset of res.body){
+              expect(asset.name, "expect asset name to match regex").to.match(regex)
+              expect(asset.assetId, "expect assetId to be an asset attached to this bnenchmark").to.be.oneOf(distinct.assetsAvailableBenchmark)
+              expect(asset.collectionId, "expect collectionId to be equal to reference.testCollection.collectionId").to.be.eql(reference.testCollection.collectionId)
+              for(const label of asset.assetLabelIds){
+                expect(label).to.be.oneOf(reference.testCollection.labels, `Label should be one of the valid labels`)
+              }            
+            }   
+        })
+        it(`Assets in a Collection attached to a STIG - label match = null`, async function () {
+
+          const res = await chai
+            .request(config.baseUrl)
+            .get(`/collections/${reference.testCollection.collectionId}/stigs/${reference.benchmark}/assets?labelMatch=null`)
+            .set(`Authorization`, `Bearer ` + iteration.token)
+            if(!distinct.hasAccessToTestAsset){
+              expect(res).to.have.status(403)
+              return
+            }
+            expect(res).to.have.status(200) 
+            expect(res.body).to.be.an(`array`).of.length(1)
+            for(let asset of res.body){
+              expect(asset.assetLabelIds).to.be.empty
+              expect(asset.collectionId).to.eql(reference.testCollection.collectionId)
+            }
         })
       })
     })

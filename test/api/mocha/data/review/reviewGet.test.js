@@ -260,6 +260,26 @@ describe('GET - Review', () => {
             expect(review.assetId).to.be.oneOf(reference.testCollection.assetIds)
           }
         })
+        it('Return a list of reviews accessible to the requester, rules=default', async () => {
+          const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews?rules=default`)
+            .set('Authorization', `Bearer ${iteration.token}`)
+
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array').of.length(distinct.testCollection.reviewsForRulesAll)
+
+          for(let review of res.body){
+            expect(review.assetId).to.be.oneOf(reference.testCollection.assetIds)
+          }
+        })
+        it('Return a list of reviews accessible to the requester, rules=not-default-mapped', async () => {
+          const res = await chai.request(config.baseUrl)
+            .get(`/collections/${reference.testCollection.collectionId}/reviews?rules=not-default-mapped`)
+            .set('Authorization', `Bearer ${iteration.token}`)
+
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array').of.length(0)
+        })
       })
       describe('GET - getReviewsByAsset - /collections/{collectionId}/reviews/{assetId}', () => {
         it('Return a list of Reviews for an Asset', async () => {
@@ -470,26 +490,23 @@ describe('GET - Review', () => {
             expect(res.body).to.be.lengthOf(1)
             expect(res.body).to.include(reference.reviewMetadataKey)
           })
-          // will change
-          it("should return SmError.PrivilegeError for lvl1 if user cannot access review", async () => {
+          it("should return empty 200 response, no metadata", async () => {
 
             // using scrap rule id for windows cuz lvl1 cannot access
             const res = await chai.request(config.baseUrl)
               .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata/keys`)
               .set('Authorization', `Bearer ${iteration.token}`)
-            // if(distinct.canPatchReview){
-            //   expect(res).to.have.status(200)
-            //   return
-            // }
-            // expect(res).to.have.status(200)
-        //    expect(res.body.error).to.be.equal("User has insufficient privilege to complete this request.")
+            if(distinct.canPatchReview){
+              expect(res).to.have.status(200)
+              return
+            }
+            expect(res).to.have.status(200)
           })
-          it("should return SmError.NotFoundError for lvl1 if metadata key isnt found. ", async () => {
+          it("should return empty 200 response if metadata key isnt found. ", async () => {
             const res = await chai.request(config.baseUrl)
               .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testRuleNoMetadata.ruleId}/metadata/keys`)
               .set('Authorization', `Bearer ${iteration.token}`)
               expect(res).to.have.status(200)
-       //       expect(res.body.error).to.be.equal("Resource not found.")
           })
       })
       describe('GET - getReviewMetadataValue - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {

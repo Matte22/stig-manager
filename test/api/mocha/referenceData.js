@@ -18,8 +18,8 @@ const reference = {
     name: "Collection X",
     collectionId: "21",
     benchmark: "VPN_SRG_TEST",
-    defaultRevision: "V1R1",    
-    pinRevision: "V1R0",    
+    defaultRevision: "V1R1",
+    pinRevision: "V1R0",
     collectionMetadataKey: "pocName",
     collectionMetadataValue: "poc2Patched",
     collectionOwnerID: "87",
@@ -28,7 +28,7 @@ const reference = {
     assetIds: ["29", "62", "42", "154"],
     assetsWithHistory: ["42", "154"],
     testAssetId: "42",
-    ruleId: 'SV-106179r1_rule',
+    ruleId: "SV-106179r1_rule",
     validStigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST"],
     labelCount: 2,
     lvl1LabelName: "test-label-lvl1",
@@ -38,25 +38,25 @@ const reference = {
     fullLabel: "755b8a28-9a68-11ec-b1bc-0242ac110002",
     labels: [
       "755b8a28-9a68-11ec-b1bc-0242ac110002",
-      "5130dc84-9a68-11ec-b1bc-0242ac110002"
+      "5130dc84-9a68-11ec-b1bc-0242ac110002",
     ],
     allMetadata: [
       {
         key: "pocEmail",
-        value: "pocEmail@email.com"
+        value: "pocEmail@email.com",
       },
       {
         key: "pocName",
-        value: "poc2Patched"
+        value: "poc2Patched",
       },
       {
         key: "pocPhone",
-        value: "12342"
+        value: "12342",
       },
       {
         key: "reqRar",
-        value: "true"
-      }
+        value: "true",
+      },
     ],
     reviewHistory: {
       assetId: "42",
@@ -99,78 +99,78 @@ const reference = {
         user: {
           userId: "86",
           username: "bizarroLvl1",
-          displayName: "bizarroLvl1"
-          },
-        accessLevel: 1
+          displayName: "bizarroLvl1",
+        },
+        accessLevel: 1,
       },
       {
         user: {
           userId: "85",
           username: "lvl1",
-          displayName: "lvl1"
+          displayName: "lvl1",
         },
-        accessLevel: 1
+        accessLevel: 1,
       },
       {
         user: {
           userId: "21",
           username: "lvl2",
-          displayName: "lvl2"
+          displayName: "lvl2",
         },
-        accessLevel: 2
+        accessLevel: 2,
       },
       {
         user: {
           userId: "44",
           username: "lvl3",
-          displayName: "lvl3"
+          displayName: "lvl3",
         },
-        accessLevel: 3
+        accessLevel: 3,
       },
       {
         user: {
           userId: "87",
           username: "admin",
-          displayName: "Admin Burke"
+          displayName: "Admin Burke",
         },
-        accessLevel: 4
+        accessLevel: 4,
       },
       {
         user: {
           userId: "1",
           username: "stigmanadmin",
-          displayName: "STIGMAN Admin"
+          displayName: "STIGMAN Admin",
         },
-        accessLevel: 4
+        accessLevel: 4,
       },
       {
         user: {
           userId: "45",
           username: "lvl4",
-          displayName: "lvl4"
+          displayName: "lvl4",
         },
-        accessLevel: 4
-      }
+        accessLevel: 4,
+      },
     ],
     ownersProjected: [
       {
         email: "admin@admin.com",
         userId: "87",
         username: "admin",
-        displayName: "Admin Burke"
+        displayName: "Admin Burke",
       },
       {
         email: null,
         userId: "1",
         username: "stigmanadmin",
-        displayName: "STIGMAN Admin"
+        displayName: "STIGMAN Admin",
       },
       {
         email: null,
         userId: "45",
         username: "lvl4",
-        displayName: null
-      }
+        displayName: null,
+      },
     ],
     stigsProjected: [
       {
@@ -178,48 +178,47 @@ const reference = {
         benchmarkId: "VPN_SRG_TEST",
         revisionStr: "V1R0",
         benchmarkDate: "2010-07-19",
-        revisionPinned: true
+        revisionPinned: true,
       },
       {
         ruleCount: 287,
         benchmarkId: "Windows_10_STIG_TEST",
         revisionStr: "V1R23",
         benchmarkDate: "2020-06-17",
-        revisionPinned: false
-      }
+        revisionPinned: false,
+      },
     ],
     statisticsProjected: {
       assetCount: 4,
       grantCount: 7,
-      checklistCount: 6
+      checklistCount: 6,
     },
     labelsProjected: [
       {
         name: "test-label-full",
         description: "",
         color: "FF99CC",
-        uses: 2
+        uses: 2,
       },
       {
         name: "test-label-lvl1",
         description: "",
         color: "99CCFF",
-        uses: 1
-      }
-    ]
+        uses: 1,
+      },
+    ],
   },
   deleteCollection: {
     collectionId_adminOnly: "84",
-    collectionId: "85"
+    collectionId: "85",
   },
   scrapCollection: {
     collectionId: "1",
     validStigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST", "RHEL_7_STIG_TEST"],
     scrapLabel: "df4e6836-a003-11ec-b1bc-0242ac110002",
     collectionMetadataKey: "pocName",
-    collectionMetadataValue: "poc2Patched"
+    collectionMetadataValue: "poc2Patched",
   },
-
 
   // Reference Asset data
 
@@ -228,7 +227,7 @@ const reference = {
     name: "Collection_X_lvl1_asset-1",
     assetId: "42",
     collectionId: "21",
-    usersWithGrant: ["86","85"],
+    usersWithGrant: ["86", "85"],
     // benchmark: "VPN_SRG_TEST",
     validStigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST"],
     reviewCnt: 9,
@@ -236,7 +235,7 @@ const reference = {
     metadataValue: "testvalue",
     labels: [
       "755b8a28-9a68-11ec-b1bc-0242ac110002",
-      "5130dc84-9a68-11ec-b1bc-0242ac110002"
+      "5130dc84-9a68-11ec-b1bc-0242ac110002",
     ],
     stats: {
       ruleCount: 368,
@@ -246,10 +245,10 @@ const reference = {
       rejectedCount: 0,
       submittedCount: 7,
     },
-    testRuleId: 'SV-106179r1_rule',
-    freshRuleId: 'SV-106195r1_rule',
+    testRuleId: "SV-106179r1_rule",
+    freshRuleId: "SV-106195r1_rule",
     testRuleIdHistoryCount: 2,
-    testRuleIdStig: 'VPN_SRG_TEST',
+    testRuleIdStig: "VPN_SRG_TEST",
     testRuleIdStigCount: 1,
     testBenchmarkReviews: 6,
     reviewRuleIds: [
@@ -259,17 +258,17 @@ const reference = {
       "SV-106185r1_rule",
       "SV-106187r1_rule",
       "SV-106189r1_rule",
-      'SV-77813r6_rule',
-      'SV-77811r1_rule',
-      'SV-77809r3_rule'
-    ],    
+      "SV-77813r6_rule",
+      "SV-77811r1_rule",
+      "SV-77809r3_rule",
+    ],
   },
   scrapAsset: {
     assetId: "34",
     scrapBenchmark: "RHEL_7_STIG_TEST",
     metadataKey: "testkey",
-    metadataValue: "testvalue"
-  },  
+    metadataValue: "testvalue",
+  },
   testAssetNoStigs: {
     name: "ACHERNAR_Collection_X_asset",
     assetId: "29",
@@ -277,42 +276,41 @@ const reference = {
     labels: [],
     stigs: [],
     stats: {
-        ruleCount: null,
-        stigCount: 0,
-        savedCount: null,
-        acceptedCount: null,
-        rejectedCount: null,
-        submittedCount: null,
-      },
-  },  
-  testAssetNoMetadata: {
-    "collectionId": "21",
-    "assetId": "154",
+      ruleCount: null,
+      stigCount: 0,
+      savedCount: null,
+      acceptedCount: null,
+      rejectedCount: null,
+      submittedCount: null,
+    },
   },
-
+  testAssetNoMetadata: {
+    collectionId: "21",
+    assetId: "154",
+  },
 
   //Reference User data
-  allUserIds: ['87', '86', '82', '85', '21', '44', '45', '1', '22', '43'],
-  lvl1User:{
+  allUserIds: ["87", "86", "82", "85", "21", "44", "45", "1", "22", "43"],
+  lvl1User: {
     username: "lvl1",
-    userId: "85"
+    userId: "85",
   },
   stigmanadmin: {
-    username: 'stigmanadmin',
-    userId: '1'
+    username: "stigmanadmin",
+    userId: "1",
   },
   wfTest: {
-    username: 'wf-test',
-    userId: '22'
+    username: "wf-test",
+    userId: "22",
   },
   deleteUser: {
-    username: 'workforce-60',
-    userId: '43'
-  },  
+    username: "workforce-60",
+    userId: "43",
+  },
 
   scrapLvl1User: {
     userId: "86",
-    username: "bizarroLvl1"
+    username: "bizarroLvl1",
   },
 
   //review data
@@ -320,24 +318,25 @@ const reference = {
   ruleIdPinnedRev: "SV-106179r123456789_rule",
   reviewKeyChangeFile: "U_VPN_SRG_V2R3_Manual-xccdf-reviewKeyChange.xml",
   ruleIdLvl1NoAccess: "SV-77809r3_rule",
-  writeStigPropsByCollectionStig: ['62', '42', '154'],
+  writeStigPropsByCollectionStig: ["62", "42", "154"],
   reviewMatchString: "test",
   freshRuleId: "SV-106195r1_rule",
   testGroupId: "V-97041",
-  reviewMetadataKey: 'testkey',
-  reviewMetadataValue: 'testvalue',
+  reviewMetadataKey: "testkey",
+  reviewMetadataValue: "testvalue",
   scrapRuleIdWindows10: "SV-77809r3_rule",
 
   //Reference Stig and Rule data
   benchmark: "VPN_SRG_TEST",
   revisionStr: "V1R1",
   checklistLength: 81,
-  testBenchmarkAllRevisions: ['V1R1', 'V1R0'],
+  testBenchmarkAllRevisions: ["V1R1", "V1R0"],
   lvl1ValidStigs: ["VPN_SRG_TEST"],
-  scrapBenchmark: 'RHEL_7_STIG_TEST',
-  testStigfile: 'U_VPN_SRG_V1R1_Manual-xccdf.xml',
-  testStigfileNonLatest: 'U_VPN_SRG_V1R0_Manual-xccdf.xml',
-  rulesMatchingFingerprints: "U_VPN_SRG-OTHER_V1R1_twoRules-matchingFingerprints.xml",  
+  scrapBenchmark: "RHEL_7_STIG_TEST",
+  testStigfile: "U_VPN_SRG_V1R1_Manual-xccdf.xml",
+  testStigfileNonLatest: "U_VPN_SRG_V1R0_Manual-xccdf.xml",
+  rulesMatchingFingerprints:
+    "U_VPN_SRG-OTHER_V1R1_twoRules-matchingFingerprints.xml",
   testRule: {
     ruleId: "SV-106179r1_rule",
     groupId: "V-97041",
@@ -348,30 +347,32 @@ const reference = {
   },
 
   vpnStigs: [
-    'VPN_SRG_TEST',
-    'VPN_SRG_OTHER',
-    'VPN_SRG_Rule-fingerprint-match-test'
+    "VPN_SRG_TEST",
+    "VPN_SRG_OTHER",
+    "VPN_SRG_Rule-fingerprint-match-test",
   ],
   allStigsForAdmin: [
-    'A10_Networks_ADC_ALG_STIG',
-    'AAA_Service_SRG',
-    'Adobe_Acrobat_Pro_DC_Continuous_STIG',
-    'RHEL_7_STIG_TEST',
-    'VPN_SRG_OTHER',
-    'VPN_SRG_Rule-fingerprint-match-test',
-    'VPN_SRG_TEST',
-    'Windows_10_STIG_TEST'
-  ],  
+    "A10_Networks_ADC_ALG_STIG",
+    "AAA_Service_SRG",
+    "Adobe_Acrobat_Pro_DC_Continuous_STIG",
+    "RHEL_7_STIG_TEST",
+    "VPN_SRG_OTHER",
+    "VPN_SRG_Rule-fingerprint-match-test",
+    "VPN_SRG_TEST",
+    "Windows_10_STIG_TEST",
+  ],
   testCci: {
     id: "000015",
     status: "draft",
-  },  
+  },
   // stigmanadmin: {
   //   username: 'stigmanadmin',
   //   userId: '1'
   // },
   // reviewMetadataKey: 'testkey',
-  // reviewMetadataValue: 'testvalue',  
+  // reviewMetadataValue: 'testvalue',
+
+
 };
 
 module.exports = reference;

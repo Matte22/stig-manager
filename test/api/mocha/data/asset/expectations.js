@@ -21,10 +21,29 @@ const distinct = {
     collectionIds: ['21'],
     canModifyCollection: true,
     assetsAvailableFullLabel: ["62","42"],
+    assetsAvailableNoMetadata: ["29","154"],
     assetsAvailableBenchmark: ["42","62", "154"],
     assetsAvailableStigGrants:["42","62", "154"],
     hasAccessToTestAsset: true,
     hasAccessToTestAssetNoStigs: true,
+    AssetNamesAvailable:[
+      {
+        name: "ACHERNAR_Collection_X_asset",
+        assetId: "29",
+      },
+      {
+        name: "Collection_X_asset",
+        assetId: "62",
+      },
+      {
+        name: "Collection_X_lvl1_asset-1",
+        assetId: "42",
+      },
+      {
+        name: "Collection_X_lvl1_asset-2",
+        assetId: "154",
+      },
+    ]
     
   },
   lvl1: {
@@ -45,11 +64,22 @@ const distinct = {
     assetIds: ['42', '154'],
     assetMatchString: "lvl1",
     assetsAvailableFullLabel: ["42"],
+    assetsAvailableNoMetadata: ["154"],
     assetsAvailableBenchmark: ["42", "154"],
     validStigs: ['VPN_SRG_TEST'],
     collectionIds: ['21'],
     hasAccessToTestAsset: true,
     hasAccessToTestAssetNoStigs: false,
+    AssetNamesAvailable:[
+      {
+        name: "Collection_X_lvl1_asset-1",
+        assetId: "42",
+      },
+      {
+        name: "Collection_X_lvl1_asset-2",
+        assetId: "154",
+      },
+    ]
 
   },
   lvl2: {
@@ -70,11 +100,30 @@ const distinct = {
     assetIds: ['29', '62', '42', '154'],
     assetMatchString: "asset",
     assetsAvailableFullLabel: ["62","42"],
+    assetsAvailableNoMetadata: ["29","154"],
     assetsAvailableBenchmark: ["42","62", "154"],
     validStigs: ['VPN_SRG_TEST', 'Windows_10_STIG_TEST'],
     collectionIds: ['21'],
     hasAccessToTestAsset: true,
     hasAccessToTestAssetNoStigs: true,
+    AssetNamesAvailable:[
+      {
+        name: "ACHERNAR_Collection_X_asset",
+        assetId: "29",
+      },
+      {
+        name: "Collection_X_asset",
+        assetId: "62",
+      },
+      {
+        name: "Collection_X_lvl1_asset-1",
+        assetId: "42",
+      },
+      {
+        name: "Collection_X_lvl1_asset-2",
+        assetId: "154",
+      },
+    ]
 
   },
   lvl3: {
@@ -97,10 +146,29 @@ const distinct = {
     validStigs: ['VPN_SRG_TEST', 'Windows_10_STIG_TEST'],
     collectionIds: ['21'],
     assetsAvailableFullLabel: ["62","42"],
+    assetsAvailableNoMetadata: ["29","154"],
     assetsAvailableBenchmark: ["42","62", "154"],
     assetsAvailableStigGrants:["42","62", "154"],
     hasAccessToTestAsset: true,
     hasAccessToTestAssetNoStigs: true,
+    AssetNamesAvailable:[
+      {
+        name: "ACHERNAR_Collection_X_asset",
+        assetId: "29",
+      },
+      {
+        name: "Collection_X_asset",
+        assetId: "62",
+      },
+      {
+        name: "Collection_X_lvl1_asset-1",
+        assetId: "42",
+      },
+      {
+        name: "Collection_X_lvl1_asset-2",
+        assetId: "154",
+      },
+    ]
 
   },
   lvl4: {
@@ -122,11 +190,30 @@ const distinct = {
     assetIds: ['29', '62', '42', '154'],
     assetMatchString: "asset",
     assetsAvailableBenchmark: ["42","62", "154"],
+    assetsAvailableNoMetadata: ["29","154"],
     validStigs: ['VPN_SRG_TEST', 'Windows_10_STIG_TEST'],
     collectionIds: ['21'],
     assetsAvailableStigGrants:["42","62", "154"],
     hasAccessToTestAsset: true,
     hasAccessToTestAssetNoStigs: true,
+    AssetNamesAvailable:[
+      {
+        name: "ACHERNAR_Collection_X_asset",
+        assetId: "29",
+      },
+      {
+        name: "Collection_X_asset",
+        assetId: "62",
+      },
+      {
+        name: "Collection_X_lvl1_asset-1",
+        assetId: "42",
+      },
+      {
+        name: "Collection_X_lvl1_asset-2",
+        assetId: "154",
+      },
+    ]
   },
   collectioncreator: {
     canModifyCollection: false,

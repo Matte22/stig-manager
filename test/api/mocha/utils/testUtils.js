@@ -140,7 +140,7 @@ const deleteCollection = async (collectionId) => {
 const createTempAsset = async asset => {
   if (!asset) {
     asset = {
-      name: 'tempAsset',
+      name: 'tempAsset' + Math.floor(Math.random() * 1000),
       collectionId: "21",
       description: 'temp',
       ip: '1.1.1.1',
@@ -565,11 +565,31 @@ const setDefaultRevision = async (collectionId, benchmarkId, revisionStr) => {
 
 }
 
+const putAsset = async (assetId, asset) => {
+  try {
+    const res = await axios.put(
+      `${config.baseUrl}/assets/${assetId}`,
+      asset,
+      {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+    return res.data
+  }
+  catch (e) {
+    return e;
+  }
+}
+
 module.exports = {
   loadAppData,
   deleteCollection,
   uploadTestStigs,
   deleteAsset,
+  putAsset,
   getStigByCollectionBenchmarkId,
   setDefaultRevision,
   createTempAsset,

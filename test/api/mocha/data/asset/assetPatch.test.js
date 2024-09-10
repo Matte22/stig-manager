@@ -7,12 +7,24 @@ const utils = require('../../utils/testUtils')
 const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
+const requestBodies = require('./requestBodies.js')
+
+const resetTestAsset = async () => {
+
+  const res = await utils.putAsset(reference.testAsset.assetId, requestBodies.testAssetPut)
+
+}
+
+const resetScrapAsset = async () => {
+
+  const res = await utils.putAsset(reference.scrapAsset.assetId, requestBodies.scrapAssetPut)
+}
 
 describe('PATCH - Asset', function () {
   before(async function () {
     await utils.createDisabledCollectionsandAssets()
+ //   await utils.loadAppData()
   })
-
 
   for(const iteration of iterations){
     if (expectations[iteration.name] === undefined){
@@ -24,10 +36,9 @@ describe('PATCH - Asset', function () {
       const distinct = expectations[iteration.name]
       beforeEach(async function () {
         this.timeout(4000)
-        // await utils.uploadTestStigs()
-        await utils.loadAppData()
+        await resetTestAsset()
+        await resetScrapAsset()
       })
-
       describe(`updateAsset - /assets/{assetId}`, function () {
       
         it('Merge provided properties with an Asset - Change Collection - Fail for all iterations', async function () {
@@ -166,61 +177,6 @@ describe('PATCH - Asset', function () {
           }
         })
       })
-
-      describe(`patchAssets - /assets`, function () {
-    
-        it('Delete Assets - expect success for valid iterations', async function () {
-          const res = await chai
-            .request(config.baseUrl)
-            .patch(`/assets?collectionId=${reference.testCollection.collectionId}`)
-            .set('Authorization', 'Bearer ' + iteration.token)
-            .send({
-              "operation": "delete",
-              "assetIds": ["29","42"]
-            })
-        
-          if(!distinct.canModifyCollection){
-            expect(res).to.have.status(403)
-            return
-          }
-          expect(res).to.have.status(200)
-          expect(res.body, "expect assets 29 and 42 to be delted").to.eql({
-            "operation": "deleted",
-            "assetIds": [
-                "29",
-                "42"
-              ]})
-          
-          for(const assetID of res.body.assetIds){
-            const effectedAsset = await utils.getAsset(assetID)
-            expect(effectedAsset.response, "response should be 403 due to asset being deleted").to.have.status(403)
-          }
-            
-        })
-        it('Delete Assets - assets not in collection', async function () {
-            const res = await chai
-              .request(config.baseUrl)
-              .patch(`/assets?collectionId=${reference.testCollection.collectionId}`)
-              .set('Authorization', 'Bearer ' + iteration.token)
-              .send({
-                "operation": "delete",
-                "assetIds": ["258","260"]
-              })
-              expect(res, "assets are not in collection 21.").to.have.status(403)
-        })
-        it('Delete Assets - collection does not exist', async function () {
-          const res = await chai
-            .request(config.baseUrl)
-            .patch(`/assets?collectionId=${99999}`)
-            .set('Authorization', 'Bearer ' + iteration.token)
-            .send({
-              "operation": "delete",
-              "assetIds": ["29","42"]
-            })
-            expect(res, "collecitonId is does not exist").to.have.status(403)
-        })
-      })  
-
       describe(`patchAssetMetadata - /assets/{assetId}/metadata`, function () {
 
         it('Merge provided properties with an Asset - Change metadata', async function () {
@@ -266,6 +222,63 @@ describe('PATCH - Asset', function () {
             })
         })
       })
+      describe(`patchAssets - /assets`, function () {
+    
+        it('Delete Assets - expect success for valid iterations', async function () {
+
+            // create 2 assets to be deleted 
+            const asset1 = await utils.createTempAsset()
+            const asset2 = await utils.createTempAsset()
+
+            const assetIds = [asset1.data.assetId, asset2.data.assetId]
+
+            const res = await chai
+            .request(config.baseUrl)
+            .patch(`/assets?collectionId=${reference.testCollection.collectionId}`)
+            .set('Authorization', 'Bearer ' + iteration.token)
+            .send({
+                "operation": "delete",
+                "assetIds": assetIds
+            })
+        
+            if(!distinct.canModifyCollection){
+                expect(res).to.have.status(403)
+                return
+            }
+            expect(res).to.have.status(200)
+            expect(res.body, "expect assets 29 and 42 to be delted").to.eql({
+            "operation": "deleted",
+            "assetIds": assetIds})
+            
+            for(const assetID of res.body.assetIds){
+                const effectedAsset = await utils.getAsset(assetID)
+                expect(effectedAsset.response, "response should be 403 due to asset being deleted").to.have.status(403)
+            }
+            
+        })
+        it('Delete Assets - assets not in collection', async function () {
+            const res = await chai
+              .request(config.baseUrl)
+              .patch(`/assets?collectionId=${reference.testCollection.collectionId}`)
+              .set('Authorization', 'Bearer ' + iteration.token)
+              .send({
+                "operation": "delete",
+                "assetIds": ["258","260"]
+              })
+              expect(res, "assets are not in collection 21.").to.have.status(403)
+        })
+        it('Delete Assets - collection does not exist', async function () {
+          const res = await chai
+            .request(config.baseUrl)
+            .patch(`/assets?collectionId=${99999}`)
+            .set('Authorization', 'Bearer ' + iteration.token)
+            .send({
+              "operation": "delete",
+              "assetIds": ["29","42"]
+            })
+            expect(res, "collecitonId is does not exist").to.have.status(403)
+        })
+      })  
     })
   }
 })
