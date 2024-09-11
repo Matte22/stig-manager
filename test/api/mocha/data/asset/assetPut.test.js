@@ -12,11 +12,10 @@ const { v4: uuidv4 } = require('uuid')
 describe('PUT - Asset', function () {
 
   before(async function () {
-    this.timeout(4000)
-    await utils.uploadTestStigs()
-    await utils.loadAppData()
-    // await utils.createDisabledCollectionsandAssets()
+     await utils.resetTestAsset()
+     await utils.resetScrapAsset()
   })
+
   for (const iteration of iterations) {
     if (expectations[iteration.name] === undefined){
       it(`No expectations for this iteration scenario: ${iteration.name}`, async function () {})
@@ -24,6 +23,7 @@ describe('PUT - Asset', function () {
     }
     describe(`iteration:${iteration.name}`, function () {
       const distinct = expectations[iteration.name]
+
       describe(`replaceAsset -/assets/{assetId}`, function () {
         
         it('Set all properties of an Asset', async function () {

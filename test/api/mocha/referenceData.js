@@ -268,6 +268,9 @@ const reference = {
     scrapBenchmark: "RHEL_7_STIG_TEST",
     metadataKey: "testkey",
     metadataValue: "testvalue",
+    ruleCount: 612,
+    validStigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST", "RHEL_7_STIG_TEST"],
+
   },
   testAssetNoStigs: {
     name: "ACHERNAR_Collection_X_asset",

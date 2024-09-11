@@ -11,13 +11,6 @@ const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
 
 describe('POST - Asset', function () {
-  before(async function () {
-    this.timeout(4000)
-    await utils.uploadTestStigs()
-    await utils.loadAppData()
-    // await utils.createDisabledCollectionsandAssets()
-  })
-
   for (const iteration of iterations) {
     if (expectations[iteration.name] === undefined){
       it(`No expectations for this iteration scenario: ${iteration.name}`, async function () {})
@@ -26,14 +19,13 @@ describe('POST - Asset', function () {
     describe(`iteration:${iteration.name}`, function () {
       const distinct = expectations[iteration.name]
       describe(`createAsset - /assets`, function () {
-
         it('Create an Asset (with statusStats and stigs projection', async function () {
           const res = await chai
             .request(config.baseUrl)
             .post('/assets?projection=statusStats&projection=stigs')
             .set('Authorization', 'Bearer ' + iteration.token)
             .send({
-              name: 'TestAsset' + Math.floor(Math.random() * 1000),
+              name: 'TestAsset' + Date.now(),
               collectionId: reference.testCollection.collectionId,
               description: 'test',
               ip: '1.1.1.1',
@@ -78,7 +70,6 @@ describe('POST - Asset', function () {
             expect(effectedAsset.statusStats.ruleCount).to.equal(reference.testAsset.stats.ruleCount)
 
         })
-
         it('should fail, duplicate asset name', async function () {
 
           const res = await chai
@@ -109,7 +100,7 @@ describe('POST - Asset', function () {
             .post('/assets?projection=stigGrants')
             .set('Authorization', 'Bearer ' + iteration.token)
             .send({
-              name: 'TestAsset' + Math.floor(Math.random() * 1000),
+              name: 'TestAsset' + Date.now(),
               collectionId: reference.testCollection.collectionId,
               description: 'test',
               ip: '1.1.1.1',

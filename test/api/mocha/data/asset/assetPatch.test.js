@@ -7,23 +7,12 @@ const utils = require('../../utils/testUtils')
 const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
-const requestBodies = require('./requestBodies.js')
-
-const resetTestAsset = async () => {
-
-  const res = await utils.putAsset(reference.testAsset.assetId, requestBodies.testAssetPut)
-
-}
-
-const resetScrapAsset = async () => {
-
-  const res = await utils.putAsset(reference.scrapAsset.assetId, requestBodies.scrapAssetPut)
-}
 
 describe('PATCH - Asset', function () {
-  before(async function () {
-    await utils.createDisabledCollectionsandAssets()
- //   await utils.loadAppData()
+  
+  after(async () => {
+    await utils.resetTestAsset()
+    await utils.resetScrapAsset()
   })
 
   for(const iteration of iterations){
@@ -34,13 +23,15 @@ describe('PATCH - Asset', function () {
 
     describe(`iteration:${iteration.name}`, function () {
       const distinct = expectations[iteration.name]
+
       beforeEach(async function () {
         this.timeout(4000)
-        await resetTestAsset()
-        await resetScrapAsset()
+        await utils.resetTestAsset()
+        await utils.resetScrapAsset()
       })
+
       describe(`updateAsset - /assets/{assetId}`, function () {
-      
+
         it('Merge provided properties with an Asset - Change Collection - Fail for all iterations', async function () {
           const res = await chai
             .request(config.baseUrl)
@@ -177,12 +168,13 @@ describe('PATCH - Asset', function () {
           }
         })
       })
-      describe(`patchAssetMetadata - /assets/{assetId}/metadata`, function () {
 
+      describe(`patchAssetMetadata - /assets/{assetId}/metadata`, function () {
+        
         it('Merge provided properties with an Asset - Change metadata', async function () {
           const res = await chai
             .request(config.baseUrl)
-            .patch(`/assets/${reference.scrapAsset.assetId}/metadata`)
+            .patch(`/assets/${reference.testAsset.assetId}/metadata`)
             .set('Authorization', 'Bearer ' + iteration.token)
             .send({
               "testkey":"poc2Patched"
@@ -195,7 +187,7 @@ describe('PATCH - Asset', function () {
             expect(res.body, "expect new metadata to take effect").to.deep.equal({
               "testkey": "poc2Patched",
             })
-            const effectedAsset = await utils.getAsset(reference.scrapAsset.assetId)
+            const effectedAsset = await utils.getAsset(reference.testAsset.assetId)
             expect(effectedAsset.metadata, "getting asset for double checking").to.deep.equal({
               "testkey": "poc2Patched"
             })
@@ -222,13 +214,19 @@ describe('PATCH - Asset', function () {
             })
         })
       })
+      
       describe(`patchAssets - /assets`, function () {
+
+        let asset1 = null
+        let asset2 = null
+
+        before(async function () {
+          asset1 = await utils.createTempAsset()
+          asset2 = await utils.createTempAsset()
+        
+        })
     
         it('Delete Assets - expect success for valid iterations', async function () {
-
-            // create 2 assets to be deleted 
-            const asset1 = await utils.createTempAsset()
-            const asset2 = await utils.createTempAsset()
 
             const assetIds = [asset1.data.assetId, asset2.data.assetId]
 

@@ -2,21 +2,7 @@
 
 const requestBodies = {
     tempAssetPost: {
-        name: 'tempAsset',
-        collectionId: "21",
-        description: 'temp',
-        ip: '1.1.1.1',
-        fqdn: null,
-        noncomputing: true,
-        mac: null,
-        labelIds: [],
-        metadata: {
-            testKey: 'testValue'
-        },
-        stigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST"],
-    },
-    testAssetPut: {
-        name: "Collection_X_lvl1_asset-1",
+        name: "TempAsset",
         collectionId: "21",
         description: "",
         ip: "",
@@ -30,19 +16,8 @@ const requestBodies = {
          testkey: "testvalue"
         },
         stigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST"],
-      },
-      scrapAssetPut: {
-        name: "test asset stigmanadmin",
-        collectionId: "1",
-        description: "test desc",
-        ip: "1.1.1.1",
-        fqdn: null,
-        noncomputing: true,
-        mac: null,
-        labelIds: [],
-        metadata: {},
-        stigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST","RHEL_7_STIG_TEST"],
-      },
-  }
+    },
+}
 module.exports = requestBodies
   
+

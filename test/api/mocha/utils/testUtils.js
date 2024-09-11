@@ -140,7 +140,7 @@ const deleteCollection = async (collectionId) => {
 const createTempAsset = async asset => {
   if (!asset) {
     asset = {
-      name: 'tempAsset' + Math.floor(Math.random() * 1000),
+      name: 'tempAsset' + Date.now(),
       collectionId: "21",
       description: 'temp',
       ip: '1.1.1.1',
@@ -319,33 +319,34 @@ const uploadTestStigs = async () => {
   }
 }
 
-const replaceStigRevision = async (stigFile = "U_VPN_SRG_V1R1_Manual-xccdf-replace.xml") => {
-  const directoryPath = path.join(__dirname, '../../form-data-files/')
+//delete soon?
+// const replaceStigRevision = async (stigFile = "U_VPN_SRG_V1R1_Manual-xccdf-replace.xml") => {
+//   const directoryPath = path.join(__dirname, '../../form-data-files/')
 
-  const formData = new FormData()
-  const filePath = path.join(directoryPath, stigFile)
-  formData.append('importFile', fs.createReadStream(filePath), {
-    stigFile,
-    contentType: 'text/xml'
-  })
+//   const formData = new FormData()
+//   const filePath = path.join(directoryPath, stigFile)
+//   formData.append('importFile', fs.createReadStream(filePath), {
+//     stigFile,
+//     contentType: 'text/xml'
+//   })
 
-  const axiosConfig = {
-    method: 'post',
-    url: `${config.baseUrl}/stigs?elevate=true&clobber=true`,
-    headers: {
-      ...formData.getHeaders(),
-      Authorization: `Bearer ${adminToken}`
-    },
-    data: formData
-  }
+//   const axiosConfig = {
+//     method: 'post',
+//     url: `${config.baseUrl}/stigs?elevate=true&clobber=true`,
+//     headers: {
+//       ...formData.getHeaders(),
+//       Authorization: `Bearer ${adminToken}`
+//     },
+//     data: formData
+//   }
 
-  try {
-    const response = await axios(axiosConfig)
-    console.log(`Successfully uploaded ${stigFile}`)
-  } catch (error) {
-    console.error(`Failed to upload ${stigFile}:`, error)
-  }
-}
+//   try {
+//     const response = await axios(axiosConfig)
+//     console.log(`Successfully uploaded ${stigFile}`)
+//   } catch (error) {
+//     console.error(`Failed to upload ${stigFile}:`, error)
+//   }
+// }
 
 const deleteStigByRevision = async (benchmarkId, revisionStr) => {
   try {
@@ -565,9 +566,76 @@ const setDefaultRevision = async (collectionId, benchmarkId, revisionStr) => {
 
 }
 
+const resetTestAsset = async () => {
+  const res = await putAsset("42", {
+    name: "Collection_X_lvl1_asset-1",
+    collectionId: "21",
+    description: "",
+    fqdn: null,
+    ip: "",
+    noncomputing: true,
+    mac: null,
+    labelIds: [
+      "755b8a28-9a68-11ec-b1bc-0242ac110002",
+      "5130dc84-9a68-11ec-b1bc-0242ac110002",
+    ],
+    metadata: {
+      testkey: "testvalue",
+    },
+    stigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST"],
+  })
+  const res2 = await setRestrictedUsers("21", "86", [
+    {
+      assetId: "42",
+      benchmarkId: "Windows_10_STIG_TEST",
+    },
+  ])
+  const res3 = await setRestrictedUsers("21", "85", [
+    {
+      assetId: "42",
+      benchmarkId: "VPN_SRG_TEST",
+    },
+  ])
+}
+const resetScrapAsset = async () => {
+  const res = await putAsset("34", {
+    name: "test asset stigmanadmin",
+    collectionId: "1",
+    description: "test desc",
+    ip: "1.1.1.1",
+    fqdn: null,
+    noncomputing: true,
+    mac: null,
+    labelIds: [],
+    metadata: {},
+    stigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST","RHEL_7_STIG_TEST"],
+    })
+}
+
+const setRestrictedUsers = async (collectionId, userId, body) => {
+
+  try{
+    const res = await axios.put(
+      `${config.baseUrl}/collections/${collectionId}/grants/${userId}/access`,
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+    return res
+  }
+  catch (e) {
+    return e;
+  }
+}
+
+
 const putAsset = async (assetId, asset) => {
   try {
-    const res = await axios.put(
+    const res = await axios.patch(
       `${config.baseUrl}/assets/${assetId}`,
       asset,
       {
@@ -585,6 +653,9 @@ const putAsset = async (assetId, asset) => {
 }
 
 module.exports = {
+  resetTestAsset,
+  resetScrapAsset,
+  setRestrictedUsers,
   loadAppData,
   deleteCollection,
   uploadTestStigs,
