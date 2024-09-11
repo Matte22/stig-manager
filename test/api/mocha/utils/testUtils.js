@@ -672,7 +672,7 @@ module.exports = {
   getReviews,
   getCollectionMetricsDetails,
   getChecklist,
-  replaceStigRevision,
+  
   deleteStig,
   getStigByBenchmarkId,
   getCollection,
