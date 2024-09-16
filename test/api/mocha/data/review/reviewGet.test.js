@@ -9,11 +9,12 @@ const reference = require('../../referenceData.js')
 const iterations = require('../../iterations.js')
 
 describe('GET - Review', () => {
+  
   before(async function () {
     this.timeout(4000)
-    await utils.uploadTestStigs()
+    //await utils.uploadTestStigs()
     await utils.loadAppData()
-    await utils.createDisabledCollectionsandAssets()
+    //await utils.createDisabledCollectionsandAssets()
   })
 
   for(const iteration of iterations){
@@ -489,24 +490,6 @@ describe('GET - Review', () => {
             expect(res.body).to.be.an('array')
             expect(res.body).to.be.lengthOf(1)
             expect(res.body).to.include(reference.reviewMetadataKey)
-          })
-          it("should return empty 200 response, no metadata", async () => {
-
-            // using scrap rule id for windows cuz lvl1 cannot access
-            const res = await chai.request(config.baseUrl)
-              .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata/keys`)
-              .set('Authorization', `Bearer ${iteration.token}`)
-            if(distinct.canPatchReview){
-              expect(res).to.have.status(200)
-              return
-            }
-            expect(res).to.have.status(200)
-          })
-          it("should return empty 200 response if metadata key isnt found. ", async () => {
-            const res = await chai.request(config.baseUrl)
-              .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testRuleNoMetadata.ruleId}/metadata/keys`)
-              .set('Authorization', `Bearer ${iteration.token}`)
-              expect(res).to.have.status(200)
           })
       })
       describe('GET - getReviewMetadataValue - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {

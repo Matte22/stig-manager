@@ -580,6 +580,7 @@ describe('GET - Collection', function () {
             }
             expect(res).to.have.status(200)
             expect(res.body).to.be.an('array').of.length(0)
+            utils.deleteCollection(collectionNoMetadata.data.collectionId)
          })
       })
 

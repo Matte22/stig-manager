@@ -4,8 +4,10 @@ const deepEqualInAnyOrder = require('deep-equal-in-any-order')
 chai.use(chaiHttp)
 chai.use(deepEqualInAnyOrder)
 const expect = chai.expect
+const fs = require('fs')
+const path = require('path')
 const config = require('../../testConfig.json')
-const utils = require('../../utils/testUtils')
+const utils = require('../../utils/testUtils.js')
 const iterations = require("../../iterations.js")
 const reference = require('../../referenceData.js')
 const expectations = require('./expectations.js')
@@ -265,6 +267,212 @@ describe('GET - Stig', () => {
                     expect(res.body.ruleId, `expect ${reference.testRule.ruleId}`).to.be.equal(reference.testRule.ruleId)
                     expect(res.body.groupId, `expect group id to match test group id: ${reference.testRule.groupId}`).to.be.equal(reference.testRule.groupId)
                     expect(res.body.version, `expect rule version to be the test version: ${reference.testRule.version}`).to.be.equal(reference.testRule.version)
+                })
+            })
+        })
+    }
+})
+
+describe('DELETE - Stig', () => {
+
+    for(const iteration of iterations){
+        if (expectations[iteration.name] === undefined){
+            it(`No expectations for this iteration scenario: ${iteration.name}`, async () => {})
+            continue
+        }
+        describe(`iteration:${iteration.name}`, () => {
+            const distinct = expectations[iteration.name]
+            describe('DELETE - deleteStigById - /stigs/{benchmarkId}', () => {
+
+                before(async function () {
+                    // this is neeed because we will be deleting these stigs on each iteration and we need theem to be assigned to an asset 
+                  await utils.uploadTestStig('U_MS_Windows_10_STIG_V1R23_Manual-xccdf.xml')
+                  await utils.uploadTestStig('U_RHEL_7_STIG_V3R0-3_Manual-xccdf.xml')
+                  await utils.resetScrapAsset()
+                })
+
+                it('attempts to delete stig and all revisions, fails because no force.', async () => {
+                    const res = await chai.request(config.baseUrl)
+                    .delete(`/stigs/${reference.windowsBenchmark}?elevate=true`)
+                    .set('Authorization', `Bearer ${iteration.token}`)
+                    if(iteration.name !== "stigmanadmin"){
+                        expect(res).to.have.status(403)
+                        return
+                    }
+                    expect(res).to.have.status(422)
+                })
+                it('Deletes a stig an all revisions', async () => {
+                    const res = await chai.request(config.baseUrl)
+                    .delete(`/stigs/${reference.scrapBenchmark}?elevate=true&force=true`)
+                    .set('Authorization', `Bearer ${iteration.token}`)
+                    if(iteration.name !== "stigmanadmin"){
+                        expect(res).to.have.status(403)
+                        return
+                    }
+                    expect(res).to.have.status(200)
+
+                    const response = await utils.getStigByBenchmarkId(reference.scrapBenchmark)
+                    expect(response.response.status).to.equal(404)
+
+                })
+                it('should throw SmError.NotFoundError No matching benchmarkId found.', async () => {
+                    const res = await chai.request(config.baseUrl)
+                    .delete(`/stigs/${'trashdata'}?elevate=true&force=true`)
+                    .set('Authorization', `Bearer ${iteration.token}`)
+                    if(iteration.name !== "stigmanadmin"){
+                        expect(res).to.have.status(403)
+                        return
+                    }
+                    expect(res).to.have.status(404)
+                })
+            })
+            describe('DELETE - deleteRevisionByString - /stigs/{benchmarkId}/revisions/{revisionStr}', () => {
+
+                before(async function () {
+                    // this is neeed because we will be deleting these stigs on each iteration and we need theem to be assigned to an asset 
+                  await utils.uploadTestStig('U_VPN_SRG_V1R1_Manual-xccdf.xml')
+                  await utils.resetScrapAsset()
+                })
+
+                it('attempts to delete latest of test benchmark, fails because latest is not a permitted revision for this endpoint!', async () => {
+                    const res = await chai.request(config.baseUrl)
+                    .delete(`/stigs/${reference.benchmark}/revisions/latest?elevate=true&force=true`)
+                    .set('Authorization', `Bearer ${iteration.token}`)
+                    if(iteration.name !== "stigmanadmin"){
+                        expect(res).to.have.status(403)
+                        return
+                    }
+                    expect(res, "fails because latest cannot work in this endpoint").to.have.status(400)
+                })
+                it('Deletes the specified revision of a STIG (v1r1 of test benchmark)', async () => {
+                
+                    const res = await chai.request(config.baseUrl)
+                    .delete(`/stigs/${reference.benchmark}/revisions/${reference.revisionStr}?elevate=true&force=true`)
+                    .set('Authorization', `Bearer ${iteration.token}`)
+                    if(iteration.name !== "stigmanadmin"){
+                        expect(res).to.have.status(403)
+                        return
+                    }
+                    expect(res).to.have.status(200)
+                })
+            })
+        })
+    }
+})
+
+describe('POST - Stig', () => {
+    before(async function () {
+       await utils.deleteStig(reference.benchmark)
+    })
+
+    for(const iteration of iterations){
+        if (expectations[iteration.name] === undefined){
+            it(`No expectations for this iteration scenario: ${iteration.name}`, async () => {})
+            continue
+        }
+        describe(`iteration:${iteration.name}`, () => {
+            describe('POST - importBenchmark - /stigs', () => {
+
+                it('Import a new STIG - new', async () => {
+                
+                    const directoryPath = path.join(__dirname, '../../../form-data-files/')
+                    const testStigfile = reference.testStigfile
+                    const filePath = path.join(directoryPath, testStigfile)
+            
+                    const res = await chai.request(config.baseUrl)
+                    .post('/stigs?elevate=true&clobber=false')
+                    .set('Authorization', `Bearer ${iteration.token}`)
+                    .set('Content-Type', `multipart/form-data`)
+                    .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
+                    let expectedRevData = {
+                        benchmarkId: "VPN_SRG_TEST",
+                        revisionStr: "V1R1",
+                        action: "inserted",
+                    }
+                    if(iteration.name !== "stigmanadmin"){
+                        expect(res).to.have.status(403)
+                        return
+                    }
+                    expect(res).to.have.status(200)
+                    expect(res.body).to.deep.eql(expectedRevData)
+                })
+                it('should throw SmError.PrivilegeError() no elevate', async () => {
+                
+                    const directoryPath = path.join(__dirname, '../../../form-data-files/')
+                    const testStigfile = reference.testStigfile
+                    const filePath = path.join(directoryPath, testStigfile)
+            
+                    const res = await chai.request(config.baseUrl)
+                    .post('/stigs?clobber=false')
+                    .set('Authorization', `Bearer ${iteration.token}`)
+                    .set('Content-Type', `multipart/form-data`)
+                    .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
+                    expect(res).to.have.status(403)
+                })
+                it('should throw SmError.ClientError not xml file', async () => {
+                
+                    const directoryPath = path.join(__dirname, '../../../form-data-files/')
+                    const testStigfile = 'appdata.json'
+                    const filePath = path.join(directoryPath, testStigfile)
+            
+                    const res = await chai.request(config.baseUrl)
+                    .post('/stigs?elevate=true&clobber=false')
+                    .set('Authorization', `Bearer ${iteration.token}`)
+                    .set('Content-Type', `multipart/form-data`)
+                    .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
+                    if(iteration.name !== "stigmanadmin"){
+                        expect(res).to.have.status(403)
+                        return
+                    }
+                    expect(res).to.have.status(400)
+                })
+                it('Import a new STIG - preserve', async () => {
+                
+                    const directoryPath = path.join(__dirname, '../../../form-data-files/')
+                    const testStigfile = reference.testStigfile
+                    const filePath = path.join(directoryPath, testStigfile)
+            
+                    const res = await chai.request(config.baseUrl)
+                    .post('/stigs?elevate=true&clobber=false')
+                    .set('Authorization', `Bearer ${iteration.token}`)
+                    .set('Content-Type', `multipart/form-data`)
+                    .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
+                    let expectedRevData = 
+                    {
+                        "benchmarkId": "VPN_SRG_TEST",
+                        "revisionStr": "V1R1",
+                        "action": "preserved"
+                    }
+                    if(iteration.name !== "stigmanadmin"){
+                        expect(res).to.have.status(403)
+                        return
+                    }
+                    expect(res).to.have.status(200)
+                    expect(res.body).to.deep.eql(expectedRevData)
+                })
+                it('Import a new STIG - clobber', async () => {
+                
+                    const directoryPath = path.join(__dirname, '../../../form-data-files/')
+                    const testStigfile = reference.testStigfile
+                    const filePath = path.join(directoryPath, testStigfile)
+            
+                    const res = await chai.request(config.baseUrl)
+                    .post('/stigs?elevate=true&clobber=true')
+                    .set('Authorization', `Bearer ${iteration.token}`)
+                    .set('Content-Type', `multipart/form-data`)
+                    .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
+                    let expectedRevData = 
+                    {
+                        "benchmarkId": "VPN_SRG_TEST",
+                        "revisionStr": "V1R1",
+                        "action": "replaced"
+                    }
+                    if(iteration.name !== "stigmanadmin"){
+                        expect(res).to.have.status(403)
+                        return
+                    }
+                    expect(res).to.have.status(200)
+                    expect(res.body).to.deep.eql(expectedRevData)
                 })
             })
         })

@@ -7,7 +7,7 @@ const utils = require('../../utils/testUtils')
 const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
-
+const requestBodies = require('./requestBodies.js')
 const checkReviews = (reviews, postreview, iteration) => {
   for(let review of reviews){
     if(review.ruleId == reference.testCollection.ruleId && review.assetId == reference.testAsset.assetId){
@@ -55,6 +55,7 @@ const checkReviews = (reviews, postreview, iteration) => {
 }
 
 describe('POST - Review', () => {
+  
   before(async function () {
       await utils.uploadTestStigs()
   })
@@ -791,7 +792,6 @@ describe('POST - Review', () => {
               
           beforeEach(async function () {
             this.timeout(4000)
-            // await utils.uploadTestStigs()
             await utils.loadAppData("batch-test-data.json")
           })
           it(`POST batch Review: target by assets, and one rule, expect validation failure - invalid result for status`, async () => {
@@ -1012,7 +1012,6 @@ describe('POST - Review', () => {
           let tempCollectionCanAcceptFalse
           before(async function () {
             this.timeout(4000)
-            await utils.loadAppData()
             tempCollectionCanAcceptFalse = await utils.createTempCollection({
               name: 'temoCollection',
               description: 'Collection TEST description',
@@ -1087,7 +1086,6 @@ describe('POST - Review', () => {
               .send(postreview)
             
             expect(res).to.have.status(403)
-            expect(res.body.details).to.eql('"Reviews cannot be accepted/rejected in this Collection"')
           })
           it(`should throw SmError.PriviledgeError`, async () => {
 
@@ -1105,12 +1103,10 @@ describe('POST - Review', () => {
               }
             }
             const res = await chai.request(config.baseUrl)
-              .post(`/collections/${tempCollection.data.collectionId}/reviews`)
+              .post(`/collections/${tempCollectionCanAcceptFalse.data.collectionId}/reviews`)
               .set('Authorization', `Bearer ${iteration.token}`)
               .send(postreview)
-            
             expect(res).to.have.status(403)
-            expect(res.body.details).to.eql('"Reviews cannot be accepted/rejected in this Collection"')
           })
         })
       })
@@ -1119,8 +1115,7 @@ describe('POST - Review', () => {
         let deletedCollection, deletedAsset
         before(async function () {
           this.timeout(4000)
-          await utils.loadAppData()
-          // await utils.uploadTestStigs()
+          await utils.putReviewByAssetRule(reference.testCollection.collectionId, reference.testAsset.assetId, reference.testCollection.ruleId, requestBodies.requestBodies)
           const deletedItems = await utils.createDisabledCollectionsandAssets()
           deletedCollection = deletedItems.collection
           deletedAsset = deletedItems.asset

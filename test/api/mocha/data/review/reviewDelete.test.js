@@ -9,9 +9,10 @@ const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
 
 describe('DELETE - Review', () => {
+
   before(async function () {
     // this.timeout(4000)
-    // await utils.loadAppData()
+    await utils.loadAppData()
     await utils.uploadTestStigs()
   })
     
@@ -22,12 +23,12 @@ describe('DELETE - Review', () => {
     }
     describe(`iteration:${iteration.name}`, () => {
       const distinct = expectations[iteration.name]
+      
       describe('DELETE - deleteReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId}', () => {
-
+        let review = null
         beforeEach(async function () {
           this.timeout(4000)
-          await utils.loadAppData()
-          // await utils.uploadTestStigs()
+          review = await utils.importReview(reference.testCollection.collectionId, reference.testAsset.assetId, reference.testAsset.testRuleId)
         })
         
         it('Delete a Review', async () => {
@@ -39,7 +40,6 @@ describe('DELETE - Review', () => {
 
           expect(res.body.assetId).to.equal(reference.testAsset.assetId)
           expect(res.body.rule.ruleId).to.equal(reference.testAsset.testRuleId)
-          expect(res.body.history).to.be.an('array').of.length(reference.testAsset.testRuleIdHistoryCount)
           expect(res.body.stigs).to.be.an('array').of.length(reference.testAsset.testRuleIdStigCount)
 
           for(const history of res.body.history) {
@@ -57,10 +57,18 @@ describe('DELETE - Review', () => {
 
         before(async function () {
           this.timeout(4000)
-          await utils.loadAppData()
-          // await utils.uploadTestStigs()
+          review = await utils.importReview(reference.testCollection.collectionId, reference.testAsset.assetId, reference.testAsset.testRuleId)
         })
 
+        it('should create metadata to be deleted', async () => {
+          const res = await chai.request(config.baseUrl)
+          .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata`)
+          .set('Authorization', `Bearer ${iteration.token}`)
+          .send({[reference.reviewMetadataKey]: reference.reviewMetadataValue})
+          expect(res).to.have.status(200)
+          expect(res.body).to.eql({[reference.reviewMetadataKey]: reference.reviewMetadataValue})
+
+        })
         it('Delete one metadata key/value of a Review', async () => {
           const res = await chai.request(config.baseUrl)
             .delete(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testAsset.testRuleId}/metadata/keys/${reference.reviewMetadataKey}`)

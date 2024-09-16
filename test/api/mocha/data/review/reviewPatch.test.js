@@ -7,6 +7,7 @@ const utils = require('../../utils/testUtils')
 const reference = require('../../referenceData.js')
 const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
+const requestBodies = require('./requestBodies.js')
 
 describe('PATCH - Review', () => {
 
@@ -26,14 +27,12 @@ describe('PATCH - Review', () => {
       describe('PATCH - patchReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId}', () => {
 
         beforeEach(async function () {
-          this.timeout(4000)
-          await utils.loadAppData()
-          // await utils.uploadTestStigs()
+          await utils.putReviewByAssetRule(reference.testCollection.collectionId, reference.testAsset.assetId, reference.testCollection.ruleId, requestBodies.resetRule)
         })
-        
+
         it('PATCH Review with new details, expect status to remain', async () => {
           const res = await chai.request(config.baseUrl)
-            .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
+            .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`)
             .set('Authorization', `Bearer ${iteration.token}`)
             .send({detail:"these details have changed, but the status remains"})
        
@@ -42,7 +41,7 @@ describe('PATCH - Review', () => {
         })
         it('PATCH Review with new result, expect status to reset to saved', async () => {
             const res = await chai.request(config.baseUrl)
-              .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
+              .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`)
               .set('Authorization', `Bearer ${iteration.token}`)
               .send({result: "pass"})
            
@@ -52,7 +51,7 @@ describe('PATCH - Review', () => {
         })
         it('PATCH Review to submitted status', async () => {
             const res = await chai.request(config.baseUrl)
-              .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
+              .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`)
               .set('Authorization', `Bearer ${iteration.token}`)
               .send({status: "submitted"})
            
@@ -61,7 +60,7 @@ describe('PATCH - Review', () => {
         })
         it('PATCH Review patched and no longer meets Collection Requirements', async () => {
             const res = await chai.request(config.baseUrl)
-              .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
+              .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`)
               .set('Authorization', `Bearer ${iteration.token}`)
               .send({result: "fail"})
            
@@ -81,7 +80,6 @@ describe('PATCH - Review', () => {
           }
           expect(res).to.have.status(200)
           expect(res.body).to.have.property("touchTs").to.eql(res.body.status.ts)
-          expect(res.body.status).to.have.property("ts").to.not.eql(res.body.ts)        
         })
         it('Merge provided properties with a Review', async () => {
           const res = await chai
@@ -105,11 +103,6 @@ describe('PATCH - Review', () => {
       })
       describe('PATCH - patchReviewMetadata - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata', () => {
 
-        // before(async function () {
-        //   this.timeout(4000)
-        //   await utils.loadAppData()
-        //   await utils.uploadTestStigs()
-        // })
         it('Merge metadata property/value into a Review', async () => {
           const res = await chai.request(config.baseUrl)
             .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata`)

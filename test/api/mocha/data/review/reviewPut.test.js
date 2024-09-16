@@ -8,6 +8,7 @@ const xml2js = require('xml2js');
 const iterations = require('../../iterations.js')
 const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
+const requestBodies = require('./requestBodies.js')
 
 describe('PUT - Review', () => {
 
@@ -243,7 +244,7 @@ describe('PUT - Review', () => {
 
                     expect(res).to.have.status(403)
                 })
-                it('Test all projections are returned and contain accurate data. ', async () => {
+                it('Test all projections are returned and contain accurate data. (besides history that is tested better elsewhere)', async () => {
 
                     const putBody = {
                         result: 'pass',
@@ -254,7 +255,7 @@ describe('PUT - Review', () => {
                     }
 
                     const res = await chai.request(config.baseUrl)
-                        .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}?projection=rule&projection=history&projection=stigs&projection=metadata`)
+                        .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}?projection=rule&projection=stigs&projection=metadata`)
                         .set('Authorization', `Bearer ${iteration.token}`)
                         .send(putBody)
                    
@@ -269,14 +270,11 @@ describe('PUT - Review', () => {
                     expect(res.body.metadata[reference.reviewMetadataKey]).to.be.equal(reference.reviewMetadataValue)
 
                     //projections
-
                     expect(res.body).to.have.property("rule")
-                    expect(res.body).to.have.property("history")
                     expect(res.body).to.have.property("stigs")
                     expect(res.body).to.have.property("metadata")
 
                     expect(res.body.rule.ruleId).to.be.eql(reference.testCollection.ruleId)
-                    expect(res.body.history).to.have.lengthOf(6)
                     expect(res.body.stigs).to.have.lengthOf(1)
                     expect(res.body.metadata).to.have.property(reference.reviewMetadataKey)
                     expect(res.body.metadata[reference.reviewMetadataKey]).to.be.equal(reference.reviewMetadataValue)
@@ -338,38 +336,37 @@ describe('PUT - Review', () => {
 
                 before(async function () {
                     this.timeout(4000)
-                    // await utils.uploadTestStigs()
-                    await utils.loadAppData()
+                    await utils.putReviewByAssetRule(reference.testCollection.collectionId, reference.testAsset.assetId, reference.testCollection.ruleId, requestBodies.resetRule)
                 })
-                    it('Set all metadata of a Review', async () => {
-                        const res = await chai.request(config.baseUrl)
-                        .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata`)
-                        .set('Authorization', `Bearer ${iteration.token}`)
-                        .send({[reference.reviewMetadataKey]: reference.reviewMetadataValue})
-                      
-                        expect(res).to.have.status(200)
-                        expect(res.body).to.eql({[reference.reviewMetadataKey]: reference.reviewMetadataValue})
+                
+                it('Set all metadata of a Review', async () => {
+                    const res = await chai.request(config.baseUrl)
+                    .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata`)
+                    .set('Authorization', `Bearer ${iteration.token}`)
+                    .send({[reference.reviewMetadataKey]: reference.reviewMetadataValue})
+                    
+                    expect(res).to.have.status(200)
+                    expect(res.body).to.eql({[reference.reviewMetadataKey]: reference.reviewMetadataValue})
 
-                    })
-                    it("should return SmError.PrivilegeError if user cannot put review", async () => {
-                        const res = await chai.request(config.baseUrl)
-                          .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata`)
-                          .set('Authorization', `Bearer ${iteration.token}`)
-                        if(distinct.canPatchReview){
-                          expect(res).to.have.status(200)
-                          return
-                        }
-                        expect(res).to.have.status(403)
-                        expect(res.body.error).to.be.equal("User has insufficient privilege to complete this request.")
-                    })
+                })
+                it("should return SmError.PrivilegeError if user cannot put review", async () => {
+                    const res = await chai.request(config.baseUrl)
+                        .get(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata`)
+                        .set('Authorization', `Bearer ${iteration.token}`)
+                    if(distinct.canPatchReview){
+                        expect(res).to.have.status(200)
+                        return
+                    }
+                    expect(res).to.have.status(403)
+                    expect(res.body.error).to.be.equal("User has insufficient privilege to complete this request.")
+                })
             })
 
             describe('PUT - putReviewMetadataValue - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {
 
                 before(async function () {
                     this.timeout(4000)
-                    // await utils.uploadTestStigs()
-                    await utils.loadAppData()
+                    await utils.putReviewByAssetRule(reference.testCollection.collectionId, reference.testAsset.assetId, reference.testCollection.ruleId, requestBodies.resetRule)
                 })
                 it('Set one metadata key/value of a Review', async () => {
                     const res = await chai.request(config.baseUrl)

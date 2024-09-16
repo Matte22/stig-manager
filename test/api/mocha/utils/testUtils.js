@@ -195,13 +195,13 @@ const createDisabledCollectionsandAssets = async () => {
   return {collection: collection.data , asset: asset.data}
 }
 
-const importReview = async (collectionId, assetId) => {
+const importReview = async (collectionId, assetId, ruleId = "SV-106179r1_rule") => {
   try {
     const res = await axios.post(
       `${config.baseUrl}/collections/${collectionId}/reviews/${assetId}`,
       [
         {
-        "ruleId": "SV-106179r1_rule",
+        "ruleId": ruleId,
         "result": "pass",
         "detail": "test\nvisible to lvl1",
         "comment": "sure",
@@ -565,6 +565,25 @@ const setDefaultRevision = async (collectionId, benchmarkId, revisionStr) => {
   }
 
 }
+const putReviewByAssetRule = async (collectionId, assetId, ruleId, body) => {
+
+  try {
+    const res = await axios.put(
+      `${config.baseUrl}/collections/${collectionId}/reviews/${assetId}/${ruleId}`,
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+    return res
+  }
+  catch (e) {
+    return e;
+  }
+}
 
 const resetTestAsset = async () => {
   const res = await putAsset("42", {
@@ -611,7 +630,6 @@ const resetScrapAsset = async () => {
     stigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST","RHEL_7_STIG_TEST"],
     })
 }
-
 const setRestrictedUsers = async (collectionId, userId, body) => {
 
   try{
@@ -631,8 +649,24 @@ const setRestrictedUsers = async (collectionId, userId, body) => {
     return e;
   }
 }
-
-
+const createUser = async (user) => {
+  try {
+    const res = await axios.post(
+      `${config.baseUrl}/users?elevate=true`,
+      user,
+      {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+    return res.data
+  }
+  catch (e) {
+    return e;
+  }
+}
 const putAsset = async (assetId, asset) => {
   try {
     const res = await axios.patch(
@@ -653,6 +687,8 @@ const putAsset = async (assetId, asset) => {
 }
 
 module.exports = {
+  putReviewByAssetRule,
+  createUser,
   resetTestAsset,
   resetScrapAsset,
   setRestrictedUsers,
@@ -672,7 +708,7 @@ module.exports = {
   getReviews,
   getCollectionMetricsDetails,
   getChecklist,
-  
+  importReview,
   deleteStig,
   getStigByBenchmarkId,
   getCollection,

@@ -270,6 +270,7 @@ const reference = {
     metadataValue: "testvalue",
     ruleCount: 612,
     validStigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST", "RHEL_7_STIG_TEST"],
+    name: "test asset stigmanadmin"
 
   },
   testAssetNoStigs: {
@@ -337,6 +338,7 @@ const reference = {
   lvl1ValidStigs: ["VPN_SRG_TEST"],
   scrapBenchmark: "RHEL_7_STIG_TEST",
   testStigfile: "U_VPN_SRG_V1R1_Manual-xccdf.xml",
+  windowsBenchmark: "Windows_10_STIG_TEST",
   testStigfileNonLatest: "U_VPN_SRG_V1R0_Manual-xccdf.xml",
   rulesMatchingFingerprints:
     "U_VPN_SRG-OTHER_V1R1_twoRules-matchingFingerprints.xml",
