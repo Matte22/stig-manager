@@ -1115,7 +1115,8 @@ describe('POST - Review', () => {
         let deletedCollection, deletedAsset
         before(async function () {
           this.timeout(4000)
-          await utils.putReviewByAssetRule(reference.testCollection.collectionId, reference.testAsset.assetId, reference.testCollection.ruleId, requestBodies.requestBodies)
+          //await utils.putReviewByAssetRule(reference.testCollection.collectionId, reference.testAsset.assetId, reference.testCollection.ruleId, requestBodies.requestBodies)
+          await utils.deleteReviewsByAssetRule(reference.testCollection.collectionId, reference.testAsset.assetId, reference.testCollection.ruleId)
           const deletedItems = await utils.createDisabledCollectionsandAssets()
           deletedCollection = deletedItems.collection
           deletedAsset = deletedItems.asset
@@ -1127,7 +1128,7 @@ describe('POST - Review', () => {
             .set('Authorization', `Bearer ${iteration.token}`)
             .send([
               {
-              "ruleId": `SV-106191r1_rule`,
+              "ruleId": reference.testCollection.ruleId,
               "result": "pass",
               "detail": "test\nvisible to lvl1",
               "comment": "sure",

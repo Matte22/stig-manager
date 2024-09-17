@@ -2,7 +2,7 @@
 const reference = require('../../referenceData.js')
 const requestBodies = {
   scrapUser: {
-      "username": "TEST_USER",
+      "username": "additionalTemp",
       "collectionGrants": [
           {
               "collectionId": reference.scrapCollection.collectionId,

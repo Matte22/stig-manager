@@ -15,7 +15,6 @@ describe('PATCH - Collection', function () {
     before(async function () {
         this.timeout(4000)
         await utils.uploadTestStigs()
-        await utils.loadAppData()
     })
 
     for(const iteration of iterations) {
@@ -27,12 +26,17 @@ describe('PATCH - Collection', function () {
 
       describe(`iteration:${iteration.name}`, function () {
 
+        beforeEach(async function () {
+          await utils.putCollection(reference.testCollection, requestBodies.resetTestCollection)
+        })
+          
         describe('updateCollection - /collections/{collectionId}', function () {
-          it('Patch scrap collection, send 5 new grants and metadata.',async function () {
+
+          it('Patch test collection, send 5 new grants and metadata.',async function () {
 
             const patchRequest = requestBodies.updateCollection            
             const res = await chai.request(config.baseUrl)
-                  .patch(`/collections/${reference.scrapCollection.collectionId}?&projection=grants&projection=stigs`)
+                  .patch(`/collections/${reference.testCollection.collectionId}?&projection=grants&projection=stigs`)
                   .set('Authorization', `Bearer ${iteration.token}`)
                   .send(patchRequest)
             
@@ -49,7 +53,7 @@ describe('PATCH - Collection', function () {
 
             expect(res.body.grants).to.have.lengthOf(patchRequest.grants.length)
             for(let stig of res.body.stigs) {
-                expect(stig.benchmarkId).to.be.oneOf(reference.scrapCollection.validStigs)
+                expect(stig.benchmarkId).to.be.oneOf(reference.testCollection.validStigs)
                 if(stig.benchmarkId === reference.benchmark){
                     expect(stig.ruleCount).to.equal(reference.checklistLength)
                 }
@@ -72,14 +76,12 @@ describe('PATCH - Collection', function () {
               expect(res.body.error).to.equal("Unprocessable Entity.")
               expect(res.body.detail).to.equal("Duplicate user in grant array")
           })
-          
         })
-
         describe('patchCollectionLabelById - /collections/{collectionId}/labels/{labelId}', function () {
-          it('Patch scrap collection label, change color, description and name ',async function () {
+          it('Patch test collection label, change color, description and name ',async function () {
             const body = requestBodies.patchCollectionLabelById
             const res = await chai.request(config.baseUrl)
-                .patch(`/collections/${reference.scrapCollection.collectionId}/labels/${reference.scrapCollection.scrapLabel}`)
+                .patch(`/collections/${reference.testCollection.collectionId}/labels/${reference.testCollection.fullLabel}`)
                 .set('Authorization', `Bearer ${iteration.token}`)
                 .send(body)
                 
@@ -89,7 +91,7 @@ describe('PATCH - Collection', function () {
               }
               expect(res).to.have.status(200)
   
-              expect(res.body.labelId).to.equal(reference.scrapCollection.scrapLabel)
+              expect(res.body.labelId).to.equal(reference.testCollection.fullLabel)
               expect(res.body.description).to.equal(body.description)
               expect(res.body.color).to.equal(body.color)
               expect(res.body.name).to.equal(body.name)
@@ -98,7 +100,7 @@ describe('PATCH - Collection', function () {
 
             const body = requestBodies.patchCollectionLabelById
             const res = await chai.request(config.baseUrl)
-                .patch(`/collections/${reference.scrapCollection.collectionId}/labels/${uuidv4()}`)
+                .patch(`/collections/${reference.testCollection.collectionId}/labels/${uuidv4()}`)
                 .set('Authorization', `Bearer ${iteration.token}`)
                 .send(body)
               if(distinct.canModifyCollection === false){
@@ -109,15 +111,14 @@ describe('PATCH - Collection', function () {
               expect(res.body.error).to.equal("Resource not found.")
           })
         })
-
         describe('patchCollectionMetadata - /collections/{collectionId}/metadata', function () {
 
-          it('Patch scrap collection metadata',async function () {
+          it('Patch test collection metadata',async function () {
               
               const res = await chai.request(config.baseUrl)
-                  .patch(`/collections/${reference.scrapCollection.collectionId}/metadata`)
+                  .patch(`/collections/${reference.testCollection.collectionId}/metadata`)
                   .set('Authorization', `Bearer ${iteration.token}`)
-                  .send({[reference.scrapCollection.collectionMetadataKey]: reference.scrapCollection.collectionMetadataValue})
+                  .send({[reference.testCollection.collectionMetadataKey]: reference.testCollection.collectionMetadataValue})
 
                 if(distinct.canModifyCollection === false){
                   expect(res).to.have.status(403)
@@ -125,7 +126,7 @@ describe('PATCH - Collection', function () {
                 }
 
                 expect(res).to.have.status(200)
-                expect(res.body).to.contain({[reference.scrapCollection.collectionMetadataKey]: reference.scrapCollection.collectionMetadataValue})
+                expect(res.body).to.contain({[reference.testCollection.collectionMetadataKey]: reference.testCollection.collectionMetadataValue})
           })
         })
       })

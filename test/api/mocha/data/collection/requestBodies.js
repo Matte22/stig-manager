@@ -138,6 +138,83 @@ const requestBodies = {
   writeStigPropsByCollectionStig: {
     defaultRevisionStr: 'V1R1',
     assetIds: ['62', '42', '154']
-  }
+  },
+  resetTestCollection:{
+    name: 'Collection X',
+    description: null,
+    settings: {
+      fields: {
+        detail: {
+          enabled: 'always',
+          required: 'always'
+        },
+        comment: {
+          enabled: 'always',
+          required: 'findings'
+        }
+      },
+      status: {
+        canAccept: true,
+        minAcceptGrant: 3,
+        resetCriteria: 'result'
+      },
+      history: {
+        maxReviews: 5
+      }
+    },
+    metadata: {
+      pocName: 'true',
+      pocEmail: 'pocEmailPut@email.com',
+      pocPhone: '12342',
+      reqRar: 'true'
+    },
+    grants: [
+      {
+        userId: '1',
+        accessLevel: 4
+      },
+      {
+        userId: '45',
+        accessLevel: 4
+      },
+      {
+        userId: '87',
+        accessLevel: 4
+      },
+      {
+        userId: '44',
+        accessLevel: 3
+      },
+      {
+        userId: "21",
+        accessLevel: 2
+      },
+      {
+        userId: "85",
+        accessLevel: 1
+      },
+      {
+        userId: "86",
+        accessLevel: 1
+      }
+    ],
+    labels: [
+      {
+        name: 'test-label-full',
+        description: '',
+        color: 'FF99CC'
+      },
+      {
+        name: 'test-label-lvl1',
+        description: '',
+        color: '99CCFF'
+      }
+    ]
+  },
+  recreateCollectionLabel:{
+    name: 'testLabel',
+    description: 'test label',
+    color: 'FF99CC'
+  },
 }
 module.exports = requestBodies

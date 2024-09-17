@@ -56,7 +56,7 @@ const createTempCollection = async (collectionPost) => {
     if (!collectionPost) {
       collectionPost = 
         {
-          name: 'temoCollection',
+          name: 'temoCollection' + Math.floor(Math.random() * 1000) + Date.now(),
           description: 'Collection TEST description',
           settings: {
             fields: {
@@ -585,6 +585,24 @@ const putReviewByAssetRule = async (collectionId, assetId, ruleId, body) => {
   }
 }
 
+const deleteReviewsByAssetRule = async (collectionId, assetId, ruleId) => {
+
+  try{
+    const res = await axios.delete(
+      `${config.baseUrl}/collections/${collectionId}/reviews/${assetId}/${ruleId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+  }
+  catch (e) {
+    return e;
+  }
+}
+
 const resetTestAsset = async () => {
   const res = await putAsset("42", {
     name: "Collection_X_lvl1_asset-1",
@@ -669,7 +687,7 @@ const createUser = async (user) => {
 }
 const putAsset = async (assetId, asset) => {
   try {
-    const res = await axios.patch(
+    const res = await axios.put(
       `${config.baseUrl}/assets/${assetId}`,
       asset,
       {
@@ -686,9 +704,50 @@ const putAsset = async (assetId, asset) => {
   }
 }
 
+const putCollection = async (collectionId, collection) => {
+  try {
+    const res = await axios.put(
+      `${config.baseUrl}/collections/${collectionId}`,
+      collection,
+      {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+    return res.data
+  }
+  catch (e) {
+    return e;
+  }
+}
+
+const createCollectionLabel = async (collectionId, label) => {
+  try {
+    const res = await axios.post(
+      `${config.baseUrl}/collections/${collectionId}/labels`,
+      label,
+      {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+    return res.data
+  }
+  catch (e) {
+    return e;
+  }
+}
+
 module.exports = {
+  createCollectionLabel,
+  putCollection,
   putReviewByAssetRule,
   createUser,
+  deleteReviewsByAssetRule,
   resetTestAsset,
   resetScrapAsset,
   setRestrictedUsers,

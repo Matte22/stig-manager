@@ -12,19 +12,27 @@ let testUser = null
 const randomValue = Math.floor(Math.random() * 10000)
 
 describe('user', () => {
-  
+
+  before(async function () {
+    await utils.loadAppData()
+  })
+
   for(const iteration of iterations) {
 
     describe(`iteration:${iteration.name}`, () => {
 
+      before(async function () {
+        await utils.loadAppData()
+          // this is here because after we do the gets we need to create a temp user to do all posts, patches, and puts etc on. 
+      // as a result we will have an extra user in the gets to consider
+        const create =  JSON.parse(JSON.stringify(requestBodies.scrapUser))
+        create.username = create.username + Math.floor(Math.random() * 1000) + Date.now()
+        testUser = await utils.createUser(create)
+      })
+
       describe('GET - user', () => {
 
-        before(async function () {
-          this.timeout(4000)
-          await utils.loadAppData()
-        })
-
-        describe(`GET - getUserObject - /user`, () => {
+        describe(`getUserObject - /user`, () => {
 
           it('Return the requesters user information - check user', async () => {
             const res = await chai
@@ -41,7 +49,7 @@ describe('user', () => {
           })
         })
         
-        describe(`GET - getUsers - /user`, () => {
+        describe(`getUsers - /user`, () => {
 
           it('Return a list of users accessible to the requester USERNAME', async () => {
 
@@ -159,13 +167,15 @@ describe('user', () => {
             }
             expect(res).to.have.status(200)
             expect(res.body).to.be.an('array')
-            expect(res.body, "expect to get back all usersIds with elevate").to.be.an('array').of.length(reference.allUserIds.length)
+            // plus one for test user created in before
+            expect(res.body, "expect to get back all usersIds with elevate").to.be.an('array').of.length(reference.allUserIds.length + 1)
             for(let user of res.body) {
               expect(user).to.have.property('collectionGrants')
               expect(user).to.have.property('statistics')
               expect(user).to.have.property('username')
               expect(user).to.have.property('userId')
-              expect(user.userId, "expect userId to be one of the users the system").to.be.oneOf(reference.allUserIds)
+              const newIds = reference.allUserIds.concat(testUser.userId)
+              expect(user.userId, "expect userId to be one of the users the system").to.be.oneOf(newIds)
             }
           })
           it('Return a list of users accessible to the requester no projections for lvl1 success. ', async () => {
@@ -176,9 +186,12 @@ describe('user', () => {
                 .set('Authorization', 'Bearer ' + iteration.token)
       
             expect(res).to.have.status(200)
-            expect(res.body).to.be.an('array').of.length(reference.allUserIds.length)
+            // plus one for test user created in before
+            expect(res.body).to.be.an('array').of.length(reference.allUserIds.length + 1)
             for(let user of res.body) {
-              expect(user.userId, "expect userId to be one of the users the system").to.be.oneOf(reference.allUserIds)
+              // plus one for test user created in before
+              const newIds = reference.allUserIds.concat(testUser.userId)
+              expect(user.userId, "expect userId to be one of the users the system").to.be.oneOf(newIds)
             }
           })
           it("should throw SmError.PrivilegeError no elevate with projections.", async () => {
@@ -191,7 +204,7 @@ describe('user', () => {
           })
         })
 
-        describe(`GET - getUserByUserId - /users{userId}`, async () => {
+        describe(`getUserByUserId - /users{userId}`, async () => {
 
           it('Return a user', async () => {
             const res = await chai
@@ -215,14 +228,14 @@ describe('user', () => {
       describe('POST - user', () => {
         describe(`POST - createUser - /users`, () => {
           
-        //  let newUser = null
+          let tempUser = null
           it('Create a user', async () => {
             const res = await chai
                 .request(config.baseUrl)
                 .post(`/users?elevate=true&projection=collectionGrants&projection=statistics`)
                 .set('Authorization', 'Bearer ' + iteration.token)
                 .send({
-                  "username": "TEST_USER" +  randomValue,
+                  "username": "TEMP_USER" +  randomValue,
                   "collectionGrants": [
                       {
                           "collectionId": `${reference.scrapCollection.collectionId}`,
@@ -234,7 +247,7 @@ describe('user', () => {
                 expect(res).to.have.status(403)
                 return
               }
-              testUser = res.body
+              tempUser = res.body
               expect(res).to.have.status(201)
               expect(res.body).to.be.an('object')
               for(let grant of res.body.collectionGrants) {
@@ -277,7 +290,7 @@ describe('user', () => {
                   .post(`/users?elevate=true`)
                   .set('Authorization', 'Bearer ' + iteration.token)
                   .send({
-                    "username": `${testUser.username}`,
+                    "username": `${tempUser.username}`,
                     "collectionGrants": [
                         {
                             "collectionId": `${reference.scrapCollection.collectionId}`,
@@ -292,19 +305,19 @@ describe('user', () => {
                 expect(res).to.have.status(422)
             })
           }
-          // if(iteration.name == "stigmanadmin"){
-          //   it('cleanup - delete test user', async () => {
-          //     const res = await chai
-          //         .request(config.baseUrl)
-          //         .delete(`/users/${newUser.userId}?elevate=true`)
-          //         .set('Authorization', 'Bearer ' + iteration.token)
-          //     if(iteration.name != "stigmanadmin"){
-          //       expect(res).to.have.status(403)
-          //       return
-          //     }
-          //     expect(res).to.have.status(200)
-          //   })
-          // }
+          if(iteration.name == "stigmanadmin"){
+            it('cleanup - delete temp user', async () => {
+              const res = await chai
+                  .request(config.baseUrl)
+                  .delete(`/users/${tempUser.userId}?elevate=true`)
+                  .set('Authorization', 'Bearer ' + iteration.token)
+              if(iteration.name != "stigmanadmin"){
+                expect(res).to.have.status(403)
+                return
+              }
+              expect(res).to.have.status(200)
+            })
+          }
         
         })
       })
@@ -428,7 +441,6 @@ describe('user', () => {
                 expect(res).to.have.status(422)
           })
         })
-    
       })
 
       describe('DELETE - user', () => {

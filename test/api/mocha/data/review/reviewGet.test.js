@@ -249,6 +249,7 @@ describe('GET - Review', () => {
             expect(review.assetId).to.be.oneOf(reference.testCollection.assetIds)
           }
         })
+        // this test has some odd behavior . 
         it('Return a list of reviews accessible to the requester, rules=not-default', async () => {
           const res = await chai.request(config.baseUrl)
             .get(`/collections/${reference.testCollection.collectionId}/reviews?rules=not-default`)

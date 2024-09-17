@@ -9,6 +9,10 @@ const expectations = require('./expectations.js')
 const reference = require('../../referenceData.js')
 
 describe('PATCH - Asset', function () {
+
+  before(async () => {
+    await utils.loadAppData()
+  })
   
   after(async () => {
     await utils.resetTestAsset()
@@ -23,11 +27,13 @@ describe('PATCH - Asset', function () {
 
     describe(`iteration:${iteration.name}`, function () {
       const distinct = expectations[iteration.name]
-
+      let testAsset = null
+      let scrapAsset = null
       beforeEach(async function () {
+
         this.timeout(4000)
-        await utils.resetTestAsset()
-        await utils.resetScrapAsset()
+        testAsset = await utils.resetTestAsset()
+        scrapAsset = await utils.resetScrapAsset()
       })
 
       describe(`updateAsset - /assets/{assetId}`, function () {
