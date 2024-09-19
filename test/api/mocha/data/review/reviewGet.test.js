@@ -12,7 +12,7 @@ describe('GET - Review', () => {
   
   before(async function () {
     this.timeout(4000)
-    //await utils.uploadTestStigs()
+    await utils.uploadTestStigs()
     await utils.loadAppData()
     //await utils.createDisabledCollectionsandAssets()
   })
@@ -25,6 +25,8 @@ describe('GET - Review', () => {
     describe(`iteration:${iteration.name}`, () => {
       const distinct = expectations[iteration.name]
       describe('GET - getReviewsByCollection - /collections/{collectionId}/reviews', () => {
+
+        
         it('Return a list of reviews accessible to the requester', async () => {
           const res = await chai.request(config.baseUrl)
             .get(`/collections/${reference.testCollection.collectionId}/reviews?projection=rule&projection=stigs&projection=metadata`)
@@ -249,7 +251,7 @@ describe('GET - Review', () => {
             expect(review.assetId).to.be.oneOf(reference.testCollection.assetIds)
           }
         })
-        // this test has some odd behavior . 
+        // this test has some odd behavior . will occational see 0 reviews returned sometimes 11. I think 0  is correct? 
         it('Return a list of reviews accessible to the requester, rules=not-default', async () => {
           const res = await chai.request(config.baseUrl)
             .get(`/collections/${reference.testCollection.collectionId}/reviews?rules=not-default`)
@@ -511,8 +513,6 @@ describe('GET - Review', () => {
           expect(res.body.error).to.be.equal("Resource not found.")
         })
       })
-      
     })
   }
 })
-

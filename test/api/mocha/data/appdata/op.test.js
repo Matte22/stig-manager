@@ -6,7 +6,7 @@ const config = require('../../testConfig.json')
 const utils = require('../../utils/testUtils.js')
 const iterations = require('../../iterations.js')
 
-describe('Op', () => {
+describe('GET - Op', () => {
   before(async function () {
     this.timeout(4000)
     await utils.uploadTestStigs()
@@ -16,7 +16,7 @@ describe('Op', () => {
 
   for(const iteration of iterations){
     describe(`iteration:${iteration.name}`, () => {
-      describe('GET - getAppData - /op/appdata', () => {
+      describe('getAppData - /op/appdata', () => {
         it('Export application data', async () => {
         const res = await chai.request(config.baseUrl)
             .get(`/op/appdata?elevate=true`)
@@ -28,7 +28,7 @@ describe('Op', () => {
         expect(res).to.have.status(200)
         })
       })
-      describe('GET - getConfiguration - /op/configuration', () => {
+      describe('getConfiguration - /op/configuration', () => {
         it('Return API version and configuration information', async () => {
         const res = await chai.request(config.baseUrl)
             .get(`/op/configuration`)
@@ -42,7 +42,7 @@ describe('Op', () => {
           expect(res).to.have.status(200)
           })
       })
-      describe('GET - getDetails - /op/details', () => {
+      describe('getDetails - /op/details', () => {
         it('Return API Deployment Details', async () => {
         const res = await chai.request(config.baseUrl)
             .get(`/op/details?elevate=true`)
@@ -59,7 +59,7 @@ describe('Op', () => {
 									
         })
       })
-      describe('GET - getDefinition - /op/definition', () => {
+      describe('getDefinition - /op/definition', () => {
         it('Return API Deployment Definition', async () => {
         const res = await chai.request(config.baseUrl)
             .get(`/op/definition`)

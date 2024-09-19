@@ -212,11 +212,7 @@ describe('GET - Collection', function () {
           expect(res.body.collectionId).to.equal(reference.testCollection.collectionId)
           const regex  = new RegExp(reference.testCollection.name)
           expect(res.body.name).to.match(regex)
-
-          // this is a bug
-        //  expect(res.body.grants).to.have.lengthOf(distinct.grantCnt)
-         // grants projection
-          // todo: lvl1 iteration seems to be getting all grants, but should only see owners and themselves (or grants projection is invalid for lvl1 iterations)
+      
           for(const grant of res.body.grants){
             const userIds = reference.testCollection.grantsProjected.map(grant => grant.user.userId)
             expect(userIds).to.include(grant.user.userId)

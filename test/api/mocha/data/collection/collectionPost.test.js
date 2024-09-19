@@ -57,68 +57,71 @@ describe('POST - Collection - not all tests run for all iterations', function ()
   
       describe("createCollection - /collections", function () {
 
+        const random = Math.floor(Math.random() * 100) + "-" + Math.floor(Math.random() * 100)
+
         it("Create a Collection and test projections",async function () {
-          const post = requestBodies.createCollection
-           const res = await chai
-            .request(config.baseUrl)
-            .post(
-              `/collections?elevate=${distinct.canElevate}&projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`
-            )
-            .set("Authorization", `Bearer ${iteration.token}`)
-            .send(post)
-            if(distinct.canCreateCollection === false){
-              expect(res).to.have.status(403)
-              return
-            }
-            expect(res).to.have.status(201)
-            if (distinct.grant === 'none') {  
-              // grant = none iteration can create a collection, but does not give itself access to the collection
-              // TODO: Should eventually be changed to respond with empty object
-              return
-            }
-            expect(res.body.description).to.equal("Collection TEST description")
-            expect(res.body.name).to.equal("TEST")
-            expect(res.body.settings.fields.detail.enabled).to.equal(post.settings.fields.detail.enabled)
-            expect(res.body.settings.fields.detail.required).to.equal(post.settings.fields.detail.required)
-            expect(res.body.settings.fields.comment.enabled).to.equal(post.settings.fields.comment.enabled)
-            expect(res.body.settings.fields.comment.required).to.equal(post.settings.fields.comment.required)
-            expect(res.body.settings.status.canAccept).to.equal(post.settings.status.canAccept)
-            expect(res.body.settings.status.minAcceptGrant).to.equal(post.settings.status.minAcceptGrant)
-            expect(res.body.settings.status.resetCriteria).to.equal(post.settings.status.resetCriteria)
-            expect(res.body.settings.history.maxReviews).to.equal(post.settings.history.maxReviews)
-            expect(res.body.metadata.pocName).to.equal(post.metadata.pocName)
-            expect(res.body.metadata.pocEmail).to.equal(post.metadata.pocEmail)
-            expect(res.body.metadata.pocPhone).to.equal(post.metadata.pocPhone)
-            expect(res.body.metadata.reqRar).to.equal(post.metadata.reqRar)
+          const post = JSON.parse(JSON.stringify(requestBodies.createCollection))
+          post.name = "testCollection" + random
+          const res = await chai
+          .request(config.baseUrl)
+          .post(
+            `/collections?elevate=${distinct.canElevate}&projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`
+          )
+          .set("Authorization", `Bearer ${iteration.token}`)
+          .send(post)
+          if(distinct.canCreateCollection === false){
+            expect(res).to.have.status(403)
+            return
+          }
+          expect(res).to.have.status(201)
+          if (distinct.grant === 'none') {  
+            // grant = none iteration can create a collection, but does not give itself access to the collection
+            // TODO: Should eventually be changed to respond with empty object
+            return
+          }
+          expect(res.body.description).to.equal("Collection TEST description")
+          expect(res.body.name).to.equal(post.name)
+          expect(res.body.settings.fields.detail.enabled).to.equal(post.settings.fields.detail.enabled)
+          expect(res.body.settings.fields.detail.required).to.equal(post.settings.fields.detail.required)
+          expect(res.body.settings.fields.comment.enabled).to.equal(post.settings.fields.comment.enabled)
+          expect(res.body.settings.fields.comment.required).to.equal(post.settings.fields.comment.required)
+          expect(res.body.settings.status.canAccept).to.equal(post.settings.status.canAccept)
+          expect(res.body.settings.status.minAcceptGrant).to.equal(post.settings.status.minAcceptGrant)
+          expect(res.body.settings.status.resetCriteria).to.equal(post.settings.status.resetCriteria)
+          expect(res.body.settings.history.maxReviews).to.equal(post.settings.history.maxReviews)
+          expect(res.body.metadata.pocName).to.equal(post.metadata.pocName)
+          expect(res.body.metadata.pocEmail).to.equal(post.metadata.pocEmail)
+          expect(res.body.metadata.pocPhone).to.equal(post.metadata.pocPhone)
+          expect(res.body.metadata.reqRar).to.equal(post.metadata.reqRar)
 
-            // grants projection
-            expect(res.body.grants).to.have.lengthOf(1)
-            expect(res.body.grants[0].user.userId).to.equal("1")
-            expect(res.body.grants[0].accessLevel).to.equal(4)
+          // grants projection
+          expect(res.body.grants).to.have.lengthOf(1)
+          expect(res.body.grants[0].user.userId).to.equal("1")
+          expect(res.body.grants[0].accessLevel).to.equal(4)
 
-            // labels projection
-            expect(res.body.labels).to.have.lengthOf(1)
-            expect(res.body.labels[0].name).to.equal("TEST")
-            expect(res.body.labels[0].description).to.equal("Collection label description")
-            expect(res.body.labels[0].color).to.equal("ffffff")
+          // labels projection
+          expect(res.body.labels).to.have.lengthOf(1)
+          expect(res.body.labels[0].name).to.equal("TEST")
+          expect(res.body.labels[0].description).to.equal("Collection label description")
+          expect(res.body.labels[0].color).to.equal("ffffff")
 
-            // assets projection
-            expect(res.body.assets).to.have.lengthOf(0)
+          // assets projection
+          expect(res.body.assets).to.have.lengthOf(0)
 
-            // owners projection
-            expect(res.body.owners).to.have.lengthOf(1)
-            expect(res.body.owners[0].userId).to.equal("1")
+          // owners projection
+          expect(res.body.owners).to.have.lengthOf(1)
+          expect(res.body.owners[0].userId).to.equal("1")
 
-            // statistics projection
-            expect(res.body.statistics.assetCount).to.equal(0)
-            expect(res.body.statistics.checklistCount).to.equal(0)
-            expect(res.body.statistics.grantCount).to.equal(1)
-        
-            // stigs projection
-            expect(res.body.stigs).to.have.lengthOf(0)
+          // statistics projection
+          expect(res.body.statistics.assetCount).to.equal(0)
+          expect(res.body.statistics.checklistCount).to.equal(0)
+          expect(res.body.statistics.grantCount).to.equal(1)
+      
+          // stigs projection
+          expect(res.body.stigs).to.have.lengthOf(0)
 
-            // just an extra check to make sure the collection was created
-            const createdCollection = await utils.getCollection(res.body.collectionId)
+          // just an extra check to make sure the collection was created
+          const createdCollection = await utils.getCollection(res.body.collectionId)
             expect(createdCollection).to.exist
         })
         it("should throw SmError.UnprocessableError due to duplicate user in grant array.",async function () {
@@ -140,7 +143,8 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             expect(res.body.detail).to.equal("Duplicate user in grant array")
         })
         it("should throw SmError.UnprocessableError due to duplicate name exists ",async function () {
-          const post = requestBodies.createCollection
+          const post = JSON.parse(JSON.stringify(requestBodies.createCollection))
+          post.name = "testCollection" + random
           const res = await chai
            .request(config.baseUrl)
            .post(`/collections?elevate=${distinct.canElevate}&projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`)
@@ -334,6 +338,8 @@ describe('POST - Collection - not all tests run for all iterations', function ()
 
       describe("createCollectionLabel - /collections/{collectionId}/labels", function () {
 
+        let label = null
+
         it("Create Label in a Collection",async function () {
 
           const request = {
@@ -351,12 +357,21 @@ describe('POST - Collection - not all tests run for all iterations', function ()
               expect(res).to.have.status(403)
               return
             }
-
+            label = res.body
             expect(res).to.have.status(201)
             expect(res.body.name).to.equal(request.name)
             expect(res.body.description).to.equal(request.description)
             expect(res.body.color).to.equal(request.color)
             expect(res.body.uses).to.equal(0)
+        })
+        it("Clean up - delete label",async function () {
+            if(label){
+              const res = await chai
+                .request(config.baseUrl)
+                .delete(`/collections/${reference.scrapCollection.collectionId}/labels/${label.labelId}`)
+                .set("Authorization", `Bearer ${iteration.token}`)
+                expect(res).to.have.status(204)
+            }
         })
       })
 

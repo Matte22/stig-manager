@@ -7,7 +7,7 @@ usage() {
   echo "  -f file        Run specific test file."
   echo "  -d directory   Run tests in specific directory."
   echo "  -i iteration   Run tests for specific iteration.name (see iterations.js)" 
-  echo -e "  -h help        examples: \n ./runMocha.sh -p \"the name of my test\" \n ./runMocha.sh -i lvl1 -i lvl2 -p getCollections \n ./runMocha.sh -f collectionGet.test.js \n ./runMocha.sh -d mocha/data/collection"
+  echo -e "  -h help        examples: \n ./runMocha.sh \n ./runMocha.sh -p \"the name of my test\" \n ./runMocha.sh -p \"getCollections|getAsset\" \n ./runMocha.sh -p getCollections \n ./runMocha.sh -i lvl1 -i lvl2 -p getCollections \n ./runMocha.sh -f collectionGet.test.js \n ./runMocha.sh -d mocha/data/collection"
   exit 
 }
 
