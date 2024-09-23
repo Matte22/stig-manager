@@ -18,6 +18,7 @@ on:
         - "api/source/**"
         - "test/api/**"
         - ".github/workflows/api-container-tests.yml"
+        #test
 jobs:
   fetch-mysql-versions:
     runs-on: ubuntu-latest
