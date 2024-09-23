@@ -90,7 +90,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: mocha-report
+          name: mocha-report-${{ matrix.container.name }}-${{ matrix.mysql_version }}
           path: ./test/api/mochawesome-report
    
       - name: Extract API container log
