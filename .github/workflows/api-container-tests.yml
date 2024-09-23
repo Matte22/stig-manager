@@ -9,7 +9,15 @@ on:
       - "test/api/**"
       - "Dockerfile"
       - ".github/workflows/api-container-tests.yml"
-
+  push:
+      branches:
+        - main
+        - test-coverage
+        - testing-new-iterations
+      paths:
+        - "api/source/**"
+        - "test/api/**"
+        - ".github/workflows/api-container-tests.yml"
 jobs:
   fetch-mysql-versions:
     runs-on: ubuntu-latest
