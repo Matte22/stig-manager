@@ -233,6 +233,7 @@ const reference = {
     reviewCnt: 9,
     metadataKey: "testkey",
     metadataValue: "testvalue",
+    ipaddress: "1.1.1.1",
     labels: [
       "755b8a28-9a68-11ec-b1bc-0242ac110002",
       "5130dc84-9a68-11ec-b1bc-0242ac110002",

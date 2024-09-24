@@ -36,7 +36,6 @@ describe('DELETE - Collection ', function () {
           const testCollectionClone  = JSON.parse(JSON.stringify(requestBodies.resetTestCollection))
           testCollectionClone.name = `Collection ` + Math.floor(Math.random() * 1000000)
           tempCollection = await utils.createTempCollection(testCollectionClone)
-          console.log(`tempCollection: ${tempCollection.data.collectionId}`)
         })
 
         it('Delete tempCollection collection (stigmanadmin only)',async function () {
@@ -54,7 +53,7 @@ describe('DELETE - Collection ', function () {
 
           //confirm that it is deleted
           const deletedCollection = await utils.getCollection(tempCollection.data.collectionId)
-          expect(deletedCollection).to.be.undefined
+          expect(deletedCollection.status, "expect 403 response (delete worked)").to.equal(403)
         })
 
       })

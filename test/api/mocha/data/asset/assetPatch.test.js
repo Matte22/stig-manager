@@ -82,8 +82,8 @@ describe('PATCH - Asset', function () {
           }
           expect(res).to.have.status(200)
           expect(res.body.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
-          expect(res.body.labelIds).to.have.lengthOf(2)
-          expect(res.body.ip).to.equal("1.1.1.1")
+          expect(res.body.labelIds).to.have.lengthOf(reference.testAsset.labels.length)
+          expect(res.body.ip).to.equal(reference.testAsset.ipaddress)
           expect(res.body.noncomputing).to.equal(true)
           expect(res.body.metadata).to.deep.equal({})
           expect(res.body.description).to.equal('test desc')
@@ -256,7 +256,7 @@ describe('PATCH - Asset', function () {
             
             for(const assetID of res.body.assetIds){
                 const effectedAsset = await utils.getAsset(assetID)
-                expect(effectedAsset.response, "response should be 403 due to asset being deleted").to.have.status(403)
+                expect(effectedAsset.status, "response should be 403 due to asset being deleted").to.equal(403)
             }
             
         })

@@ -312,7 +312,7 @@ describe('DELETE - Stig', () => {
                     expect(res).to.have.status(200)
 
                     const response = await utils.getStigByBenchmarkId(reference.scrapBenchmark)
-                    expect(response.response.status).to.equal(404)
+                    expect(response.status).to.equal(404)
 
                 })
                 it('should throw SmError.NotFoundError No matching benchmarkId found.', async () => {

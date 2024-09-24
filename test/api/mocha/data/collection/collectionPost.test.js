@@ -167,6 +167,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
 
       describe("cloneCollection - /collections/{collectionId}/clone - test basic clone permissions (ie. must have owner grant + createCollection priv", function () {
 
+        // this is flakey should be redesigned.
         before(async function () {
           // this.timeout(4000)
           await utils.setDefaultRevision(reference.testCollection.collectionId, reference.benchmark, reference.testCollection.pinRevision)

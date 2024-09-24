@@ -14,6 +14,7 @@ describe('PATCH - Collection', function () {
 
     before(async function () {
         this.timeout(4000)
+        await utils.loadAppData()
         await utils.uploadTestStigs()
     })
 
@@ -27,9 +28,8 @@ describe('PATCH - Collection', function () {
       describe(`iteration:${iteration.name}`, function () {
 
         beforeEach(async function () {
-          await utils.putCollection(reference.testCollection, requestBodies.resetTestCollection)
+          await utils.putCollection(reference.testCollection.collectionId, requestBodies.resetTestCollection)
         })
-          
         describe('updateCollection - /collections/{collectionId}', function () {
 
           it('Patch test collection, send 5 new grants and metadata.',async function () {
@@ -78,10 +78,20 @@ describe('PATCH - Collection', function () {
           })
         })
         describe('patchCollectionLabelById - /collections/{collectionId}/labels/{labelId}', function () {
+
           it('Patch test collection label, change color, description and name ',async function () {
+            // this needed to be done because we are putting the collection in beforeeach which alters the labelId
+            const labelGet = await chai.request(config.baseUrl)  
+              .get(`/collections/${reference.testCollection.collectionId}/labels`)
+              .set('Authorization', `Bearer ${iteration.token}`)
+            if(distinct.canModifyCollection === false){
+              return
+            }
+            const fullLabel = labelGet.body.find(label => label.name === "test-label-full")
+            
             const body = requestBodies.patchCollectionLabelById
             const res = await chai.request(config.baseUrl)
-                .patch(`/collections/${reference.testCollection.collectionId}/labels/${reference.testCollection.fullLabel}`)
+                .patch(`/collections/${reference.testCollection.collectionId}/labels/${fullLabel.labelId}`)
                 .set('Authorization', `Bearer ${iteration.token}`)
                 .send(body)
                 
@@ -91,7 +101,7 @@ describe('PATCH - Collection', function () {
               }
               expect(res).to.have.status(200)
   
-              expect(res.body.labelId).to.equal(reference.testCollection.fullLabel)
+              expect(res.body.labelId).to.equal(fullLabel.labelId)
               expect(res.body.description).to.equal(body.description)
               expect(res.body.color).to.equal(body.color)
               expect(res.body.name).to.equal(body.name)

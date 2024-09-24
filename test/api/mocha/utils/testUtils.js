@@ -6,24 +6,16 @@ const path = require('path')
 
 const adminToken = config.adminToken
 
-
 // canidate for a function? (used to store responses for a test (metrics))
-/** const metricsFilePath = path.join(__dirname, 'metricsGet.json');
-let metricsData = JSON.parse(fs.readFileSync(metricsFilePath, 'utf8'));
-async function storeResponseData(testCaseName, username, responseData) {
-    if (!metricsData[testCaseName]) {
-      metricsData[testCaseName] = {};
-    }
-    metricsData[testCaseName][username] = responseData;
-    fs.writeFileSync(metricsFilePath, JSON.stringify(metricsData, null, 2), 'utf8');
-
+const metricsOutputToJSON = (testCaseName, username, responseData, outputJsonFile) => {
+  const metricsFilePath = path.join(__dirname, outputJsonFile)
+  let metricsData = JSON.parse(fs.readFileSync(metricsFilePath, 'utf8'))
+  if (!metricsData[testCaseName]) {
+    metricsData[testCaseName] = {}
+  }
+  metricsData[testCaseName][username] = responseData
+  fs.writeFileSync(metricsFilePath, JSON.stringify(metricsData, null, 2), 'utf8')
 }
-function loadExpectedData(testName) {
-    const filePath = path.join(__dirname, 'metricsGet.json');
-    const allExpectedData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    return allExpectedData[testName];
-}*/
-
 
 const loadAppData = async (appdataFileName = 'appdata.json') => {
 
@@ -46,7 +38,7 @@ const loadAppData = async (appdataFileName = 'appdata.json') => {
   try {
     const response = await axios(axiosConfig)
   } catch (error) {
-    console.error(`Failed to upload:`, error)
+    throw error
   }
 }
 
@@ -276,7 +268,7 @@ const uploadTestStig = async (filename) => {
   try {
     const response = await axios(axiosConfig)
   } catch (error) {
-    console.error(`Failed to upload ${filename}:`, error)
+    throw error
   }
 }
 
@@ -314,39 +306,10 @@ const uploadTestStigs = async () => {
     try {
       const response = await axios(axiosConfig)
     } catch (error) {
-      console.error(`Failed to upload ${filename}:`, error)
+      throw error
     }
   }
 }
-
-//delete soon?
-// const replaceStigRevision = async (stigFile = "U_VPN_SRG_V1R1_Manual-xccdf-replace.xml") => {
-//   const directoryPath = path.join(__dirname, '../../form-data-files/')
-
-//   const formData = new FormData()
-//   const filePath = path.join(directoryPath, stigFile)
-//   formData.append('importFile', fs.createReadStream(filePath), {
-//     stigFile,
-//     contentType: 'text/xml'
-//   })
-
-//   const axiosConfig = {
-//     method: 'post',
-//     url: `${config.baseUrl}/stigs?elevate=true&clobber=true`,
-//     headers: {
-//       ...formData.getHeaders(),
-//       Authorization: `Bearer ${adminToken}`
-//     },
-//     data: formData
-//   }
-
-//   try {
-//     const response = await axios(axiosConfig)
-//     console.log(`Successfully uploaded ${stigFile}`)
-//   } catch (error) {
-//     console.error(`Failed to upload ${stigFile}:`, error)
-//   }
-// }
 
 const deleteStigByRevision = async (benchmarkId, revisionStr) => {
   try {
@@ -364,6 +327,7 @@ const deleteStigByRevision = async (benchmarkId, revisionStr) => {
     throw e
   }
 }
+
 const deleteStig = async (benchmarkId) => {
   try {
 
@@ -396,7 +360,10 @@ const getAsset = async assetId => {
     return res.data
   }
   catch (e) {
-   return e;
+    if (e.response && e.response.status === 403) {
+      return { status: 403 } // return an object with the 404 status
+    }
+    throw e 
   }
 }
 
@@ -414,7 +381,10 @@ const getStigByBenchmarkId = async benchmarkId => {
     return res.data
   }
   catch (e) {
-    return e
+    if (e.response && e.response.status === 404) {
+      return { status: 404 } // return an object with the 404 status
+    }
+    throw e 
   }
 }
 
@@ -432,7 +402,10 @@ const getUser = async userId => {
     return res.data
   }
   catch (e) {
-   return e;
+    if (e.response && e.response.status === 404) {
+      return { status: 404 } // return an object with the 404 status
+    }
+    throw e 
   }
 }
 
@@ -450,7 +423,7 @@ const getAssetsByLabel = async (collectionId, labelId) => {
     return res.data
   }
   catch (e) {
-   return e;
+   throw e
   }
 }
 
@@ -468,7 +441,7 @@ const getCollectionMetricsDetails = async (collectionId) => {
     return res.data
   }
   catch (e) {
-   return e;
+   throw e
   }
 }
 
@@ -486,7 +459,7 @@ const getReviews = async (collectionId) => {
     return res.data
   }
   catch (e) {
-   return undefined;
+   throw e
   }
 }
 
@@ -504,7 +477,7 @@ const getChecklist = async (assetId, benchmarkId, revisionStr) => {
     return res.data
   }
   catch (e) {
-   return e;
+  throw e
   }
 }
 
@@ -522,26 +495,10 @@ const getCollection = async (collectionId) => {
     return res.data
   }
   catch (e) {
-   return undefined;
-  }
-}
-
-const getStigByCollectionBenchmarkId = async (collectionId, benchmarkId) => {
-
-  try {
-    const res = await axios.get(
-      `${config.baseUrl}/collections/${collectionId}/stigs/${benchmarkId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${adminToken}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
-    return res.data
-  }
-  catch (e) {
-    return undefined
+    if (e.response && e.response.status === 403) {
+      return { status: 403 } 
+    }
+    throw e
   }
 }
 
@@ -561,10 +518,11 @@ const setDefaultRevision = async (collectionId, benchmarkId, revisionStr) => {
     return res
   }
   catch (e) {
-    return e;
+   return e
   }
 
 }
+
 const putReviewByAssetRule = async (collectionId, assetId, ruleId, body) => {
 
   try {
@@ -581,7 +539,7 @@ const putReviewByAssetRule = async (collectionId, assetId, ruleId, body) => {
     return res
   }
   catch (e) {
-    return e;
+    throw e
   }
 }
 
@@ -599,7 +557,7 @@ const deleteReviewsByAssetRule = async (collectionId, assetId, ruleId) => {
     )
   }
   catch (e) {
-    return e;
+    throw e
   }
 }
 
@@ -634,6 +592,7 @@ const resetTestAsset = async () => {
     },
   ])
 }
+
 const resetScrapAsset = async () => {
   const res = await putAsset("34", {
     name: "test asset stigmanadmin",
@@ -648,6 +607,7 @@ const resetScrapAsset = async () => {
     stigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST","RHEL_7_STIG_TEST"],
     })
 }
+
 const setRestrictedUsers = async (collectionId, userId, body) => {
 
   try{
@@ -664,9 +624,10 @@ const setRestrictedUsers = async (collectionId, userId, body) => {
     return res
   }
   catch (e) {
-    return e;
+    throw e
   }
 }
+
 const createUser = async (user) => {
   try {
     const res = await axios.post(
@@ -682,9 +643,10 @@ const createUser = async (user) => {
     return res.data
   }
   catch (e) {
-    return e;
+    throw e
   }
 }
+
 const putAsset = async (assetId, asset) => {
   try {
     const res = await axios.put(
@@ -700,7 +662,7 @@ const putAsset = async (assetId, asset) => {
     return res.data
   }
   catch (e) {
-    return e;
+    throw e
   }
 }
 
@@ -719,7 +681,7 @@ const putCollection = async (collectionId, collection) => {
     return res.data
   }
   catch (e) {
-    return e;
+    throw e
   }
 }
 
@@ -738,7 +700,7 @@ const createCollectionLabel = async (collectionId, label) => {
     return res.data
   }
   catch (e) {
-    return e;
+    throw e
   }
 }
 
@@ -756,7 +718,6 @@ module.exports = {
   uploadTestStigs,
   deleteAsset,
   putAsset,
-  getStigByCollectionBenchmarkId,
   setDefaultRevision,
   createTempAsset,
   createDisabledCollectionsandAssets,

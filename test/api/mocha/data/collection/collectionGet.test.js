@@ -266,6 +266,7 @@ describe('GET - Collection', function () {
         })
       })
 
+      // needs some projection work
       describe('getFindingsByCollection - /collections/{collectionId}/findings', function () {
         
         it('Return the Findings for the specified Collection by ruleId',async function () {
