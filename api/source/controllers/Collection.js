@@ -41,7 +41,7 @@ module.exports.createCollection = async function createCollection (req, res, nex
     const body = req.body
     if ( elevate || req.userObject.privileges.canCreateCollection ) {
       if (!hasUniqueGrants(body.grants)) {
-        throw new SmError.UnprocessableError('Duplicate user in grant array')
+        throw new SmError.UnprocessableError('Duplicate user or user group in grant array')
       }  
       try {
         const response = await CollectionService.createCollection( body, projection, req.userObject, res.svcStatus)
@@ -69,9 +69,10 @@ module.exports.createCollection = async function createCollection (req, res, nex
 module.exports.deleteCollection = async function deleteCollection (req, res, next) {
   try {
     const elevate = req.query.elevate
-    const projection = req.query.projection
+    const projections = req.query.projection
     const { collectionId } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Owner, true)
-    const response = await CollectionService.deleteCollection(collectionId, projection, elevate, req.userObject)
+    const response = await CollectionService.getCollection(collectionId, projections, elevate, req.userObject)
+    await CollectionService.deleteCollection(collectionId, req.userObject.userId)
     res.json(response)
   }
   catch (err) {
@@ -81,7 +82,7 @@ module.exports.deleteCollection = async function deleteCollection (req, res, nex
 
 module.exports.exportCollections = async function exportCollections (projection, elevate, userObject) {
   try {
-    return await CollectionService.getCollections( {}, projection, elevate, userObject )
+    return await CollectionService.queryCollections({projection, elevate})
   }
   catch (err) {
     next(err)
@@ -116,16 +117,18 @@ module.exports.getCollection = async function getCollection (req, res, next) {
 
 module.exports.getCollections = async function getCollections (req, res, next) {
   try {
-    const projection = req.query.projection
+    const projections = req.query.projection
     const elevate = req.query.elevate
     const name = req.query.name
     const nameMatch = req.query['name-match']
     const metadata = req.query.metadata
-    const response = await CollectionService.getCollections({
-      name: name,
-      nameMatch: nameMatch,
-      metadata: metadata
-    }, projection, elevate, req.userObject)
+    const response = await CollectionService.queryCollections({
+      filter: {name, nameMatch, metadata},
+      projections,
+      elevate,
+      grants: req.userObject.grants,
+      userId: req.userObject.userId
+    })
     res.json(response)
   }
   catch (err) {
@@ -139,9 +142,9 @@ module.exports.getFindingsByCollection = async function getFindingsByCollection 
     const benchmarkId = req.query.benchmarkId
     const assetId = req.query.assetId
     const acceptedOnly = req.query.acceptedOnly
-    const projection = req.query.projection
-    const { collectionId } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
-    const response = await CollectionService.getFindingsByCollection( collectionId, aggregator, benchmarkId, assetId, acceptedOnly, projection, req.userObject )
+    const projections = req.query.projection
+    const {collectionId, grant} = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const response = await CollectionService.getFindingsByCollection({collectionId, aggregator, benchmarkId, assetId, acceptedOnly, projections, grant})
     res.json(response)
   }
   catch (err) {
@@ -149,7 +152,7 @@ module.exports.getFindingsByCollection = async function getFindingsByCollection 
   }
 }
 
-module.exports.getPoamByCollection = async function getFindingsByCollection (req, res, next) {
+module.exports.getPoamByCollection = async function getPoamByCollection (req, res, next) {
   try {
     const {
       aggregator, 
@@ -170,23 +173,24 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
       mccastPackageId, 
       mccastAuthName
     }
-    const { collectionId, collectionGrant } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
-    const findings = await CollectionService.getFindingsByCollection( collectionId, aggregator, benchmarkId, assetId, acceptedOnly, 
-      [
+    const {collectionId, grant} = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const findings = await CollectionService.getFindingsByCollection({
+      collectionId, aggregator, benchmarkId, assetId, acceptedOnly, 
+      projections: [
         'rulesWithDiscussion',
         'groups',
         'assets',
         'stigs',
         'ccis'
-      ], req.userObject )
-
+      ],
+      grant})
+    
     const poFns = {
       EMASS: Serialize.poamObjectFromFindings,
       MCCAST: Serialize.mccastPoamObjectFromFindings
     }
     const xlsx = await Serialize.xlsxFromPoamObject(poFns[format](findings, defaults), format)
-    writer.writeInlineFile( res, xlsx, `POAM-${format}-${collectionGrant.collection.name}_${escape.filenameComponentFromDate()}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-
+    writer.writeInlineFile( res, xlsx, `POAM-${format}-${grant.name}_${escape.filenameComponentFromDate()}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   }
   catch (err) {
     next(err)
@@ -207,12 +211,12 @@ module.exports.getStigAssetsByCollectionUser = async function getStigAssetsByCol
 
 module.exports.getStigsByCollection = async function getStigsByCollection (req, res, next) {
   try {
-    const { collectionId } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const { collectionId, grant } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     const labelIds = req.query.labelId
     const labelNames = req.query.labelName
     const labelMatch = req.query.labelMatch
     const projections = req.query.projection
-    const response = await CollectionService.getStigsByCollection({collectionId, labelIds, labelNames, labelMatch, projections, userObject: req.userObject})
+    const response = await CollectionService.getStigsByCollection({collectionId, labelIds, labelNames, labelMatch, projections, grant})
     res.json(response)
   }
   catch (err) {
@@ -222,10 +226,10 @@ module.exports.getStigsByCollection = async function getStigsByCollection (req, 
 
 module.exports.getStigByCollection = async function getStigByCollection (req, res, next) {
   try {
-    const { collectionId } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const { collectionId, grant } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     const benchmarkId = req.params.benchmarkId
     const projections = req.query.projection
-    const response = await CollectionService.getStigsByCollection({collectionId, projections, userObject: req.userObject, benchmarkId})
+    const response = await CollectionService.getStigsByCollection({collectionId, projections, grant, benchmarkId})
     if (!response[0]) {
       res.status(204)
     }
@@ -239,7 +243,7 @@ module.exports.getStigByCollection = async function getStigByCollection (req, re
 module.exports.replaceCollection = async function replaceCollection (req, res, next) {
   try {
     const elevate = req.query.elevate
-    const {collectionId, collectionGrant} = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage, true)
+    const {collectionId, grant} = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage, true)
     const projection = req.query.projection
     const body = req.body
     if (!hasUniqueGrants(body.grants)) {
@@ -249,7 +253,7 @@ module.exports.replaceCollection = async function replaceCollection (req, res, n
       ?.grants
       .map(g => ({userId: g.user.userId, accessLevel: g.accessLevel}))
 
-      if (!elevate && (collectionGrant.accessLevel !== Security.ACCESS_LEVEL.Owner && !requestedOwnerGrantsMatchExisting(body.grants, existingGrants))) {
+      if (!elevate && (grant.accessLevel !== Security.ACCESS_LEVEL.Owner && !requestedOwnerGrantsMatchExisting(body.grants, existingGrants))) {
         throw new SmError.PrivilegeError('Cannot create or modify owner grants.')
     }
     let response = await CollectionService.replaceCollection(collectionId, body, projection, req.userObject, res.svcStatus)
@@ -260,30 +264,10 @@ module.exports.replaceCollection = async function replaceCollection (req, res, n
   }
 }
 
-module.exports.setStigAssetsByCollectionUser = async function setStigAssetsByCollectionUser (req, res, next) {
-  try {
-    const userId = req.params.userId
-    const stigAssets = req.body
-    const { collectionId } = getCollectionInfoAndCheckPermission(req)
-    const collectionResponse = await CollectionService.getCollection(collectionId, ['grants'], false, req.userObject )
-    if (collectionResponse.grants.filter( grant => grant.accessLevel === 1 && grant.user.userId === userId).length > 0) {
-      await CollectionService.setStigAssetsByCollectionUser(collectionId, userId, stigAssets, res.svcStatus ) 
-      const getResponse = await CollectionService.getStigAssetsByCollectionUser(collectionId, userId, req.userObject )
-      res.json(getResponse)    
-    }
-    else {
-      throw new SmError.NotFoundError('User not found in this Collection with accessLevel === 1.')
-    }
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
 module.exports.updateCollection = async function updateCollection (req, res, next) {
   try {
     const elevate = req.query.elevate
-    const {collectionId, collectionGrant} = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage, true)
+    const {collectionId, grant} = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage, true)
     const projection = req.query.projection
     const body = req.body
     if (body.grants) {
@@ -292,9 +276,18 @@ module.exports.updateCollection = async function updateCollection (req, res, nex
       }
       const existingGrants = (await CollectionService.getCollection(collectionId, ['grants'], false, req.userObject ))
         ?.grants
-        .map(g => ({userId: g.user.userId, accessLevel: g.accessLevel}))
+        .map(g => {
+          const flattenedGrant = {accessLevel: g.accessLevel}
+          if (g.user) {
+            flattenedGrant.userId = g.user.userId
+          }
+          else {
+            flattenedGrant.userGroupId = g.userGroup.userGroupId
+          }
+          return flattenedGrant
+        })
 
-      if (!elevate && (collectionGrant.accessLevel !== Security.ACCESS_LEVEL.Owner && !requestedOwnerGrantsMatchExisting(body.grants, existingGrants))) {
+      if (!elevate && (grant.accessLevel !== Security.ACCESS_LEVEL.Owner && !requestedOwnerGrantsMatchExisting(body.grants, existingGrants))) {
         throw new SmError.PrivilegeError('Cannot create or modify owner grants.')
       }
     }
@@ -307,17 +300,21 @@ module.exports.updateCollection = async function updateCollection (req, res, nex
 }
 
 function hasUniqueGrants(requestedGrants) {
-  const requestedUsers = {}
+  const userItems = {}
+  const userGroupItems = {}
   for (const grant of requestedGrants) {
-    if (requestedUsers[grant.userId]) return false
-    requestedUsers[grant.userId] = true
+    if (userItems[grant.userId]) return false
+    if (userGroupItems[grant.userGroupId]) return false
+    const itemsObject = grant.userId ? userItems : userGroupItems
+    itemsObject[grant.userId ?? grant.userGroupId] = true
   }
   return true
 }
 
 function requestedOwnerGrantsMatchExisting(requestedGrants, existingGrants) {
   const accumulateOwners = (accumulator, currentValue) => {
-    if (currentValue.accessLevel === Security.ACCESS_LEVEL.Owner) accumulator.push(currentValue.userId)
+    if (currentValue.accessLevel === Security.ACCESS_LEVEL.Owner) 
+      accumulator.push(currentValue.userId ? `U${currentValue.userId}` : `UG${currentValue.userGroupId}`)
     return accumulator
   }
   const haveSameSet = (a, b) => {
@@ -326,10 +323,7 @@ function requestedOwnerGrantsMatchExisting(requestedGrants, existingGrants) {
   const existingOwners = existingGrants.reduce(accumulateOwners, [])
   const requestedOwners = requestedGrants.reduce(accumulateOwners, [])
   
-  if ( existingOwners.length !== requestedOwners.length || !haveSameSet(existingOwners, requestedOwners)) {
-    return false
-  }
-  return true
+  return !(existingOwners.length !== requestedOwners.length || !haveSameSet(existingOwners, requestedOwners))
 }
 
 /**
@@ -338,18 +332,19 @@ function requestedOwnerGrantsMatchExisting(requestedGrants, existingGrants) {
  * @param {Object} request - The request object.
  * @param {number} minimumAccessLevel - The minimum access level required. Defaults to Security.ACCESS_LEVEL.Manage.
  * @param {boolean} allowElevate - Whether to allow elevation of access level. Defaults to false.
- * @returns {Object} - An object containing the collectionId and collectionGrant.
+ * @returns {Object} - An object containing the collectionId and grant.
  * @throws {SmError.PrivilegeError} - If the user does not have sufficient privileges.
  */
 function getCollectionInfoAndCheckPermission(request, minimumAccessLevel = Security.ACCESS_LEVEL.Manage, supportsElevation = false) {
   let collectionId = request.params.collectionId
   const elevate = request.query.elevate
-  const collectionGrant = request.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
+  const grant = request.userObject.grants[collectionId]
+
   // If elevate is not set and supported, and the user does not have a grant, or the grant level is below the minimum required, throw an error.
-  if (!( (supportsElevation && elevate) || (collectionGrant?.accessLevel >= minimumAccessLevel) )) {
+  if (!( (supportsElevation && elevate) || (grant?.accessLevel >= minimumAccessLevel) )) {
     throw new SmError.PrivilegeError()
   }
-  return {collectionId, collectionGrant}
+  return {collectionId, grant}
 }
 
 module.exports.getCollectionInfoAndCheckPermission = getCollectionInfoAndCheckPermission
@@ -497,8 +492,8 @@ module.exports.getReviewHistoryStatsByCollection = async function (req, res, nex
 
 module.exports.getCollectionLabels = async function (req, res, next) {
   try {
-    const { collectionId } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
-    const response = await CollectionService.getCollectionLabels( collectionId, req.userObject )
+    const { collectionId, grant } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const response = await CollectionService.getCollectionLabels( collectionId, grant )
     res.json(response)
   }
   catch (err) {
@@ -508,9 +503,9 @@ module.exports.getCollectionLabels = async function (req, res, next) {
 
 module.exports.createCollectionLabel = async function (req, res, next) {
   try {
-    const { collectionId } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    const { collectionId, grant } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
     const labelId = await CollectionService.createCollectionLabel( collectionId, req.body )
-    const response = await CollectionService.getCollectionLabelById( collectionId, labelId, req.userObject )
+    const response = await CollectionService.getCollectionLabelById( collectionId, labelId, grant )
     res.status(201).json(response)
   }
   catch (err) {
@@ -520,8 +515,8 @@ module.exports.createCollectionLabel = async function (req, res, next) {
 
 module.exports.getCollectionLabelById = async function (req, res, next) {
   try {
-    const { collectionId } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
-    const response = await CollectionService.getCollectionLabelById( collectionId, req.params.labelId, req.userObject )
+    const { collectionId, grant } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const response = await CollectionService.getCollectionLabelById( collectionId, req.params.labelId, grant )
     if (!response) {
       throw new SmError.NotFoundError()
     }
@@ -534,12 +529,12 @@ module.exports.getCollectionLabelById = async function (req, res, next) {
 
 module.exports.patchCollectionLabelById = async function (req, res, next) {
   try {
-    const { collectionId } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    const { collectionId, grant } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
     const affectedRows = await CollectionService.patchCollectionLabelById( collectionId, req.params.labelId, req.body )
     if (affectedRows === 0) {
       throw new SmError.NotFoundError()
     }
-    const response = await CollectionService.getCollectionLabelById( collectionId, req.params.labelId, req.userObject )
+    const response = await CollectionService.getCollectionLabelById( collectionId, req.params.labelId, grant )
     res.json(response)
   }
   catch (err) {
@@ -563,8 +558,8 @@ module.exports.deleteCollectionLabelById = async function (req, res, next) {
 
 module.exports.getAssetsByCollectionLabelId = async function (req, res, next) {
   try {
-    const { collectionId } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
-    const response = await CollectionService.getAssetsByCollectionLabelId( collectionId, req.params.labelId, req.userObject )
+    const {collectionId, grant} = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const response = await CollectionService.getAssetsByCollectionLabelId( collectionId, req.params.labelId, grant )
     res.json(response)
   }
   catch (err) {
@@ -600,9 +595,9 @@ module.exports.putAssetsByCollectionLabelId = async function (req, res, next) {
 
 module.exports.postCklArchiveByCollection = async function (req, res, next) {
   try {
-    const { collectionId } = getCollectionInfoAndCheckPermission(req)
+    const { collectionId, grant } = getCollectionInfoAndCheckPermission(req)
     const mode = req.query.mode || 'mono'
-    const parsedRequest = await processAssetStigRequests (req.body, collectionId, mode, req.userObject)
+    const parsedRequest = await processAssetStigRequests (req.body, collectionId, mode, grant)
     await postArchiveByCollection({
       format: `ckl-${mode}`,
       req,
@@ -617,9 +612,9 @@ module.exports.postCklArchiveByCollection = async function (req, res, next) {
 
 module.exports.postCklbArchiveByCollection = async function (req, res, next) {
   try {
-    const { collectionId } = getCollectionInfoAndCheckPermission(req)
+    const { collectionId, grant } = getCollectionInfoAndCheckPermission(req)
     const mode = req.query.mode || 'mono'
-    const parsedRequest = await processAssetStigRequests (req.body, collectionId, mode, req.userObject)
+    const parsedRequest = await processAssetStigRequests (req.body, collectionId, mode, grant)
     await postArchiveByCollection({
       format: `cklb-${mode}`,
       req,
@@ -634,8 +629,8 @@ module.exports.postCklbArchiveByCollection = async function (req, res, next) {
 
 module.exports.postXccdfArchiveByCollection = async function (req, res, next) {
   try {
-    const { collectionId } = getCollectionInfoAndCheckPermission(req)
-    const parsedRequest = await processAssetStigRequests (req.body, collectionId, 'mono', req.userObject)
+    const { collectionId, grant } = getCollectionInfoAndCheckPermission(req)
+    const parsedRequest = await processAssetStigRequests (req.body, collectionId, 'mono', grant)
     await postArchiveByCollection({
       format: 'xccdf',
       req,
@@ -734,13 +729,14 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
 
 module.exports.getUnreviewedAssetsByCollection = async function (req, res, next) {
   try {
-    const { collectionId } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const { collectionId, grant } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     const benchmarkId = req.query.benchmarkId
     const assetId = req.query.assetId
     const severities = req.query.severity || []
     const labelIds = req.query.labelId || []
     const labelNames = req.query.labelName || []
     const projections = req.query.projection || []
+    
     const response = await CollectionService.getUnreviewedAssetsByCollection( {
       collectionId,
       benchmarkId,
@@ -749,7 +745,7 @@ module.exports.getUnreviewedAssetsByCollection = async function (req, res, next)
       labelNames,
       severities,
       projections,
-      userObject: req.userObject
+      grant
     })
     res.json(response)
   }
@@ -760,7 +756,7 @@ module.exports.getUnreviewedAssetsByCollection = async function (req, res, next)
 
 module.exports.getUnreviewedRulesByCollection = async function (req, res, next) {
   try {
-    const { collectionId } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const {collectionId, grant} = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     const benchmarkId = req.query.benchmarkId
     const ruleId = req.query.ruleId
     const severities = req.query.severity || []
@@ -775,7 +771,7 @@ module.exports.getUnreviewedRulesByCollection = async function (req, res, next) 
       labelIds,
       labelNames,
       projections,
-      userObject: req.userObject
+      grant
     })
     res.json(response)
   }
@@ -785,7 +781,7 @@ module.exports.getUnreviewedRulesByCollection = async function (req, res, next) 
 }
 
 // for the archive streaming endpoints
-async function processAssetStigRequests (assetStigRequests, collectionId, mode = 'mono', userObject) {
+async function processAssetStigRequests (assetStigRequests, collectionId, mode = 'mono', grant) {
   const assetStigArguments = []
   let collectionName
 
@@ -814,7 +810,7 @@ async function processAssetStigRequests (assetStigRequests, collectionId, mode =
     const assetId = requested.assetId
     
     // Try to fetch asset as this user.
-    const assetResponse = await AssetService.getAsset(assetId, ['stigs'], false, userObject )
+    const assetResponse = await AssetService.getAsset({assetId, projections: ['stigs'], grant} )
     // Does user have a grant permitting access to the asset?
     if (!assetResponse) {
       throw new SmError.PrivilegeError()
@@ -912,11 +908,11 @@ async function processAssetStigRequests (assetStigRequests, collectionId, mode =
 
 module.exports.writeStigPropsByCollectionStig = async function (req, res, next) {
   try {
-    const { collectionId } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    const { collectionId, grant } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
     const benchmarkId = req.params.benchmarkId
     const assetIds = req.body.assetIds
     const defaultRevisionStr = req.body.defaultRevisionStr
-    const existingRevisions = await STIGService.getRevisionsByBenchmarkId(benchmarkId, req.userObject)
+    const existingRevisions = await STIGService.getRevisionsByBenchmarkId({benchmarkId, grants: req.userObject.grants})
     //if defaultRevisionStr is present, check that specified revision is valid for the benchmark
     if (defaultRevisionStr && defaultRevisionStr !== "latest" && existingRevisions.find(benchmark => benchmark.revisionStr === defaultRevisionStr) === undefined) {
       throw new SmError.UnprocessableError("The revisionStr is is not valid for the specified benchmarkId")
@@ -945,7 +941,7 @@ module.exports.writeStigPropsByCollectionStig = async function (req, res, next) 
       defaultRevisionStr,
       svcStatus: res.svcStatus
     })
-    const response = await CollectionService.getStigsByCollection({collectionId, userObject: req.userObject, benchmarkId})
+    const response = await CollectionService.getStigsByCollection({collectionId, grant, benchmarkId})
     if (response[0]) {
       res.json(response[0])
     }
@@ -987,6 +983,13 @@ module.exports.cloneCollection = async function (req, res, next) {
         progressCb
       })
       if (cloned) {
+        // // hack the existing userObject
+        req.userObject.grants[cloned.destCollectionId] = {
+          collectionId: cloned.destCollectionId,
+          name: req.body.name,
+          accessLevel: 4,
+          grantIds: []
+        }
         const collection = await CollectionService.getCollection(cloned.destCollectionId, req.query.projection, false, req.userObject )
         res.write(JSON.stringify({stage: 'result', collection}) + '\n')
       }
@@ -1007,11 +1010,11 @@ module.exports.exportToCollection = async function (req, res, next) {
       res.write(JSON.stringify(json) + '\n')
     }
 
-    const { collectionId: srcCollectionId } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const { collectionId: srcCollectionId, grant } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     req.params.collectionId = req.params.dstCollectionId
     const { collectionId: dstCollectionId } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
     req.params.collectionId = srcCollectionId
-    const parsedRequest = await processAssetStigRequests (req.body, srcCollectionId, 'multi', req.userObject)
+    const parsedRequest = await processAssetStigRequests (req.body, srcCollectionId, 'multi', grant)
     
     res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
     req.noCompression = true
@@ -1030,3 +1033,223 @@ module.exports.exportToCollection = async function (req, res, next) {
     next(err)
   }
 }
+
+module.exports.getGrantByCollectionUser = async function (req, res, next) {
+  try {
+    const {collectionId} = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    const userId = req.params.userId
+    const response = await CollectionService.getGrantByCollectionUser({collectionId, userId})
+    if (!response[0]) throw new SmError.NotFoundError()
+    res.json(response[0])
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.setGrantByCollectionUser = async function (req, res, next) {
+  try{
+    const {collectionId} = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    const userId = req.params.userId
+    const accessLevel = req.body.accessLevel
+    const httpStatus = await CollectionService.setGrantByCollection({collectionId, userId, accessLevel})
+    const response  = await CollectionService.getGrantByCollectionUser({collectionId, userId})
+    res.status(httpStatus).json(response[0])
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.deleteGrantByCollectionUser  = async function (req, res, next) {
+  try{
+    const {collectionId} = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    const userId = req.params.userId
+    const response = await CollectionService.getGrantByCollectionUser({collectionId, userId})
+    await CollectionService.deleteGrantByCollectionUser({collectionId, userId})
+    res.json(response[0])
+  }
+  catch(err){
+    next(err)
+  }
+}
+
+module.exports.getGrantByCollectionUserGroup = async function (req, res, next) {
+  try{
+    const {collectionId} = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    const userGroupId = req.params.userGroupId
+    const response = await CollectionService.getGrantByCollectionUserGroup({collectionId, userGroupId})
+    if (!response[0]) throw new SmError.NotFoundError()
+    res.json(response[0])
+  }
+  catch(err){
+    next(err)
+  }
+}
+
+module.exports.setGrantByCollectionUserGroup = async function (req, res, next) {
+  try{
+    const {collectionId} = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    const userGroupId = req.params.userGroupId
+    const accessLevel = req.body.accessLevel
+    const httpStatus = await CollectionService.setGrantByCollection({collectionId, userGroupId, accessLevel})
+    const response  = await CollectionService.getGrantByCollectionUserGroup({collectionId, userGroupId})
+    res.status(httpStatus).json(response[0])
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.deleteGrantByCollectionUserGroup  = async function (req, res, next) {
+  try{
+    const {collectionId} = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    const userGroupId = req.params.userGroupId
+    const response = await CollectionService.getGrantByCollectionUserGroup({collectionId, userGroupId})
+    await CollectionService.deleteGrantByCollectionUserGroup({collectionId, userGroupId})
+    res.json(response[0])
+  }
+  catch(err){
+    next(err)
+  }
+}
+
+module.exports.getReviewAclByCollectionUser = async function getReviewAclByCollectionUser (req, res, next) {
+  try {
+    const userId = req.params.userId
+    const { collectionId } = getCollectionInfoAndCheckPermission(req)
+    const grant = await CollectionService._getCollectionGrant({collectionId, userId})
+    if (!grant) throw new SmError.UnprocessableError('user has no direct grant in collection')
+    const response = await CollectionService.queryReviewAcl({cgId: grant.cgId})
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+module.exports.getReviewAclByCollectionUserGroup = async function (req, res, next) {
+  try {
+    const userGroupId = req.params.userGroupId
+    const { collectionId } = getCollectionInfoAndCheckPermission(req)
+    const grant = await CollectionService._getCollectionGrant({collectionId, userGroupId})
+    if (!grant) throw new SmError.UnprocessableError('group has no grant in collection')
+    const response = await CollectionService.queryReviewAcl({cgId: grant.cgId})
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getEffectiveAclByCollectionUser =  async function (req, res, next) {
+  try{
+    const {collectionId} = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    const userId = req.params.userId
+    const response = await CollectionService.getEffectiveAclByCollectionUser({collectionId, userId})
+    res.json(response)
+  }
+  catch(err){
+    next(err)
+  }
+}
+
+module.exports.setReviewAclByCollectionUser = async function setReviewAclByCollectionUser (req, res, next) {
+  try {
+    const userId = req.params.userId
+    const acl = req.body
+    const {collectionId} = getCollectionInfoAndCheckPermission(req)
+    
+    const grant = await CollectionService._getCollectionGrant({collectionId, userId})
+    if (!grant) throw new SmError.UnprocessableError('user has no direct grant in collection')
+
+    const validated = await CollectionService._reviewAclValidate({cgId: grant.cgId, acl})
+    if (validated.fail.length > 0) {
+      throw new SmError.UnprocessableError(validated.fail)
+    }
+    if (validated.pass.length > 0) {
+      await CollectionService.setValidatedAcl({
+        validatedAcl: validated.pass,
+        attributionUserId: req.userObject.userId,
+        svcStatus: res.svcStatus
+      })
+    }
+    const response = await CollectionService.queryReviewAcl({cgId: grant.cgId})
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.setReviewAclByCollectionUserGroup = async function (req, res, next) {
+  try {
+    const userGroupId = req.params.userGroupId
+    const acl = req.body
+    const {collectionId} = getCollectionInfoAndCheckPermission(req)
+    
+    const grant = await CollectionService._getCollectionGrant({collectionId, userGroupId})
+    if (!grant) throw new SmError.UnprocessableError('group has no grant in collection')
+
+    const validated = await CollectionService._reviewAclValidate({cgId: grant.cgId, acl})
+    if (validated.fail.length > 0) {
+      throw new SmError.UnprocessableError(validated.fail)
+    }
+    if (validated.pass.length > 0) {
+      await CollectionService.setValidatedAcl({
+        validatedAcl: validated.pass,
+        attributionUserId: req.userObject.userId,
+        svcStatus: res.svcStatus
+      })
+    }
+    const response = await CollectionService.queryReviewAcl({cgId: grant.cgId})
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+
+module.exports.setStigAssetsByCollectionUser = async function (req, res, next) {
+  try {
+    const userId = req.params.userId
+    const acl = req.body
+    const {collectionId} = getCollectionInfoAndCheckPermission(req)
+    
+    const grant = await CollectionService._getCollectionGrant({collectionId, userId})
+    if (!grant) throw new SmError.UnprocessableError('user has no direct grant in collection')
+
+    const validated = await CollectionService._reviewAclValidate({cgId: grant.cgId, acl})
+    if (validated.fail.length > 0) {
+      throw new SmError.UnprocessableError(validated.fail)
+    }
+    if (validated.pass.length > 0) {
+      await CollectionService.setValidatedAcl({
+        validatedAcl: validated.pass,
+        attributionUserId: req.userObject.userId,
+        svcStatus: res.svcStatus
+      })
+    }
+    const response = await CollectionService.queryReviewAcl({cgId: grant.cgId})
+    res.json(response.acl)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getStigAssetsByCollectionUser = async function (req, res, next) {
+  try {
+    const userId = req.params.userId
+    const { collectionId } = getCollectionInfoAndCheckPermission(req)
+    const grant = await CollectionService._getCollectionGrant({collectionId, userId})
+    if (!grant) throw new SmError.UnprocessableError('user has no direct grant in collection')
+    const response = await CollectionService.queryReviewAcl({cgId: grant.cgId})
+    res.json(response.acl)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+
