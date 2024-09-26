@@ -15,9 +15,9 @@ describe('GET - Collection', function () {
 
   before(async function () {
     this.timeout(4000)
-    await utils.uploadTestStigs()
-    await utils.loadAppData()
-    await utils.createDisabledCollectionsandAssets()
+  //  await utils.uploadTestStigs()
+//    await utils.loadAppData()
+    //await utils.createDisabledCollectionsandAssets()
   })
 
   for(const iteration of iterations){
