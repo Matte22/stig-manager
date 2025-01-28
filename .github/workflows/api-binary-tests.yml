@@ -114,6 +114,9 @@ jobs:
 
       - name: List downloaded files
         run: ls -l ./binary-artifacts
+
+      - name: Set execute permissions on binary
+        run: chmod +x ./binary-artifacts/stig-manager-linuxstatic
       
       - name: Run linux binary 
         working-directory: ./
