@@ -115,6 +115,9 @@ jobs:
       - name: where am i 
         run: pwd
 
+      - name: go back
+        run: cd ..
+
       - name: Run linux binary 
         working-directory: ./
         run: |
