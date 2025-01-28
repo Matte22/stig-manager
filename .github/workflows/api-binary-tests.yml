@@ -113,8 +113,6 @@ jobs:
       - name: wait 5 seconds
         run: sleep 5
 
-      - name: Debug artifact content
-        run: ls -l ./binary-artifacts
 
       - name: Find binary
         run: find ./binary-artifacts -type f
