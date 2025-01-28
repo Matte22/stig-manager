@@ -29,7 +29,7 @@ env:
   STIGMAN_SWAGGER_REDIRECT: http://localhost:64001/api-docs/oauth2-redirect.html
   STIGMAN_DEV_RESPONSE_VALIDATION: logOnly
   STIGMAN_EXPERIMENTAL_APPDATA: 'true'
-  STIGMAN_OIDC_PROVIDER: http://localhost:8081/realms/stigman
+  STIGMAN_OIDC_PROVIDER: http://localhost:8080/realms/stigman
 jobs:
   build-binary-artifacts:
     name: Build binary artifacts
