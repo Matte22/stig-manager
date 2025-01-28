@@ -89,7 +89,7 @@ jobs:
         run: ls -l ./binary-artifacts
       - name: Run mock Keycloak
         id: idp-run
-        working-directory: ./test/api/mock-keycloak
+        working-directory: test/api/mock-keycloak
         run: |
           python3 -m http.server 8080 &
       - name: Run MySQL container
