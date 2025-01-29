@@ -74,6 +74,33 @@ jobs:
           path: ./api/dist/
           if-no-files-found: error
 
+  run-mysql-on-ubuntu:
+    name: Start MySQL on Ubuntu
+    runs-on: ubuntu-latest
+    outputs:
+      mysql_ip: ${{ steps.get-ip.outputs.ip }}
+    steps:
+      - name: Start MySQL container
+        run: |
+          docker run -d --name stig-manager-db \
+            -p 3306:3306 \
+            -e MYSQL_ROOT_PASSWORD=rootpw \
+            -e MYSQL_DATABASE=stigman \
+            -e MYSQL_USER=stigman \
+            -e MYSQL_PASSWORD=stigman \
+            mysql:8.0.24
+      - name: Get MySQL container IP
+        id: get-ip
+        run: |
+          MYSQL_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' stig-manager-db)
+          echo "MySQL is running on $MYSQL_IP"
+          echo "ip=$MYSQL_IP" >> $GITHUB_ENV
+          echo "::set-output name=ip::$MYSQL_IP"
+
+      - name: Verify MySQL is running
+        run: |
+          mysqladmin ping -h $MYSQL_IP --silent || exit 1
+
   run-test-linux-binary-artifact:
     name: Run and test linux artifact
     runs-on: ubuntu-latest
@@ -141,11 +168,13 @@ jobs:
         run: npm test
 
   run-test-windows-binary-artifact:
-    name: Run and test windows artifact
+    name: Run and test Windows artifact
     runs-on: windows-latest
-    needs: build-binary-artifacts  
+    needs: run-mysql-on-ubuntu
+    env:
+      STIGMAN_DB_HOST: ${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}
+      STIGMAN_DB_PORT: 3306
     steps:
-  
       - name: Check out the repo
         uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -157,25 +186,16 @@ jobs:
         working-directory: test/api/mock-keycloak
         run: |
           Start-Process -NoNewWindow -FilePath "python" -ArgumentList "-m http.server 8080"
-    
 
-      # - name: Verify Keycloak is Running
-      #   run: curl -v http://localhost:8080/auth/realms/stigman/.well-known/openid-configuration || exit 1
-        
-      - name: Run MySQL container (Windows)
-        id: mysql-run
+      - name: Wait for MySQL to be accessible
         run: |
-          docker run -d --name stig-manager-db `
-            -p 3306:3306 `
-            -e MYSQL_ROOT_PASSWORD=rootpw `
-            -e MYSQL_DATABASE=stigman `
-            -e MYSQL_USER=stigman `
-            -e MYSQL_PASSWORD=stigman `
-            mysql:8.0.24
-    
-
-      - name: wait 5 seconds
-        run: sleep 5
+          echo "Trying to connect to MySQL at ${{ env.STIGMAN_DB_HOST }}"
+          for /L %%i in (1,1,10) do (
+            timeout /t 5 /nobreak >nul
+            mysqladmin ping -h ${{ env.STIGMAN_DB_HOST }} -u stigman --password=stigman && exit /B 0
+            echo "Waiting for MySQL..."
+          )
+          exit /B 1
 
       - name: Download builds
         uses: actions/download-artifact@v4
@@ -186,18 +206,13 @@ jobs:
       - name: List downloaded files
         run: dir binary-artifacts
 
-      - name: Set execute permissions on binary
-        run: chmod +x ./binary-artifacts/stig-manager-linuxstatic
-      
-      - name: Run windows binary
+      - name: Run Windows binary
         working-directory: ./
         run: |
           echo "Running tests on binary artifacts"
           start /B binary-artifacts\stig-manager-win.exe
-      
 
-          
-      - name: Wait for bootstrap
+      - name: Wait for API bootstrap
         run: |
           for /L %%i in (1,1,10) do (
             timeout /t 5 /nobreak >nul
@@ -205,7 +220,7 @@ jobs:
             echo .
           )
           exit /B 1
-                
+
       - name: Install test dependencies
         run: npm ci
         working-directory: ./test/api/
@@ -213,3 +228,79 @@ jobs:
       - name: Run tests with coverage
         working-directory: ./test/api/
         run: npm test
+
+  
+  # run-test-windows-binary-artifact:
+  #   name: Run and test windows artifact
+  #   runs-on: windows-latest
+  #   needs: build-binary-artifacts  
+  #   steps:
+  
+  #     - name: Check out the repo
+  #       uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 18
+
+  #     - name: Run mock Keycloak (Windows)
+  #       id: idp-run
+  #       working-directory: test/api/mock-keycloak
+  #       run: |
+  #         Start-Process -NoNewWindow -FilePath "python" -ArgumentList "-m http.server 8080"
+    
+
+  #     # - name: Verify Keycloak is Running
+  #     #   run: curl -v http://localhost:8080/auth/realms/stigman/.well-known/openid-configuration || exit 1
+        
+  #     - name: Run MySQL container (Windows)
+  #       id: mysql-run
+  #       run: |
+  #         docker run -d --name stig-manager-db `
+  #           -p 3306:3306 `
+  #           -e MYSQL_ROOT_PASSWORD=rootpw `
+  #           -e MYSQL_DATABASE=stigman `
+  #           -e MYSQL_USER=stigman `
+  #           -e MYSQL_PASSWORD=stigman `
+  #           mysql:8.0.24
+    
+
+  #     - name: wait 5 seconds
+  #       run: sleep 5
+
+  #     - name: Download builds
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: binary-artifacts  
+  #         path: ./binary-artifacts
+
+  #     - name: List downloaded files
+  #       run: dir binary-artifacts
+
+  #     - name: Set execute permissions on binary
+  #       run: chmod +x ./binary-artifacts/stig-manager-linuxstatic
+      
+  #     - name: Run windows binary
+  #       working-directory: ./
+  #       run: |
+  #         echo "Running tests on binary artifacts"
+  #         start /B binary-artifacts\stig-manager-win.exe
+      
+
+          
+  #     - name: Wait for bootstrap
+  #       run: |
+  #         for /L %%i in (1,1,10) do (
+  #           timeout /t 5 /nobreak >nul
+  #           curl --output nul --silent --fail http://localhost:64001/api/op/configuration && exit /B 0
+  #           echo .
+  #         )
+  #         exit /B 1
+                
+  #     - name: Install test dependencies
+  #       run: npm ci
+  #       working-directory: ./test/api/
+
+  #     - name: Run tests with coverage
+  #       working-directory: ./test/api/
+  #       run: npm test
+  
