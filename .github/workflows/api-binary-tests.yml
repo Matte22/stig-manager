@@ -188,7 +188,8 @@ jobs:
         id: idp-run
         working-directory: test/api/mock-keycloak
         run: |
-          python -m http.server 8080 &
+          python -m http.server 8080 --bind 127.0.0.1 &
+    
       
       - name: Verify Keycloak Mock Server
         run: |
