@@ -190,10 +190,9 @@ jobs:
         run: |
           python -m http.server 8080 --bind 127.0.0.1 &
     
-      
-      - name: Verify Keycloak Mock Server
+      - name: Test Keycloak Mock Server
         run: |
-          curl -v http://127.0.0.1:8080/
+          curl -v http://127.0.0.1:8080/auth/realms/stigman/.well-known/openid-configuration
         
 
 
