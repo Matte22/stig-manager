@@ -171,6 +171,15 @@ jobs:
     env:
       STIGMAN_DB_HOST: ${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}
       STIGMAN_DB_PORT: 3306
+      STIGMAN_API_PORT: 64001
+      STIGMAN_DB_PASSWORD: stigman
+      STIGMAN_API_AUTHORITY: http://127.0.0.1:8080/auth/realms/stigman
+      STIGMAN_SWAGGER_ENABLED: true
+      STIGMAN_SWAGGER_SERVER: http://127.0.0.1:64001/api
+      STIGMAN_SWAGGER_REDIRECT: http://127.0.0.1:64001/api-docs/oauth2-redirect.html
+      STIGMAN_DEV_RESPONSE_VALIDATION: logOnly
+      STIGMAN_EXPERIMENTAL_APPDATA: 'true'
+      STIGMAN_OIDC_PROVIDER: http://127.0.0.1:8080/auth/realms/stigman
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
