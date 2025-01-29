@@ -180,7 +180,7 @@ jobs:
   run-test-windows-binary-artifact:
     name: Run and test Windows artifact
     runs-on: windows-latest
-    needs: [build-binary-artifacts, run-mysql-on-ubuntu]
+    needs: [build-binary-artifacts]
     env:
       STIGMAN_DB_HOST: ${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}
       STIGMAN_DB_PORT: 3306
