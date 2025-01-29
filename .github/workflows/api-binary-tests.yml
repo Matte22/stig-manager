@@ -79,6 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       mysql_ip: ${{ steps.get-ip.outputs.ip }}
+      ubuntu_ip: ${{ steps.get-ubuntu-ip.outputs.ubuntu_ip }}
     steps:
       - name: Start MySQL container
         run: |
@@ -89,10 +90,17 @@ jobs:
             -e MYSQL_USER=stigman \
             -e MYSQL_PASSWORD=stigman \
             mysql:8.0.24
-
-      - name: Start HTTP server
+      - name: Start HTTP server in the background
         run: |
-          nohup python3 -m http.server 8080 --bind 0.0.0.0 &
+          setsid python3 -m http.server 8080 --bind 0.0.0.0 > http_server.log 2>&1 &
+
+      
+      - name: Get Ubuntu Runner Public IP
+        id: get-ubuntu-ip
+        run: |
+          UBUNTU_IP=$(curl -s http://checkip.amazonaws.com)
+          echo "Ubuntu runner is accessible at $UBUNTU_IP"
+          echo "::set-output name=ubuntu_ip::$UBUNTU_IP"
 
       - name: Get MySQL container IP
         id: get-ip
@@ -101,7 +109,6 @@ jobs:
           echo "MySQL is running on $MYSQL_IP"
           echo "ip=$MYSQL_IP" >> $GITHUB_ENV
           echo "::set-output name=ip::$MYSQL_IP"
-
 
 
   run-test-linux-binary-artifact:
@@ -170,58 +177,51 @@ jobs:
         working-directory: ./test/api/
         run: npm test
 
-  # run-test-windows-binary-artifact:
-  #   name: Run and test Windows artifact
-  #   runs-on: windows-latest
-  #   needs: [build-binary-artifacts, run-mysql-on-ubuntu]
-  #   env:
-  #     STIGMAN_DB_HOST: ${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}
-  #     STIGMAN_DB_PORT: 3306
-  #     STIGMAN_OIDC_PROVIDER: http://${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}:8080/auth/realms/stigman
-  #     STIGMAN_API_AUTHORITY: http://${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}:8080/auth/realms/stigman
-  #   steps:
-  #     - name: Check out the repo
-  #       uses: actions/checkout@v4
-  #     - uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 18
+  run-test-windows-binary-artifact:
+    name: Run and test Windows artifact
+    runs-on: windows-latest
+    needs: [build-binary-artifacts, run-mysql-on-ubuntu]
+    env:
+      STIGMAN_DB_HOST: ${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}
+      STIGMAN_DB_PORT: 3306
+      STIGMAN_OIDC_PROVIDER: http://${{ needs.run-mysql-on-ubuntu.outputs.ubuntu_ip }}:8080/auth/realms/stigman
+      STIGMAN_API_AUTHORITY: http://${{ needs.run-mysql-on-ubuntu.outputs.ubuntu_ip }}:8080/auth/realms/stigman
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
+      - name: Download builds
+        uses: actions/download-artifact@v4
+        with:
+          name: binary-artifacts  
+          path: ./binary-artifacts
 
-  #     - name: Run mock Keycloak (Windows)
-  #       id: idp-run
-  #       working-directory: test/api/mock-keycloak
-  #       run: |
-  #         python3 -m http.server 8080 --bind 127.0.0.1 &
-
-  #     - name: Download builds
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: binary-artifacts  
-  #         path: ./binary-artifacts
-
-  #     - name: Run Windows binary (Direct)
-  #       working-directory: ./binary-artifacts
-  #       run: |
-  #         echo "Running tests on binary artifacts"
-  #         .\stig-manager-win.exe
+      - name: Run Windows binary (Direct)
+        working-directory: ./binary-artifacts
+        run: |
+          echo "Running tests on binary artifacts"
+          .\stig-manager-win.exe
       
 
-  #     - name: Wait for API bootstrap
-  #       run: |
-  #         for /L %%i in (1,1,10) do (
-  #           timeout /t 5 /nobreak >nul
-  #           curl --output nul --silent --fail http://localhost:64001/api/op/configuration && exit /B 0
-  #           echo .
-  #         )
-  #         exit /B 1
+      - name: Wait for API bootstrap
+        run: |
+          for /L %%i in (1,1,10) do (
+            timeout /t 5 /nobreak >nul
+            curl --output nul --silent --fail http://localhost:64001/api/op/configuration && exit /B 0
+            echo .
+          )
+          exit /B 1
 
-  #     - name: Install test dependencies
-  #       run: npm ci
-  #       working-directory: ./test/api/
+      - name: Install test dependencies
+        run: npm ci
+        working-directory: ./test/api/
 
-  #     - name: Run tests with coverage
-  #       working-directory: ./test/api/
-  #       run: npm test
+      - name: Run tests with coverage
+        working-directory: ./test/api/
+        run: npm test
 
   
   # run-test-windows-binary-artifact:
