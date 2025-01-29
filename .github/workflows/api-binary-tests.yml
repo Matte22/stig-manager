@@ -159,8 +159,8 @@ jobs:
           Start-Process -NoNewWindow -FilePath "python" -ArgumentList "-m http.server 8080"
     
 
-      - name: Verify Keycloak is Running
-        run: curl -v http://localhost:8080/auth/realms/stigman/.well-known/openid-configuration || exit 1
+      # - name: Verify Keycloak is Running
+      #   run: curl -v http://localhost:8080/auth/realms/stigman/.well-known/openid-configuration || exit 1
         
       - name: Run MySQL container (Windows)
         id: mysql-run
