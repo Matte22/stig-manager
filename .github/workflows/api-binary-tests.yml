@@ -75,7 +75,7 @@ jobs:
           if-no-files-found: error
 
   run-mysql-on-ubuntu:
-    name: Start MySQL on Ubuntu
+    name: Start MySQL and HTTP server on Ubuntu
     runs-on: ubuntu-latest
     outputs:
       mysql_ip: ${{ steps.get-ip.outputs.ip }}
@@ -89,6 +89,11 @@ jobs:
             -e MYSQL_USER=stigman \
             -e MYSQL_PASSWORD=stigman \
             mysql:8.0.24
+
+      - name: Start HTTP server
+        run: |
+          nohup python3 -m http.server 8080 --bind 0.0.0.0 &
+
       - name: Get MySQL container IP
         id: get-ip
         run: |
@@ -96,6 +101,7 @@ jobs:
           echo "MySQL is running on $MYSQL_IP"
           echo "ip=$MYSQL_IP" >> $GITHUB_ENV
           echo "::set-output name=ip::$MYSQL_IP"
+
 
 
   run-test-linux-binary-artifact:
@@ -171,6 +177,8 @@ jobs:
     env:
       STIGMAN_DB_HOST: ${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}
       STIGMAN_DB_PORT: 3306
+      STIGMAN_OIDC_PROVIDER: http://${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}:8080/auth/realms/stigman
+      STIGMAN_API_AUTHORITY: http://${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}:8080/auth/realms/stigman
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
