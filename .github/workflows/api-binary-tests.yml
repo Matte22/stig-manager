@@ -109,6 +109,10 @@ jobs:
           echo "MySQL is running on $MYSQL_IP"
           echo "ip=$MYSQL_IP" >> $GITHUB_ENV
           echo "::set-output name=ip::$MYSQL_IP"
+
+      - name: Keep Ubuntu Job Running
+        run: tail -f /dev/null
+          
   # run-test-linux-binary-artifact:
   #   name: Run and test linux artifact
   #   runs-on: ubuntu-latest
