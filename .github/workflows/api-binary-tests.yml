@@ -178,18 +178,11 @@ jobs:
         with:
           node-version: 18
 
-      - name: install nodejs
-        run: |
-          choco install nodejs
-          choco install python3
-  
-      - name: Install HTTP Server
-        run: npm install -g http-server
-
-      - name: Run mock Keycloak (Node.js)
+      - name: Run mock Keycloak (PowerShell)
         working-directory: test/api/mock-keycloak
         run: |
-          http-server -p 8080 -a 127.0.0.1 &
+          Start-Process -NoNewWindow -FilePath "powershell.exe" -ArgumentList "-Command { Start-HTTPListener -Port 8080 -Directory '.' }"
+        
 
         
       # - name: Run mock Keycloak (Windows)
