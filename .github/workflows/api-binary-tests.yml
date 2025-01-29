@@ -178,22 +178,25 @@ jobs:
         with:
           node-version: 18
 
+      - name: install nodejs
+        run: |
+          choco install nodejs
+          choco install python3
+  
+      - name: Install HTTP Server
+        run: npm install -g http-server
+
+      - name: Run mock Keycloak (Node.js)
+        working-directory: test/api/mock-keycloak
+        run: |
+          http-server -p 8080 -a 127.0.0.1 &
+
+        
       # - name: Run mock Keycloak (Windows)
       #   id: idp-run
       #   working-directory: test/api/mock-keycloak
       #   run: |
-      #     Start-Process -NoNewWindow -FilePath "python" -ArgumentList "-m http.server 8080"
-
-      - name: Verify Mock Keycloak Files (Windows)
-        run: |
-          dir test/api/mock-keycloak/auth/realms/stigman/.well-known
-    
-
-      - name: Run mock Keycloak (Windows)
-        id: idp-run
-        working-directory: test/api/mock-keycloak
-        run: |
-          python3 -m http.server 8080 --bind 127.0.0.1 &
+      #     python3 -m http.server 8080 --bind 127.0.0.1 &
     
       - name: Test Keycloak Mock Server
         run: |
