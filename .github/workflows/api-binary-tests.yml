@@ -178,24 +178,12 @@ jobs:
         with:
           node-version: 18
 
-      - name: Run mock Keycloak (PowerShell)
+
+      - name: Run mock Keycloak (Windows)
+        id: idp-run
         working-directory: test/api/mock-keycloak
         run: |
-          Start-Process -NoNewWindow -FilePath "powershell.exe" -ArgumentList "-Command { Start-HTTPListener -Port 8080 -Directory '.' }"
-        
-
-        
-      # - name: Run mock Keycloak (Windows)
-      #   id: idp-run
-      #   working-directory: test/api/mock-keycloak
-      #   run: |
-      #     python3 -m http.server 8080 --bind 127.0.0.1 &
-    
-      - name: Test Keycloak Mock Server
-        run: |
-          curl -v http://127.0.0.1:8080/auth/realms/stigman/.well-known/openid-configuration
-        
-
+          python3 -m http.server 8080 --bind 127.0.0.1 &
 
       - name: Download builds
         uses: actions/download-artifact@v4
