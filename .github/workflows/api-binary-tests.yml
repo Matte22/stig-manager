@@ -165,13 +165,14 @@ jobs:
       - name: Run MySQL container (Windows)
         id: mysql-run
         run: |
-          docker run -d --name stig-manager-db ^
-            -p 3306:3306 ^
-            -e MYSQL_ROOT_PASSWORD=rootpw ^
-            -e MYSQL_DATABASE=stigman ^
-            -e MYSQL_USER=stigman ^
-            -e MYSQL_PASSWORD=stigman ^
+          docker run -d --name stig-manager-db `
+            -p 3306:3306 `
+            -e MYSQL_ROOT_PASSWORD=rootpw `
+            -e MYSQL_DATABASE=stigman `
+            -e MYSQL_USER=stigman `
+            -e MYSQL_PASSWORD=stigman `
             mysql:8.0.24
+    
 
       - name: wait 5 seconds
         run: sleep 5
