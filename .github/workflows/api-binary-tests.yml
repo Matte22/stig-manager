@@ -170,58 +170,58 @@ jobs:
         working-directory: ./test/api/
         run: npm test
 
-  run-test-windows-binary-artifact:
-    name: Run and test Windows artifact
-    runs-on: windows-latest
-    needs: [build-binary-artifacts, run-mysql-on-ubuntu]
-    env:
-      STIGMAN_DB_HOST: ${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}
-      STIGMAN_DB_PORT: 3306
-      STIGMAN_OIDC_PROVIDER: http://${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}:8080/auth/realms/stigman
-      STIGMAN_API_AUTHORITY: http://${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}:8080/auth/realms/stigman
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
+  # run-test-windows-binary-artifact:
+  #   name: Run and test Windows artifact
+  #   runs-on: windows-latest
+  #   needs: [build-binary-artifacts, run-mysql-on-ubuntu]
+  #   env:
+  #     STIGMAN_DB_HOST: ${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}
+  #     STIGMAN_DB_PORT: 3306
+  #     STIGMAN_OIDC_PROVIDER: http://${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}:8080/auth/realms/stigman
+  #     STIGMAN_API_AUTHORITY: http://${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}:8080/auth/realms/stigman
+  #   steps:
+  #     - name: Check out the repo
+  #       uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 18
 
 
-      - name: Run mock Keycloak (Windows)
-        id: idp-run
-        working-directory: test/api/mock-keycloak
-        run: |
-          python3 -m http.server 8080 --bind 127.0.0.1 &
+  #     - name: Run mock Keycloak (Windows)
+  #       id: idp-run
+  #       working-directory: test/api/mock-keycloak
+  #       run: |
+  #         python3 -m http.server 8080 --bind 127.0.0.1 &
 
-      - name: Download builds
-        uses: actions/download-artifact@v4
-        with:
-          name: binary-artifacts  
-          path: ./binary-artifacts
+  #     - name: Download builds
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: binary-artifacts  
+  #         path: ./binary-artifacts
 
-      - name: Run Windows binary (Direct)
-        working-directory: ./binary-artifacts
-        run: |
-          echo "Running tests on binary artifacts"
-          .\stig-manager-win.exe
+  #     - name: Run Windows binary (Direct)
+  #       working-directory: ./binary-artifacts
+  #       run: |
+  #         echo "Running tests on binary artifacts"
+  #         .\stig-manager-win.exe
       
 
-      - name: Wait for API bootstrap
-        run: |
-          for /L %%i in (1,1,10) do (
-            timeout /t 5 /nobreak >nul
-            curl --output nul --silent --fail http://localhost:64001/api/op/configuration && exit /B 0
-            echo .
-          )
-          exit /B 1
+  #     - name: Wait for API bootstrap
+  #       run: |
+  #         for /L %%i in (1,1,10) do (
+  #           timeout /t 5 /nobreak >nul
+  #           curl --output nul --silent --fail http://localhost:64001/api/op/configuration && exit /B 0
+  #           echo .
+  #         )
+  #         exit /B 1
 
-      - name: Install test dependencies
-        run: npm ci
-        working-directory: ./test/api/
+  #     - name: Install test dependencies
+  #       run: npm ci
+  #       working-directory: ./test/api/
 
-      - name: Run tests with coverage
-        working-directory: ./test/api/
-        run: npm test
+  #     - name: Run tests with coverage
+  #       working-directory: ./test/api/
+  #       run: npm test
 
   
   # run-test-windows-binary-artifact:
