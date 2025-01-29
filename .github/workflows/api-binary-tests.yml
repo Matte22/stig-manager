@@ -190,9 +190,10 @@ jobs:
         run: |
           python -m http.server 8080 &
       
-
-      - name: Debug Keycloak Server
-        run: netstat -ano | findstr :8080
+      - name: Verify Keycloak Mock Server
+        run: |
+          curl -v http://127.0.0.1:8080/
+        
 
 
       - name: Download builds
