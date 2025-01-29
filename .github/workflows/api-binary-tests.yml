@@ -156,7 +156,8 @@ jobs:
         id: idp-run
         working-directory: test/api/mock-keycloak
         run: |
-          start /B python -m http.server 8080
+          Start-Process -NoNewWindow -FilePath "python" -ArgumentList "-m http.server 8080"
+    
 
       - name: Verify Keycloak is Running
         run: curl -v http://localhost:8080/auth/realms/stigman/.well-known/openid-configuration || exit 1
