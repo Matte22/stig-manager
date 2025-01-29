@@ -178,12 +178,18 @@ jobs:
         with:
           node-version: 18
 
+      # - name: Run mock Keycloak (Windows)
+      #   id: idp-run
+      #   working-directory: test/api/mock-keycloak
+      #   run: |
+      #     Start-Process -NoNewWindow -FilePath "python" -ArgumentList "-m http.server 8080"
+
       - name: Run mock Keycloak (Windows)
         id: idp-run
         working-directory: test/api/mock-keycloak
         run: |
-          Start-Process -NoNewWindow -FilePath "python" -ArgumentList "-m http.server 8080"
-
+          python -m http.server 8080 &
+      
 
       - name: Debug Keycloak Server
         run: netstat -ano | findstr :8080
