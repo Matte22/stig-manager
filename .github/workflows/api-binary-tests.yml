@@ -23,13 +23,13 @@ env:
   STIGMAN_DB_HOST: localhost
   STIGMAN_DB_PORT: 3306
   STIGMAN_DB_PASSWORD: stigman
-  STIGMAN_API_AUTHORITY: http://127.0.0.1:8080/auth/realms/stigman
+  STIGMAN_API_AUTHORITY: http://localhost:8080/auth/realms/stigman
   STIGMAN_SWAGGER_ENABLED: true
-  STIGMAN_SWAGGER_SERVER: http://127.0.0.1:64001/api
-  STIGMAN_SWAGGER_REDIRECT: http://127.0.0.1:64001/api-docs/oauth2-redirect.html
+  STIGMAN_SWAGGER_SERVER: http://localhost:64001/api
+  STIGMAN_SWAGGER_REDIRECT: http://localhost:64001/api-docs/oauth2-redirect.html
   STIGMAN_DEV_RESPONSE_VALIDATION: logOnly
   STIGMAN_EXPERIMENTAL_APPDATA: 'true'
-  STIGMAN_OIDC_PROVIDER: http://127.0.0.1:8080/auth/realms/stigman
+  STIGMAN_OIDC_PROVIDER: http://localhost:8080/auth/realms/stigman
 jobs:
   build-binary-artifacts:
     name: Build binary artifacts
