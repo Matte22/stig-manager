@@ -193,11 +193,12 @@ jobs:
       - name: List downloaded files
         run: dir binary-artifacts
 
-      - name: Run Windows binary
-        working-directory: ./
+      - name: Run Windows binary (Direct)
+        working-directory: ./binary-artifacts
         run: |
           echo "Running tests on binary artifacts"
-          start /B binary-artifacts\stig-manager-win.exe
+          .\stig-manager-win.exe
+      
 
       - name: Wait for API bootstrap
         run: |
