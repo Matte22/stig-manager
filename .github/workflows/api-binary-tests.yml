@@ -97,9 +97,6 @@ jobs:
           echo "ip=$MYSQL_IP" >> $GITHUB_ENV
           echo "::set-output name=ip::$MYSQL_IP"
 
-      - name: Verify MySQL is running
-        run: |
-          mysqladmin ping -h $MYSQL_IP --silent || exit 1
 
   run-test-linux-binary-artifact:
     name: Run and test linux artifact
