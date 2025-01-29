@@ -97,6 +97,10 @@ jobs:
           echo "ip=$MYSQL_IP" >> $GITHUB_ENV
           echo "::set-output name=ip::$MYSQL_IP"
 
+      - name: Verify MySQL is running
+        run: |
+          mysqladmin ping -h $MYSQL_IP --silent || exit 1
+
   run-test-linux-binary-artifact:
     name: Run and test linux artifact
     runs-on: ubuntu-latest
@@ -182,16 +186,6 @@ jobs:
         working-directory: test/api/mock-keycloak
         run: |
           Start-Process -NoNewWindow -FilePath "python" -ArgumentList "-m http.server 8080"
-
-      - name: Wait for MySQL to be accessible
-        run: |
-          echo "Trying to connect to MySQL at ${{ env.STIGMAN_DB_HOST }}"
-          for /L %%i in (1,1,10) do (
-            timeout /t 5 /nobreak >nul
-            mysqladmin ping -h ${{ env.STIGMAN_DB_HOST }} -u stigman --password=stigman && exit /B 0
-            echo "Waiting for MySQL..."
-          )
-          exit /B 1
 
       - name: Download builds
         uses: actions/download-artifact@v4
