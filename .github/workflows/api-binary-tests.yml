@@ -155,29 +155,6 @@ jobs:
             python3-pip
             docker.io
 
-      - name: Ensure WSL 2 is Enabled and Systemd is Active
-        shell: pwsh
-        run: |
-          echo "Checking WSL version..."
-          wsl --set-default-version 2
-          wsl --list --verbose
-          echo "Ensuring Ubuntu-22.04 is using WSL 2..."
-          wsl --set-version Ubuntu-22.04 2 || echo "Ubuntu is already on WSL 2"
-
-          echo "Enabling systemd in WSL..."
-          wsl sudo sed -i 's/^#Systemd/Enabled/SystemdEnabled=true/' /etc/wsl.conf
-          echo "Systemd should now be enabled."
-
-      - name: Start Docker Service in WSL
-        shell: pwsh
-        run: |
-          echo "Starting Docker in WSL..."
-          wsl sudo service docker start || echo "Docker service failed to start."
-          echo "Checking Docker status..."
-          wsl sudo systemctl status docker || echo "Docker is NOT running."
-          echo "Verifying Docker installation..."
-          wsl docker --version || echo "Docker command is not available."
-
       - name: Start MySQL in Docker Inside WSL
         shell: pwsh
         run: |
