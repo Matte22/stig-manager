@@ -90,19 +90,33 @@ jobs:
             -e MYSQL_PASSWORD=stigman \
             mysql:8.0.24
 
-      - name: Get MySQL container IP
-        id: get-ip
+      - name: Start mock Keycloak authentication server
+        working-directory: test/api/mock-keycloak
         run: |
-          MYSQL_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' stig-manager-db)
-          echo "MySQL is running on $MYSQL_IP"
-          echo "MYSQL_IP=$MYSQL_IP" >> $GITHUB_ENV # Store in environment variable
-
-
-      - name: Upload MySQL IP
+          nohup python3 -m http.server 8080 --bind 0.0.0.0 > keycloak.log 2>&1 &
+          - name: Get MySQL and Keycloak container IPs
+          id: get-ips
+          run: |
+            MYSQL_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' stig-manager-db)
+            echo "MySQL is running on $MYSQL_IP"
+  
+            # Get Ubuntu's own IP address (for Keycloak)
+            KEYCLOAK_IP=$(hostname -I | awk '{print $1}')
+            echo "Keycloak is running on $KEYCLOAK_IP"
+  
+            # Store in GitHub environment
+            echo "MYSQL_IP=$MYSQL_IP" >> $GITHUB_ENV
+            echo "KEYCLOAK_IP=$KEYCLOAK_IP" >> $GITHUB_ENV
+  
+            # Save to a file for later use
+            echo "MYSQL_IP=$MYSQL_IP" > env-ips.txt
+            echo "KEYCLOAK_IP=$KEYCLOAK_IP" >> env-ips.txt
+  
+      - name: Upload environment IPs
         uses: actions/upload-artifact@v4
         with:
-          name: mysql-ip
-          path: mysql_ip.txt
+          name: env-ips
+          path: env-ips.txt
 
       - name: Keep Ubuntu Job Running
         run: tail -f /dev/null
@@ -119,11 +133,11 @@ jobs:
   #       with:
   #         node-version: 18
 
-  #     - name: Run mock Keycloak
-  #       id: idp-run
-  #       working-directory: test/api/mock-keycloak
-  #       run: |
-  #         python3 -m http.server 8080 &
+      # - name: Run mock Keycloak
+      #   id: idp-run
+      #   working-directory: test/api/mock-keycloak
+      #   run: |
+      #     python3 -m http.server 8080 &
 
       
   #     - name: wait 5 seconds
@@ -181,6 +195,30 @@ jobs:
       STIGMAN_DB_PORT: 3306
     steps:
 
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Download MySQL and Keycloak IPs
+        uses: actions/download-artifact@v4
+        with:
+          name: env-ips
+
+      - name: Set MySQL and Keycloak Environment Variables
+        run: |
+          echo "STIGMAN_DB_HOST=$(Get-Content env-ips.txt | grep MYSQL_IP | cut -d '=' -f2)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "STIGMAN_OIDC_PROVIDER=http://$(Get-Content env-ips.txt | grep KEYCLOAK_IP | cut -d '=' -f2):8080/auth/realms/stigman" | Out-File -FilePath $env:GITHUB_ENV -Append
+        shell: pwsh
+
+      - name: Download builds
+        uses: actions/download-artifact@v4
+        with:
+          name: binary-artifacts  
+          path: ./binary-artifacts
+
+
       - name: print all env 
         run: |
           echo "STIGMAN_DB_HOST: ${{ env.STIGMAN_DB_HOST }}"
@@ -193,33 +231,13 @@ jobs:
           echo "STIGMAN_DEV_RESPONSE_VALIDATION: ${{ env.STIGMAN_DEV_RESPONSE_VALIDATION }}"
           echo "STIGMAN_EXPERIMENTAL_APPDATA: ${{ env.STIGMAN_EXPERIMENTAL_APPDATA }}"
           echo "STIGMAN_OIDC_PROVIDER: ${{ env.STIGMAN_OIDC_PROVIDER }}"
-          
-
-      - name: Check out the repo
-        uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - name: Run mock Keycloak
-        id: idp-run
-        working-directory: test/api/mock-keycloak
-        shell: pwsh
-        run: |
-          python -m http.server 8080 &
-
-      - name: Download builds
-        uses: actions/download-artifact@v4
-        with:
-          name: binary-artifacts  
-          path: ./binary-artifacts
+              
 
       - name: Run Windows binary (Direct)
         working-directory: ./binary-artifacts
         run: |
           echo "Running tests on binary artifacts"
           .\stig-manager-win.exe
-      
 
       - name: Wait for API bootstrap
         run: |
