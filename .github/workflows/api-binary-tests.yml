@@ -158,21 +158,6 @@ jobs:
           } else {
             echo "WSL is already installed."
           }
-
-      - name: Restart GitHub Actions Runner (Required for WSL)
-        shell: pwsh
-        run: |
-          echo "WSL installed. A restart is required for changes to take effect."
-          Stop-Process -Id $PID -Force
-
-      - name: Ensure WSL is Initialized
-        shell: pwsh
-        run: |
-          echo "Initializing WSL..."
-          wsl --update
-          wsl --set-default-version 2
-          wsl echo "WSL is now initialized."
-
       - name: Install Docker Inside WSL
         shell: pwsh
         run: |
