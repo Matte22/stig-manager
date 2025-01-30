@@ -149,6 +149,7 @@ jobs:
         with:
           distribution: "Ubuntu-22.04" # You can use "Ubuntu-20.04" if needed
           set-as-default: true
+          wsl-version: 2
           additional-packages: 
             curl
             python3
