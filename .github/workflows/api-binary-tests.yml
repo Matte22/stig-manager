@@ -172,7 +172,7 @@ jobs:
             mysql:8.0.24
 
           wsl nohup python3 -m http.server 8080 --bind 0.0.0.0 > /dev/null 2>&1 &
-          shell: powershell
+        shell: pwsh
       - name: Verify MySQL & Mock Keycloak Are Running in WSL
         run: |
           wsl curl http://localhost:8080
