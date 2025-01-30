@@ -153,17 +153,17 @@ jobs:
           update: true
           additional-packages: "docker.io python3 curl"
 
-      - name: Force WSL to Use Version 2
-        shell: pwsh
-        run: |
-          echo "Checking WSL version..."
-          wsl --set-default-version 2
-          echo "Ensuring Ubuntu-22.04 is using WSL 2..."
-          wsl --list --verbose
-          wsl --set-version Ubuntu-22.04 2 || echo "Ubuntu is already on WSL 2"
+      # - name: Force WSL to Use Version 2
+      #   shell: pwsh
+      #   run: |
+      #     echo "Checking WSL version..."
+      #     wsl --set-default-version 2
+      #     echo "Ensuring Ubuntu-22.04 is using WSL 2..."
+      #     wsl --list --verbose
+      #     wsl --set-version Ubuntu-22.04 2 || echo "Ubuntu is already on WSL 2"
           
-          echo "Restarting WSL to apply changes..."
-          wsl --shutdown
+      #     echo "Restarting WSL to apply changes..."
+      #     wsl --shutdown
       - name: Start Docker in WSL
         shell: wsl-bash {0}
         run: |
