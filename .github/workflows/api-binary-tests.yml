@@ -145,27 +145,22 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Ensure WSL is Installed & Ubuntu is Set Up
-        shell: pwsh
-        run: |
-            wsl --install -d Ubuntu
+      - name: Install WSL and Ubuntu
+        uses: Vampire/setup-wsl@v3
+        with:
+          distribution: "Ubuntu-22.04" # You can use "Ubuntu-20.04" if needed
+          set-as-default: true
+          wsl-version: 2
 
-      - name: Ensure Ubuntu is Initialized (Run First Time Setup)
+      - name: Install Docker, Python, and Curl inside WSL
         shell: pwsh
         run: |
-          echo "Running first-time setup for Ubuntu..."
-          wsl --set-default Ubuntu
-          wsl sudo apt update || echo "Ubuntu already initialized."
-
-      - name: Install Docker Inside WSL
-        shell: pwsh
-        run: |
-          echo "Installing Docker inside WSL..."
+          echo "Updating package lists and installing dependencies..."
           wsl sudo apt update
-          wsl sudo apt install -y docker.io
+          wsl sudo apt install -y docker.io python3 curl
           wsl sudo service docker start
           wsl sudo usermod -aG docker $(whoami)
-          echo "Docker installation inside WSL is complete."
+          echo "Docker, Python, and Curl installed inside WSL."
 
       - name: Start MySQL in Docker Inside WSL
         shell: pwsh
@@ -178,6 +173,7 @@ jobs:
             -e MYSQL_USER=stigman \
             -e MYSQL_PASSWORD=stigman \
             mysql:8.0.24
+          echo "MySQL container started in WSL."
 
       - name: Start Mock Keycloak HTTP Server in WSL
         shell: pwsh
@@ -208,4 +204,9 @@ jobs:
         run: |
           echo "Running tests on binary artifacts"
           .\stig-manager-win.exe
+        env:
+          STIGMAN_DB_HOST: localhost
+          STIGMAN_DB_PORT: 3306
+          STIGMAN_OIDC_PROVIDER: http://localhost:8080/auth/realms/stigman
+
      
