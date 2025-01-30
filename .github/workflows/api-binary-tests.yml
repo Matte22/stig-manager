@@ -145,43 +145,23 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Install WSL with Ubuntu and Fix APT Issues
+      - name: Install WSL with Ubuntu and Upgrade to WSL 2
         uses: Vampire/setup-wsl@v4
         with:
           distribution: "Ubuntu-22.04"
           set-as-default: true
-          update: false # ⬅️ Disable auto-update to avoid cache corruption
-          additional-packages: ""
-
-      - name: Fix APT Cache and Update Packages
-        shell: wsl-bash {0}
-        run: |
-          echo "Cleaning and resetting APT package lists..."
-          sudo rm -rf /var/lib/apt/lists/*
-          sudo apt-get clean
-          echo "Running apt-get update..."
-          sudo apt-get update
-          echo "Running apt-get upgrade..."
-          sudo apt-get upgrade -y
-          echo "APT cache successfully fixed!"
+          update: true
+          additional-packages: "docker.io python3 curl"
 
       - name: Force WSL to Use Version 2
         shell: pwsh
         run: |
           echo "Checking WSL version..."
           wsl --set-default-version 2
-          echo "Ensuring Ubuntu-22.04 is using WSL 2..."
           wsl --list --verbose
           wsl --set-version Ubuntu-22.04 2 || echo "Ubuntu is already on WSL 2"
           echo "Restarting WSL to apply changes..."
           wsl --shutdown
-
-      - name: Install Docker, Python, and Curl
-        shell: wsl-bash {0}
-        run: |
-          echo "Installing additional required packages..."
-          sudo apt-get install -y docker.io python3 curl
-          echo "All packages installed successfully."
 
       - name: Start Docker in WSL
         shell: wsl-bash {0}
@@ -210,6 +190,21 @@ jobs:
           nohup python3 -m http.server 8080 --bind 0.0.0.0 > /dev/null 2>&1 &
           echo "Mock Keycloak HTTP server started."
 
+      - name: Get WSL2 IP and Set Environment Variables
+        shell: pwsh
+        run: |
+          echo "Getting WSL2 IP..."
+          $wslIp = wsl hostname -I | ForEach-Object { $_.Trim() }
+          echo "WSL IP is: $wslIp"
+
+          echo "Updating API environment variables..."
+          echo "STIGMAN_DB_HOST=$wslIp" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "STIGMAN_OIDC_PROVIDER=http://$wslIp:8080/auth/realms/stigman" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+          echo "Ensuring Windows can connect to WSL..."
+          Test-NetConnection -ComputerName $wslIp -Port 3306 || echo "Warning: MySQL not reachable!"
+          Test-NetConnection -ComputerName $wslIp -Port 8080 || echo "Warning: Keycloak not reachable!"
+
       - name: Verify MySQL & Mock Keycloak Are Running in WSL
         shell: wsl-bash {0}
         run: |
@@ -232,6 +227,6 @@ jobs:
           echo "Running tests on binary artifacts"
           .\stig-manager-win.exe
         env:
-          STIGMAN_DB_HOST: localhost
+          STIGMAN_DB_HOST: ${{ env.STIGMAN_DB_HOST }}
           STIGMAN_DB_PORT: 3306
-          STIGMAN_OIDC_PROVIDER: http://localhost:8080/auth/realms/stigman
+          STIGMAN_OIDC_PROVIDER: ${{ env.STIGMAN_OIDC_PROVIDER }}
