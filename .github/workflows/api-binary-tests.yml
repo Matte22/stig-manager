@@ -138,44 +138,61 @@ jobs:
   #       working-directory: ./test/api/
   #       run: npm test
   run-test-windows-binary-artifact:
-    name: Run and test Windows artifact (with WSL and Docker)
+    name: Run and test Windows artifact (with WSL 2 and Docker)
     runs-on: windows-latest
     needs: build-binary-artifacts
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Install WSL with Ubuntu and Upgrade to WSL 2
+      - name: Install WSL with Ubuntu and Fix APT Issues
         uses: Vampire/setup-wsl@v4
         with:
           distribution: "Ubuntu-22.04"
           set-as-default: true
-          update: true
-          additional-packages: "docker.io python3 curl"
+          update: false # ⬅️ Disable auto-update to avoid cache corruption
+          additional-packages: ""
 
-      # - name: Force WSL to Use Version 2
-      #   shell: pwsh
-      #   run: |
-      #     echo "Checking WSL version..."
-      #     wsl --set-default-version 2
-      #     echo "Ensuring Ubuntu-22.04 is using WSL 2..."
-      #     wsl --list --verbose
-      #     wsl --set-version Ubuntu-22.04 2 || echo "Ubuntu is already on WSL 2"
-          
-      #     echo "Restarting WSL to apply changes..."
-      #     wsl --shutdown
+      - name: Fix APT Cache and Update Packages
+        shell: wsl-bash {0}
+        run: |
+          echo "Cleaning and resetting APT package lists..."
+          sudo rm -rf /var/lib/apt/lists/*
+          sudo apt-get clean
+          echo "Running apt-get update..."
+          sudo apt-get update
+          echo "Running apt-get upgrade..."
+          sudo apt-get upgrade -y
+          echo "APT cache successfully fixed!"
+
+      - name: Force WSL to Use Version 2
+        shell: pwsh
+        run: |
+          echo "Checking WSL version..."
+          wsl --set-default-version 2
+          echo "Ensuring Ubuntu-22.04 is using WSL 2..."
+          wsl --list --verbose
+          wsl --set-version Ubuntu-22.04 2 || echo "Ubuntu is already on WSL 2"
+          echo "Restarting WSL to apply changes..."
+          wsl --shutdown
+
+      - name: Install Docker, Python, and Curl
+        shell: wsl-bash {0}
+        run: |
+          echo "Installing additional required packages..."
+          sudo apt-get install -y docker.io python3 curl
+          echo "All packages installed successfully."
+
       - name: Start Docker in WSL
         shell: wsl-bash {0}
         run: |
           echo "Starting Docker daemon in WSL..."
           sudo nohup dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 > /dev/null 2>&1 &
-
           echo "Waiting for Docker to be ready..."
           for i in {1..10}; do
             sleep 2
             docker info > /dev/null 2>&1 && break || echo "Waiting..."
           done
-
           echo "Verifying Docker is running..."
           docker ps || echo "Docker failed to start!"
 
@@ -198,7 +215,6 @@ jobs:
         run: |
           echo "Checking if Keycloak is running..."
           curl -s http://localhost:8080 || echo "Keycloak is NOT responding!"
-
           echo "Checking MySQL container..."
           docker ps
           mysql -h 127.0.0.1 -u stigman -pstigman -e "SHOW DATABASES;" || echo "MySQL connection failed!"
