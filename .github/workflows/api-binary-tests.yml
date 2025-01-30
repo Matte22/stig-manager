@@ -73,104 +73,7 @@ jobs:
           name: binary-archives
           path: ./api/dist/
           if-no-files-found: error
-  run-mysql-on-ubuntu:
-    name: Start MySQL and Mock Keycloak on Ubuntu
-    runs-on: ubuntu-latest
-    steps:
-    - name: Check out the repo
-      uses: actions/checkout@v4
-
-    - name: Start MySQL container (bind to all interfaces)
-      run: |
-        docker run -d --name stig-manager-db \
-          -p 3306:3306 \
-          -e MYSQL_ROOT_PASSWORD=rootpw \
-          -e MYSQL_DATABASE=stigman \
-          -e MYSQL_USER=stigman \
-          -e MYSQL_PASSWORD=stigman \
-          mysql:8.0.24
-
-    - name: Build and Start Mock Keycloak in Docker (bind to 0.0.0.0)
-      working-directory: test/api/mock-keycloak
-      run: |
-        docker build -t mock-keycloak .
-        docker run -d --name mock-keycloak -p 8080:8080 mock-keycloak
-
-    - name: Set MySQL and Keycloak Environment Variables
-      run: |
-        echo "STIGMAN_DB_HOST=localhost" >> $GITHUB_ENV
-        echo "STIGMAN_OIDC_PROVIDER=http://localhost:8080/auth/realms/stigman" >> $GITHUB_ENV
-        
-    - name: Upload environment variables
-      run: |
-        echo "STIGMAN_DB_HOST=localhost" > env-ips.txt
-        echo "STIGMAN_OIDC_PROVIDER=http://localhost:8080/auth/realms/stigman" >> env-ips.txt
-    
-
-    - name: Upload environment IPs
-      uses: actions/upload-artifact@v4
-      with:
-        name: env-ips
-        path: env-ips.txt
-
-  # run-mysql-on-ubuntu:
-  #   name: Start MySQL on Ubuntu
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     mysql_ip: ${{ env.MYSQL_IP }} # Use the environment variable instead of deprecated set-output
-  #   steps:
-
-  #     - name: Check out the repo
-  #       uses: actions/checkout@v4
-  #     - uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 18
-
-  #     - name: Start MySQL container
-  #       run: |
-  #         docker run -d --name stig-manager-db \
-  #           -p 3306:3306 \
-  #           -e MYSQL_ROOT_PASSWORD=rootpw \
-  #           -e MYSQL_DATABASE=stigman \
-  #           -e MYSQL_USER=stigman \
-  #           -e MYSQL_PASSWORD=stigman \
-  #           mysql:8.0.24
-
-  #     - name: Build and Start Mock Keycloak in Docker
-  #       working-directory: test/api/mock-keycloak
-  #       run: |
-  #         docker build -t mock-keycloak -f Dockerfile .
-  #         docker run -d --name mock-keycloak -p 8080:8080 mock-keycloak
-
-    
-
-  #     - name: Get MySQL and Mock Keycloak container IPs
-  #       id: get-ips
-  #       run: |
-  #         MYSQL_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' stig-manager-db)
-  #         echo "MySQL is running on $MYSQL_IP"
-
-  #         KEYCLOAK_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mock-keycloak)
-  #         echo "Mock Keycloak is running on $KEYCLOAK_IP"
-
-  #         # Store in GitHub environment
-  #         echo "MYSQL_IP=$MYSQL_IP" >> $GITHUB_ENV
-  #         echo "KEYCLOAK_IP=$KEYCLOAK_IP" >> $GITHUB_ENV
-
-  #         # Save to a file for later use
-  #         echo "MYSQL_IP=$MYSQL_IP" > env-ips.txt
-  #         echo "KEYCLOAK_IP=$KEYCLOAK_IP" >> env-ips.txt
-
-  #     - name: Upload environment IPs
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: env-ips
-  #         path: env-ips.txt
-
-  #     - name: Keep Ubuntu Job Running
-  #       run: tail -f /dev/null
-
-          
+ 
   # run-test-linux-binary-artifact:
   #   name: Run and test linux artifact
   #   runs-on: ubuntu-latest
@@ -240,25 +143,37 @@ jobs:
     runs-on: windows-latest
     needs: [build-binary-artifacts]
     steps:
-
+    
       - name: Check out the repo
         uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      - name: Download MySQL and Keycloak IPs
-        uses: actions/download-artifact@v4
-        with:
-          name: env-ips
 
-      - name: Set MySQL and Keycloak Environment Variables
+      - name: Install WSL and Ubuntu
         run: |
-          echo "STIGMAN_DB_HOST=$(Get-Content env-ips.txt | grep MYSQL_IP | cut -d '=' -f2)" | Out-File -FilePath $env:GITHUB_ENV -Append
-          echo "STIGMAN_OIDC_PROVIDER=http://$(Get-Content env-ips.txt | grep KEYCLOAK_IP | cut -d '=' -f2):8080/auth/realms/stigman" | Out-File -FilePath $env:GITHUB_ENV -Append
-          echo "STIGMAN_API_AUTHORITY=http://$(Get-Content env-ips.txt | grep KEYCLOAK_IP | cut -d '=' -f2):8080/auth/realms/stigman" | Out-File -FilePath $env:GITHUB_ENV -Append
-        shell: pwsh
+          wsl --install -d Ubuntu || echo "WSL already installed"
+        shell: powershell
 
+      - name: Start MySQL & Mock Keycloak inside WSL
+        run: |
+          wsl sudo service mysql start
+          wsl docker run -d --name stig-manager-db \
+            -p 3306:3306 \
+            -e MYSQL_ROOT_PASSWORD=rootpw \
+            -e MYSQL_DATABASE=stigman \
+            -e MYSQL_USER=stigman \
+            -e MYSQL_PASSWORD=stigman \
+            mysql:8.0.24
+
+          wsl nohup python3 -m http.server 8080 --bind 0.0.0.0 > /dev/null 2>&1 &
+          shell: powershell
+      - name: Verify MySQL & Mock Keycloak Are Running in WSL
+        run: |
+          wsl curl http://localhost:8080
+          wsl mysql -h 127.0.0.1 -u stigman -pstigman -e "SHOW DATABASES;"
+        shell: powershell
       - name: Download builds
         uses: actions/download-artifact@v4
         with:
@@ -300,78 +215,4 @@ jobs:
       - name: Run tests with coverage
         working-directory: ./test/api/
         run: npm test
-  
-  # run-test-windows-binary-artifact:
-  #   name: Run and test windows artifact
-  #   runs-on: windows-latest
-  #   needs: build-binary-artifacts  
-  #   steps:
-  
-  #     - name: Check out the repo
-  #       uses: actions/checkout@v4
-  #     - uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 18
-
-  #     - name: Run mock Keycloak (Windows)
-  #       id: idp-run
-  #       working-directory: test/api/mock-keycloak
-  #       run: |
-  #         Start-Process -NoNewWindow -FilePath "python" -ArgumentList "-m http.server 8080"
-    
-
-  #     # - name: Verify Keycloak is Running
-  #     #   run: curl -v http://localhost:8080/auth/realms/stigman/.well-known/openid-configuration || exit 1
-        
-  #     - name: Run MySQL container (Windows)
-  #       id: mysql-run
-  #       run: |
-  #         docker run -d --name stig-manager-db `
-  #           -p 3306:3306 `
-  #           -e MYSQL_ROOT_PASSWORD=rootpw `
-  #           -e MYSQL_DATABASE=stigman `
-  #           -e MYSQL_USER=stigman `
-  #           -e MYSQL_PASSWORD=stigman `
-  #           mysql:8.0.24
-    
-
-  #     - name: wait 5 seconds
-  #       run: sleep 5
-
-  #     - name: Download builds
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: binary-artifacts  
-  #         path: ./binary-artifacts
-
-  #     - name: List downloaded files
-  #       run: dir binary-artifacts
-
-  #     - name: Set execute permissions on binary
-  #       run: chmod +x ./binary-artifacts/stig-manager-linuxstatic
-      
-  #     - name: Run windows binary
-  #       working-directory: ./
-  #       run: |
-  #         echo "Running tests on binary artifacts"
-  #         start /B binary-artifacts\stig-manager-win.exe
-      
-
-          
-  #     - name: Wait for bootstrap
-  #       run: |
-  #         for /L %%i in (1,1,10) do (
-  #           timeout /t 5 /nobreak >nul
-  #           curl --output nul --silent --fail http://localhost:64001/api/op/configuration && exit /B 0
-  #           echo .
-  #         )
-  #         exit /B 1
-                
-  #     - name: Install test dependencies
-  #       run: npm ci
-  #       working-directory: ./test/api/
-
-  #     - name: Run tests with coverage
-  #       working-directory: ./test/api/
-  #       run: npm test
   
