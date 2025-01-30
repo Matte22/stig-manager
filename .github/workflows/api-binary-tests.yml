@@ -215,6 +215,7 @@ jobs:
         run: |
           echo "STIGMAN_DB_HOST=$(Get-Content env-ips.txt | grep MYSQL_IP | cut -d '=' -f2)" | Out-File -FilePath $env:GITHUB_ENV -Append
           echo "STIGMAN_OIDC_PROVIDER=http://$(Get-Content env-ips.txt | grep KEYCLOAK_IP | cut -d '=' -f2):8080/auth/realms/stigman" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "STIGMAN_API_AUTHORITY=http://$(Get-Content env-ips.txt | grep KEYCLOAK_IP | cut -d '=' -f2):8080/auth/realms/stigman" | Out-File -FilePath $env:GITHUB_ENV -Append
         shell: pwsh
 
       - name: Download builds
