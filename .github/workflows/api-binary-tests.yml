@@ -73,63 +73,102 @@ jobs:
           name: binary-archives
           path: ./api/dist/
           if-no-files-found: error
-
   run-mysql-on-ubuntu:
-    name: Start MySQL on Ubuntu
+    name: Start MySQL and Mock Keycloak on Ubuntu
     runs-on: ubuntu-latest
-    outputs:
-      mysql_ip: ${{ env.MYSQL_IP }} # Use the environment variable instead of deprecated set-output
     steps:
+    - name: Check out the repo
+      uses: actions/checkout@v4
 
-      - name: Check out the repo
-        uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
+    - name: Start MySQL container (bind to all interfaces)
+      run: |
+        docker run -d --name stig-manager-db \
+          -p 3306:3306 \
+          -e MYSQL_ROOT_PASSWORD=rootpw \
+          -e MYSQL_DATABASE=stigman \
+          -e MYSQL_USER=stigman \
+          -e MYSQL_PASSWORD=stigman \
+          mysql:8.0.24
 
-      - name: Start MySQL container
-        run: |
-          docker run -d --name stig-manager-db \
-            -p 3306:3306 \
-            -e MYSQL_ROOT_PASSWORD=rootpw \
-            -e MYSQL_DATABASE=stigman \
-            -e MYSQL_USER=stigman \
-            -e MYSQL_PASSWORD=stigman \
-            mysql:8.0.24
+    - name: Build and Start Mock Keycloak in Docker (bind to 0.0.0.0)
+      working-directory: test/api/mock-keycloak
+      run: |
+        docker build -t mock-keycloak .
+        docker run -d --name mock-keycloak -p 8080:8080 mock-keycloak
 
-      - name: Build and Start Mock Keycloak in Docker
-        working-directory: test/api/mock-keycloak
-        run: |
-          docker build -t mock-keycloak -f Dockerfile .
-          docker run -d --name mock-keycloak -p 8080:8080 mock-keycloak
+    - name: Set MySQL and Keycloak Environment Variables
+      run: |
+        echo "STIGMAN_DB_HOST=localhost" >> $GITHUB_ENV
+        echo "STIGMAN_OIDC_PROVIDER=http://localhost:8080/auth/realms/stigman" >> $GITHUB_ENV
+        
+    - name: Upload environment variables
+      run: |
+        echo "STIGMAN_DB_HOST=localhost" > env-ips.txt
+        echo "STIGMAN_OIDC_PROVIDER=http://localhost:8080/auth/realms/stigman" >> env-ips.txt
+    
+
+    - name: Upload environment IPs
+      uses: actions/upload-artifact@v4
+      with:
+        name: env-ips
+        path: env-ips.txt
+
+  # run-mysql-on-ubuntu:
+  #   name: Start MySQL on Ubuntu
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     mysql_ip: ${{ env.MYSQL_IP }} # Use the environment variable instead of deprecated set-output
+  #   steps:
+
+  #     - name: Check out the repo
+  #       uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 18
+
+  #     - name: Start MySQL container
+  #       run: |
+  #         docker run -d --name stig-manager-db \
+  #           -p 3306:3306 \
+  #           -e MYSQL_ROOT_PASSWORD=rootpw \
+  #           -e MYSQL_DATABASE=stigman \
+  #           -e MYSQL_USER=stigman \
+  #           -e MYSQL_PASSWORD=stigman \
+  #           mysql:8.0.24
+
+  #     - name: Build and Start Mock Keycloak in Docker
+  #       working-directory: test/api/mock-keycloak
+  #       run: |
+  #         docker build -t mock-keycloak -f Dockerfile .
+  #         docker run -d --name mock-keycloak -p 8080:8080 mock-keycloak
 
     
 
-      - name: Get MySQL and Mock Keycloak container IPs
-        id: get-ips
-        run: |
-          MYSQL_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' stig-manager-db)
-          echo "MySQL is running on $MYSQL_IP"
+  #     - name: Get MySQL and Mock Keycloak container IPs
+  #       id: get-ips
+  #       run: |
+  #         MYSQL_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' stig-manager-db)
+  #         echo "MySQL is running on $MYSQL_IP"
 
-          KEYCLOAK_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mock-keycloak)
-          echo "Mock Keycloak is running on $KEYCLOAK_IP"
+  #         KEYCLOAK_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mock-keycloak)
+  #         echo "Mock Keycloak is running on $KEYCLOAK_IP"
 
-          # Store in GitHub environment
-          echo "MYSQL_IP=$MYSQL_IP" >> $GITHUB_ENV
-          echo "KEYCLOAK_IP=$KEYCLOAK_IP" >> $GITHUB_ENV
+  #         # Store in GitHub environment
+  #         echo "MYSQL_IP=$MYSQL_IP" >> $GITHUB_ENV
+  #         echo "KEYCLOAK_IP=$KEYCLOAK_IP" >> $GITHUB_ENV
 
-          # Save to a file for later use
-          echo "MYSQL_IP=$MYSQL_IP" > env-ips.txt
-          echo "KEYCLOAK_IP=$KEYCLOAK_IP" >> env-ips.txt
+  #         # Save to a file for later use
+  #         echo "MYSQL_IP=$MYSQL_IP" > env-ips.txt
+  #         echo "KEYCLOAK_IP=$KEYCLOAK_IP" >> env-ips.txt
 
-      - name: Upload environment IPs
-        uses: actions/upload-artifact@v4
-        with:
-          name: env-ips
-          path: env-ips.txt
+  #     - name: Upload environment IPs
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: env-ips
+  #         path: env-ips.txt
 
-      - name: Keep Ubuntu Job Running
-        run: tail -f /dev/null
+  #     - name: Keep Ubuntu Job Running
+  #       run: tail -f /dev/null
 
           
   # run-test-linux-binary-artifact:
