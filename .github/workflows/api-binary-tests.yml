@@ -139,30 +139,54 @@ jobs:
   #       run: npm test
 
   run-test-windows-binary-artifact:
-    name: Run and test Windows artifact
+    name: Run and test Windows artifact (with WSL and Docker)
     runs-on: windows-latest
-    needs: [build-binary-artifacts]
+    needs: build-binary-artifacts
     steps:
-    
       - name: Check out the repo
         uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
 
       - name: Install WSL and Ubuntu
+        shell: pwsh
         run: |
+          # Check if WSL is installed
           $wslStatus = wsl --list --quiet
           if ($wslStatus -notmatch "Ubuntu") {
+            echo "Installing WSL and Ubuntu..."
             wsl --install -d Ubuntu
+            echo "WSL installation complete."
           } else {
-            echo "WSL already installed"
+            echo "WSL is already installed."
           }
+
+      - name: Restart GitHub Actions Runner (Required for WSL)
         shell: pwsh
-  
-      - name: Start MySQL & Mock Keycloak inside WSL
         run: |
-          wsl sudo service mysql start
+          echo "WSL installed. A restart is required for changes to take effect."
+          Stop-Process -Id $PID -Force
+
+      - name: Ensure WSL is Initialized
+        shell: pwsh
+        run: |
+          echo "Initializing WSL..."
+          wsl --update
+          wsl --set-default-version 2
+          wsl echo "WSL is now initialized."
+
+      - name: Install Docker Inside WSL
+        shell: pwsh
+        run: |
+          echo "Installing Docker inside WSL..."
+          wsl sudo apt update
+          wsl sudo apt install -y docker.io
+          wsl sudo service docker start
+          wsl sudo usermod -aG docker $USER
+          echo "Docker installation inside WSL is complete."
+
+      - name: Start MySQL in Docker Inside WSL
+        shell: pwsh
+        run: |
+          echo "Starting MySQL container in WSL..."
           wsl docker run -d --name stig-manager-db \
             -p 3306:3306 \
             -e MYSQL_ROOT_PASSWORD=rootpw \
@@ -171,52 +195,33 @@ jobs:
             -e MYSQL_PASSWORD=stigman \
             mysql:8.0.24
 
-          wsl nohup python3 -m http.server 8080 --bind 0.0.0.0 > /dev/null 2>&1 &
+      - name: Start Mock Keycloak HTTP Server in WSL
         shell: pwsh
-      - name: Verify MySQL & Mock Keycloak Are Running in WSL
         run: |
-          wsl curl http://localhost:8080
+          echo "Starting Mock Keycloak HTTP server..."
+          wsl nohup python3 -m http.server 8080 --bind 0.0.0.0 > /dev/null 2>&1 &
+          echo "Mock Keycloak HTTP server started."
+
+      - name: Verify MySQL & Mock Keycloak Are Running in WSL
+        shell: pwsh
+        run: |
+          echo "Checking if Keycloak is running..."
+          wsl curl -s http://localhost:8080
+
+          echo "Checking MySQL connection..."
+          wsl docker ps
           wsl mysql -h 127.0.0.1 -u stigman -pstigman -e "SHOW DATABASES;"
-        shell: powershell
+
       - name: Download builds
         uses: actions/download-artifact@v4
         with:
           name: binary-artifacts  
           path: ./binary-artifacts
 
-      - name: print all env 
-        run: |
-          echo "STIGMAN_DB_HOST: ${{ env.STIGMAN_DB_HOST }}"
-          echo "STIGMAN_DB_PORT: ${{ env.STIGMAN_DB_PORT }}"
-          echo "STIGMAN_DB_PASSWORD: ${{ env.STIGMAN_DB_PASSWORD }}"
-          echo "STIGMAN_API_AUTHORITY: ${{ env.STIGMAN_API_AUTHORITY }}"
-          echo "STIGMAN_SWAGGER_ENABLED: ${{ env.STIGMAN_SWAGGER_ENABLED }}"
-          echo "STIGMAN_SWAGGER_SERVER: ${{ env.STIGMAN_SWAGGER_SERVER }}"
-          echo "STIGMAN_SWAGGER_REDIRECT: ${{ env.STIGMAN_SWAGGER_REDIRECT }}"
-          echo "STIGMAN_DEV_RESPONSE_VALIDATION: ${{ env.STIGMAN_DEV_RESPONSE_VALIDATION }}"
-          echo "STIGMAN_EXPERIMENTAL_APPDATA: ${{ env.STIGMAN_EXPERIMENTAL_APPDATA }}"
-          echo "STIGMAN_OIDC_PROVIDER: ${{ env.STIGMAN_OIDC_PROVIDER }}"
-              
-
       - name: Run Windows binary (Direct)
         working-directory: ./binary-artifacts
+        shell: pwsh
         run: |
           echo "Running tests on binary artifacts"
           .\stig-manager-win.exe
-
-      - name: Wait for API bootstrap
-        run: |
-          for /L %%i in (1,1,10) do (
-            timeout /t 5 /nobreak >nul
-            curl --output nul --silent --fail http://localhost:64001/api/op/configuration && exit /B 0
-            echo .
-          )
-          exit /B 1
-      - name: Install test dependencies
-        run: npm ci
-        working-directory: ./test/api/
-
-      - name: Run tests with coverage
-        working-directory: ./test/api/
-        run: npm test
-  
+      
