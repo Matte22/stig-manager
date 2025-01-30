@@ -80,6 +80,13 @@ jobs:
     outputs:
       mysql_ip: ${{ env.MYSQL_IP }} # Use the environment variable instead of deprecated set-output
     steps:
+
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
       - name: Start MySQL container
         run: |
           docker run -d --name stig-manager-db \
@@ -94,23 +101,24 @@ jobs:
         working-directory: test/api/mock-keycloak
         run: |
           nohup python3 -m http.server 8080 --bind 0.0.0.0 > keycloak.log 2>&1 &
-          - name: Get MySQL and Keycloak container IPs
-          id: get-ips
-          run: |
-            MYSQL_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' stig-manager-db)
-            echo "MySQL is running on $MYSQL_IP"
-  
-            # Get Ubuntu's own IP address (for Keycloak)
-            KEYCLOAK_IP=$(hostname -I | awk '{print $1}')
-            echo "Keycloak is running on $KEYCLOAK_IP"
-  
-            # Store in GitHub environment
-            echo "MYSQL_IP=$MYSQL_IP" >> $GITHUB_ENV
-            echo "KEYCLOAK_IP=$KEYCLOAK_IP" >> $GITHUB_ENV
-  
-            # Save to a file for later use
-            echo "MYSQL_IP=$MYSQL_IP" > env-ips.txt
-            echo "KEYCLOAK_IP=$KEYCLOAK_IP" >> env-ips.txt
+
+      - name: Get MySQL and Keycloak container IPs
+        id: get-ips
+        run: |
+          MYSQL_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' stig-manager-db)
+          echo "MySQL is running on $MYSQL_IP"
+
+          # Get Ubuntu's own IP address (for Keycloak)
+          KEYCLOAK_IP=$(hostname -I | awk '{print $1}')
+          echo "Keycloak is running on $KEYCLOAK_IP"
+
+          # Store in GitHub environment
+          echo "MYSQL_IP=$MYSQL_IP" >> $GITHUB_ENV
+          echo "KEYCLOAK_IP=$KEYCLOAK_IP" >> $GITHUB_ENV
+
+          # Save to a file for later use
+          echo "MYSQL_IP=$MYSQL_IP" > env-ips.txt
+          echo "KEYCLOAK_IP=$KEYCLOAK_IP" >> env-ips.txt
   
       - name: Upload environment IPs
         uses: actions/upload-artifact@v4
