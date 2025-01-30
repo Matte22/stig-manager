@@ -190,7 +190,7 @@ jobs:
           nohup python3 -m http.server 8080 --bind 0.0.0.0 > /dev/null 2>&1 &
           echo "Mock Keycloak HTTP server started."
 
-      - name: Get WSL2 IP and Set Environment Variables
+      - name: Get WSL2 IP, Forward Ports, and Set Environment Variables
         shell: pwsh
         run: |
           echo "Getting WSL2 IP..."
@@ -204,9 +204,14 @@ jobs:
           echo "STIGMAN_DB_HOST=$wslIp" | Out-File -FilePath $env:GITHUB_ENV -Append
           echo "STIGMAN_OIDC_PROVIDER=http://$wslIp:8080/auth/realms/stigman" | Out-File -FilePath $env:GITHUB_ENV -Append
       
+          echo "Setting up port forwarding from Windows to WSL..."
+          netsh interface portproxy add v4tov4 listenport=3306 listenaddress=0.0.0.0 connectport=3306 connectaddress=$wslIp
+          netsh interface portproxy add v4tov4 listenport=8080 listenaddress=0.0.0.0 connectport=8080 connectaddress=$wslIp
+      
           echo "Ensuring Windows can connect to WSL..."
           Test-NetConnection -ComputerName $wslIp -Port 3306 -InformationLevel Detailed || echo "Warning: MySQL not reachable!"
           Test-NetConnection -ComputerName $wslIp -Port 8080 -InformationLevel Detailed || echo "Warning: Keycloak not reachable!"
+        
     
 
       - name: Verify MySQL & Mock Keycloak Are Running in WSL
