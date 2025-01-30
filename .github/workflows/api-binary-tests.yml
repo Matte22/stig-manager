@@ -145,29 +145,17 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Enable WSL Feature (Manual Fix for 0x8000ffff)
+      - name: Ensure WSL is Installed & Ubuntu is Set Up
         shell: pwsh
         run: |
-          echo "Enabling WSL..."
-          wsl --set-default-version 2
-          wsl --update
-          echo "WSL is enabled."
+            wsl --install -d Ubuntu
 
-      - name: Install Ubuntu Manually (Fix for WSL Store Error)
+      - name: Ensure Ubuntu is Initialized (Run First Time Setup)
         shell: pwsh
         run: |
-          echo "Manually installing Ubuntu..."
-          Invoke-WebRequest -Uri https://aka.ms/wslubuntu -OutFile Ubuntu.appx
-          Add-AppxPackage -Path Ubuntu.appx
-          echo "Ubuntu installation complete."
-
-      - name: Ensure Ubuntu is Installed and Initialized
-        shell: pwsh
-        run: |
-          echo "Initializing Ubuntu..."
-          wsl --list --verbose || echo "Ubuntu is not installed!"
+          echo "Running first-time setup for Ubuntu..."
           wsl --set-default Ubuntu
-          wsl echo "WSL is now ready."
+          wsl sudo apt update || echo "Ubuntu already initialized."
 
       - name: Install Docker Inside WSL
         shell: pwsh
@@ -220,3 +208,4 @@ jobs:
         run: |
           echo "Running tests on binary artifacts"
           .\stig-manager-win.exe
+     
