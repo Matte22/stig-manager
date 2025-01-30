@@ -154,34 +154,22 @@ jobs:
             python3
             python3-pip
             docker.io
-      # - name: Ensure WSL 2 is Enabled and Systemd is Active
-      #   shell: pwsh
-      #   run: |
-      #     echo "Checking WSL version..."
-      #     wsl --set-default-version 2
-          
-      #     echo "Listing available distributions..."
-      #     wsl --list --verbose
-
-      #     echo "Ensuring Ubuntu is using WSL 2..."
-      #     wsl --set-version Ubuntu 2 || echo "Ubuntu is already on WSL 2"
-
-      #     echo "Enabling systemd in WSL..."
-      #     wsl -e bash -c "echo '[boot]' | sudo tee /etc/wsl.conf"
-      #     wsl -e bash -c "echo 'systemd=true' | sudo tee -a /etc/wsl.conf"
-          
-      #     echo "Restarting WSL to apply systemd changes..."
-      #     wsl --shutdown
-      #     wsl echo "WSL restarted with systemd enabled."
-      - name: Start Docker Service in WSL
+      - name: Ensure WSL 2 is Enabled
         shell: pwsh
         run: |
-          echo "Starting Docker in WSL..."
-          wsl sudo service docker start || echo "Docker service failed to start."
-          echo "Checking Docker status..."
-          wsl sudo systemctl status docker || echo "Docker is NOT running."
-          echo "Verifying Docker installation..."
-          wsl docker --version || echo "Docker command is not available."
+          echo "Checking WSL version..."
+          wsl --set-default-version 2
+          wsl --list --verbose
+          echo "Ensuring Ubuntu is using WSL 2..."
+          wsl --set-version Ubuntu 2 || echo "Ubuntu is already on WSL 2"
+
+      - name: Start Docker Daemon in WSL
+        shell: pwsh
+        run: |
+          echo "Starting Docker manually in WSL..."
+          wsl -e bash -c "sudo dockerd > /dev/null 2>&1 &"
+          echo "Verifying Docker is running..."
+          wsl -e bash -c "docker ps" || echo "Docker failed to start!"
 
       - name: Start MySQL in Docker Inside WSL
         shell: pwsh
