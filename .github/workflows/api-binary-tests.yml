@@ -75,10 +75,10 @@ jobs:
           if-no-files-found: error
 
   run-mysql-on-ubuntu:
-    name: Start MySQL and HTTP server on Ubuntu
+    name: Start MySQL on Ubuntu
     runs-on: ubuntu-latest
     outputs:
-      mysql_ip: ${{ steps.get-ip.outputs.ip }}
+      mysql_ip: ${{ env.MYSQL_IP }} # Use the environment variable instead of deprecated set-output
     steps:
       - name: Start MySQL container
         run: |
@@ -89,20 +89,17 @@ jobs:
             -e MYSQL_USER=stigman \
             -e MYSQL_PASSWORD=stigman \
             mysql:8.0.24
-      - name: Start HTTP server in the background
-        run: |
-          setsid python3 -m http.server 8080 --bind 0.0.0.0 > http_server.log 2>&1 &
 
       - name: Get MySQL container IP
         id: get-ip
         run: |
           MYSQL_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' stig-manager-db)
           echo "MySQL is running on $MYSQL_IP"
-          echo "ip=$MYSQL_IP" >> $GITHUB_ENV
-          echo "::set-output name=ip::$MYSQL_IP"
+          echo "MYSQL_IP=$MYSQL_IP" >> $GITHUB_ENV # Store in environment variable
 
       - name: Keep Ubuntu Job Running
         run: tail -f /dev/null
+
           
   # run-test-linux-binary-artifact:
   #   name: Run and test linux artifact
@@ -173,6 +170,7 @@ jobs:
     runs-on: windows-latest
     needs: [build-binary-artifacts, run-mysql-on-ubuntu]
     env:
+      env:
       STIGMAN_DB_HOST: ${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}
       STIGMAN_DB_PORT: 3306
     steps:
