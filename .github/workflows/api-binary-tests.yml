@@ -100,7 +100,7 @@ jobs:
       - name: Build and Start Mock Keycloak in Docker
         working-directory: test/api/mock-keycloak
         run: |
-          docker build -t mock-keycloak -f DockerFile .
+          docker build -t mock-keycloak -f Dockerfile .
           docker run -d --name mock-keycloak -p 8080:8080 mock-keycloak
 
     
