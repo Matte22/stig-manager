@@ -145,7 +145,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Enable WSL Feature (Manual Fix for 0x8000ffff)
+      - name: Enable WSL Feature (Manual Fix)
         shell: pwsh
         run: |
           echo "Enabling WSL..."
@@ -153,12 +153,15 @@ jobs:
           wsl --update
           echo "WSL is enabled."
 
-      - name: Install Ubuntu Manually (Fix for WSL Store Error)
+      - name: Manually Install Ubuntu Without Microsoft Store
         shell: pwsh
         run: |
-          echo "Manually installing Ubuntu..."
-          Invoke-WebRequest -Uri https://aka.ms/wslubuntu -OutFile Ubuntu.appx
-          Add-AppxPackage -Path Ubuntu.appx
+          echo "Downloading and installing Ubuntu..."
+          Invoke-WebRequest -Uri https://aka.ms/wslubuntu2004 -OutFile Ubuntu.appx
+          Rename-Item Ubuntu.appx Ubuntu.zip
+          Expand-Archive Ubuntu.zip -DestinationPath C:\Ubuntu
+          cd C:\Ubuntu
+          .\ubuntu2004.exe install --root
           echo "Ubuntu installation complete."
 
       - name: Ensure Ubuntu is Installed and Initialized
@@ -220,3 +223,7 @@ jobs:
         run: |
           echo "Running tests on binary artifacts"
           .\stig-manager-win.exe
+        env:
+          STIGMAN_DB_HOST: localhost
+          STIGMAN_DB_PORT: 3306
+          STIGMAN_OIDC_PROVIDER: http://localhost:8080/auth/realms/stigman
