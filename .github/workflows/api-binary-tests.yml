@@ -194,16 +194,20 @@ jobs:
         shell: pwsh
         run: |
           echo "Getting WSL2 IP..."
-          $wslIp = wsl hostname -I | ForEach-Object { $_.Trim() }
-          echo "WSL IP is: $wslIp"
-
+          
+          # Get only the FIRST valid IP (excluding Docker network)
+          $wslIp = (wsl hostname -I).Split(" ")[0].Trim()
+          
+          echo "Using WSL2 IP: $wslIp"
+      
           echo "Updating API environment variables..."
           echo "STIGMAN_DB_HOST=$wslIp" | Out-File -FilePath $env:GITHUB_ENV -Append
           echo "STIGMAN_OIDC_PROVIDER=http://$wslIp:8080/auth/realms/stigman" | Out-File -FilePath $env:GITHUB_ENV -Append
-
+      
           echo "Ensuring Windows can connect to WSL..."
-          Test-NetConnection -ComputerName $wslIp -Port 3306 || echo "Warning: MySQL not reachable!"
-          Test-NetConnection -ComputerName $wslIp -Port 8080 || echo "Warning: Keycloak not reachable!"
+          Test-NetConnection -ComputerName $wslIp -Port 3306 -InformationLevel Detailed || echo "Warning: MySQL not reachable!"
+          Test-NetConnection -ComputerName $wslIp -Port 8080 -InformationLevel Detailed || echo "Warning: Keycloak not reachable!"
+    
 
       - name: Verify MySQL & Mock Keycloak Are Running in WSL
         shell: wsl-bash {0}
