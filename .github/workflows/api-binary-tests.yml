@@ -229,7 +229,15 @@ jobs:
           Test-NetConnection -ComputerName $wslIp -Port 8080 -InformationLevel Detailed || echo "Warning: Keycloak not reachable!"
 
               
-    
+      - name: set env vars in windows env
+        run: |
+          echo "Setting environment variables for Windows..."
+          echo "::set-env name=STIGMAN_DB_HOST::$(
+            wsl bash -c "echo $STIGMAN_DB_HOST"
+          )"
+          echo "::set-env name=STIGMAN_OIDC_PROVIDER::$(
+            wsl bash -c "echo $STIGMAN_OIDC_PROVIDER"
+          )"
 
       - name: Verify MySQL & Mock Keycloak Are Running in WSL
         shell: wsl-bash {0}
