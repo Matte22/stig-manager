@@ -150,12 +150,16 @@ jobs:
         with:
           node-version: 18
 
-
       - name: Install WSL and Ubuntu
         run: |
-          wsl --install -d Ubuntu || echo "WSL already installed"
-        shell: powershell
-
+          $wslStatus = wsl --list --quiet
+          if ($wslStatus -notmatch "Ubuntu") {
+            wsl --install -d Ubuntu
+          } else {
+            echo "WSL already installed"
+          }
+        shell: pwsh
+  
       - name: Start MySQL & Mock Keycloak inside WSL
         run: |
           wsl sudo service mysql start
