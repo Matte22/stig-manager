@@ -150,16 +150,6 @@ jobs:
           distribution: "Ubuntu-22.04" # You can use "Ubuntu-20.04" if needed
           set-as-default: true
           additional-packages: "docker.io python3 curl"
-          
-      - name: Install Docker, Python, and Curl inside WSL
-        shell: pwsh
-        run: |
-          echo "Updating package lists and installing dependencies..."
-          wsl sudo apt update
-          wsl sudo apt install -y docker.io python3 curl
-          wsl sudo service docker start
-          wsl sudo usermod -aG docker $(whoami)
-          echo "Docker, Python, and Curl installed inside WSL."
 
       - name: Start MySQL in Docker Inside WSL
         shell: pwsh
