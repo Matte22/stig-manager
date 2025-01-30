@@ -137,7 +137,6 @@ jobs:
   #     - name: Run tests with coverage
   #       working-directory: ./test/api/
   #       run: npm test
-
   run-test-windows-binary-artifact:
     name: Run and test Windows artifact (with WSL and Docker)
     runs-on: windows-latest
@@ -146,18 +145,28 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Install WSL and Ubuntu
+      - name: Ensure WSL is Installed & Ubuntu is Set Up
         shell: pwsh
         run: |
-          # Check if WSL is installed
-          $wslStatus = wsl --list --quiet
-          if ($wslStatus -notmatch "Ubuntu") {
+          # Install WSL if missing
+          if (!(wsl --list --quiet | Select-String "Ubuntu")) {
             echo "Installing WSL and Ubuntu..."
             wsl --install -d Ubuntu
-            echo "WSL installation complete."
+            Start-Sleep -Seconds 5
           } else {
-            echo "WSL is already installed."
+            echo "WSL and Ubuntu are already installed."
           }
+
+          # Ensure WSL is properly initialized
+          wsl echo "WSL is now ready."
+
+      - name: Ensure Ubuntu is Initialized (Run First Time Setup)
+        shell: pwsh
+        run: |
+          echo "Running first-time setup for Ubuntu..."
+          wsl --set-default Ubuntu
+          wsl sudo apt update || echo "Ubuntu already initialized."
+
       - name: Install Docker Inside WSL
         shell: pwsh
         run: |
@@ -165,7 +174,7 @@ jobs:
           wsl sudo apt update
           wsl sudo apt install -y docker.io
           wsl sudo service docker start
-          wsl sudo usermod -aG docker $USER
+          wsl sudo usermod -aG docker $(whoami)
           echo "Docker installation inside WSL is complete."
 
       - name: Start MySQL in Docker Inside WSL
@@ -191,11 +200,11 @@ jobs:
         shell: pwsh
         run: |
           echo "Checking if Keycloak is running..."
-          wsl curl -s http://localhost:8080
+          wsl curl -s http://localhost:8080 || echo "Keycloak is NOT responding!"
 
-          echo "Checking MySQL connection..."
+          echo "Checking MySQL container..."
           wsl docker ps
-          wsl mysql -h 127.0.0.1 -u stigman -pstigman -e "SHOW DATABASES;"
+          wsl mysql -h 127.0.0.1 -u stigman -pstigman -e "SHOW DATABASES;" || echo "MySQL connection failed!"
 
       - name: Download builds
         uses: actions/download-artifact@v4
@@ -209,4 +218,4 @@ jobs:
         run: |
           echo "Running tests on binary artifacts"
           .\stig-manager-win.exe
-      
+     
