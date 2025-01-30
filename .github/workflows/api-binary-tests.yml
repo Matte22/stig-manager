@@ -174,6 +174,21 @@ jobs:
       STIGMAN_DB_HOST: ${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}
       STIGMAN_DB_PORT: 3306
     steps:
+
+      - name: print all env 
+        run: |
+          echo "STIGMAN_DB_HOST: ${{ env.STIGMAN_DB_HOST }}"
+          echo "STIGMAN_DB_PORT: ${{ env.STIGMAN_DB_PORT }}"
+          echo "STIGMAN_DB_PASSWORD: ${{ env.STIGMAN_DB_PASSWORD }}"
+          echo "STIGMAN_API_AUTHORITY: ${{ env.STIGMAN_API_AUTHORITY }}"
+          echo "STIGMAN_SWAGGER_ENABLED: ${{ env.STIGMAN_SWAGGER_ENABLED }}"
+          echo "STIGMAN_SWAGGER_SERVER: ${{ env.STIGMAN_SWAGGER_SERVER }}"
+          echo "STIGMAN_SWAGGER_REDIRECT: ${{ env.STIGMAN_SWAGGER_REDIRECT }}"
+          echo "STIGMAN_DEV_RESPONSE_VALIDATION: ${{ env.STIGMAN_DEV_RESPONSE_VALIDATION }}"
+          echo "STIGMAN_EXPERIMENTAL_APPDATA: ${{ env.STIGMAN_EXPERIMENTAL_APPDATA }}"
+          echo "STIGMAN_OIDC_PROVIDER: ${{ env.STIGMAN_OIDC_PROVIDER }}"
+          
+
       - name: Check out the repo
         uses: actions/checkout@v4
       - uses: actions/setup-node@v4
