@@ -145,27 +145,29 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Ensure WSL is Installed & Ubuntu is Set Up
+      - name: Enable WSL Feature (Manual Fix for 0x8000ffff)
         shell: pwsh
         run: |
-          # Install WSL if missing
-          if (!(wsl --list --quiet | Select-String "Ubuntu")) {
-            echo "Installing WSL and Ubuntu..."
-            wsl --install -d Ubuntu
-            Start-Sleep -Seconds 5
-          } else {
-            echo "WSL and Ubuntu are already installed."
-          }
+          echo "Enabling WSL..."
+          wsl --set-default-version 2
+          wsl --update
+          echo "WSL is enabled."
 
-          # Ensure WSL is properly initialized
-          wsl echo "WSL is now ready."
-
-      - name: Ensure Ubuntu is Initialized (Run First Time Setup)
+      - name: Install Ubuntu Manually (Fix for WSL Store Error)
         shell: pwsh
         run: |
-          echo "Running first-time setup for Ubuntu..."
+          echo "Manually installing Ubuntu..."
+          Invoke-WebRequest -Uri https://aka.ms/wslubuntu -OutFile Ubuntu.appx
+          Add-AppxPackage -Path Ubuntu.appx
+          echo "Ubuntu installation complete."
+
+      - name: Ensure Ubuntu is Installed and Initialized
+        shell: pwsh
+        run: |
+          echo "Initializing Ubuntu..."
+          wsl --list --verbose || echo "Ubuntu is not installed!"
           wsl --set-default Ubuntu
-          wsl sudo apt update || echo "Ubuntu already initialized."
+          wsl echo "WSL is now ready."
 
       - name: Install Docker Inside WSL
         shell: pwsh
@@ -218,4 +220,3 @@ jobs:
         run: |
           echo "Running tests on binary artifacts"
           .\stig-manager-win.exe
-     
