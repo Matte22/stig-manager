@@ -140,21 +140,19 @@ jobs:
   run-test-windows-binary-artifact:
     name: Run and test Windows artifact (with WSL and Docker)
     runs-on: windows-latest
+    needs: build-binary-artifacts
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
 
       - name: Install WSL and Ubuntu
-        uses: Vampire/setup-wsl@v3
+        uses: Vampire/setup-wsl@v4
         with:
-          distribution: "Ubuntu-22.04" # You can use "Ubuntu-20.04" if needed
+          distribution: "Ubuntu"
           set-as-default: true
-          wsl-version: 2
-          additional-packages: 
-            curl
-            python3
-            python3-pip
-            docker.io
+          update: true
+          additional-packages: "docker.io python3 curl"
+
       # - name: Ensure WSL 2 is Enabled
       #   shell: pwsh
       #   run: |
@@ -164,11 +162,18 @@ jobs:
       #     echo "Ensuring Ubuntu is using WSL 2..."
       #     wsl --set-version Ubuntu 2 || echo "Ubuntu is already on WSL 2"
 
-      - name: Start Docker Daemon in WSL
+      - name: Start Docker in WSL
         shell: pwsh
         run: |
-          echo "Starting Docker manually in WSL..."
-          wsl -e bash -c "sudo dockerd > /dev/null 2>&1 &"
+          echo "Starting Docker daemon in WSL..."
+          wsl -e bash -c "sudo dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 > /dev/null 2>&1 &"
+
+          echo "Waiting for Docker to be ready..."
+          for i in {1..10}; do
+            sleep 2
+            wsl -e bash -c "docker info > /dev/null 2>&1" && break || echo "Waiting..."
+          done
+
           echo "Verifying Docker is running..."
           wsl -e bash -c "docker ps" || echo "Docker failed to start!"
 
