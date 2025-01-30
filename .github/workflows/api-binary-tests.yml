@@ -79,7 +79,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       mysql_ip: ${{ steps.get-ip.outputs.ip }}
-      ubuntu_ip: ${{ steps.get-ubuntu-ip.outputs.ubuntu_ip }}
     steps:
       - name: Start MySQL container
         run: |
@@ -93,14 +92,6 @@ jobs:
       - name: Start HTTP server in the background
         run: |
           setsid python3 -m http.server 8080 --bind 0.0.0.0 > http_server.log 2>&1 &
-
-      
-      - name: Get Ubuntu Runner Public IP
-        id: get-ubuntu-ip
-        run: |
-          UBUNTU_IP=$(curl -s http://checkip.amazonaws.com)
-          echo "Ubuntu runner is accessible at $UBUNTU_IP"
-          echo "::set-output name=ubuntu_ip::$UBUNTU_IP"
 
       - name: Get MySQL container IP
         id: get-ip
@@ -180,18 +171,23 @@ jobs:
   run-test-windows-binary-artifact:
     name: Run and test Windows artifact
     runs-on: windows-latest
-    needs: [build-binary-artifacts]
+    needs: [build-binary-artifacts, run-mysql-on-ubuntu]
     env:
       STIGMAN_DB_HOST: ${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}
       STIGMAN_DB_PORT: 3306
-      STIGMAN_OIDC_PROVIDER: http://${{ needs.run-mysql-on-ubuntu.outputs.ubuntu_ip }}:8080/auth/realms/stigman
-      STIGMAN_API_AUTHORITY: http://${{ needs.run-mysql-on-ubuntu.outputs.ubuntu_ip }}:8080/auth/realms/stigman
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 18
+
+      - name: Run mock Keycloak
+        id: idp-run
+        working-directory: test/api/mock-keycloak
+        shell: pwsh
+        run: |
+          python -m http.server 8080 &
 
       - name: Download builds
         uses: actions/download-artifact@v4
@@ -214,7 +210,6 @@ jobs:
             echo .
           )
           exit /B 1
-
       - name: Install test dependencies
         run: npm ci
         working-directory: ./test/api/
@@ -222,7 +217,6 @@ jobs:
       - name: Run tests with coverage
         working-directory: ./test/api/
         run: npm test
-
   
   # run-test-windows-binary-artifact:
   #   name: Run and test windows artifact
