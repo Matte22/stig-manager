@@ -97,6 +97,13 @@ jobs:
           echo "MySQL is running on $MYSQL_IP"
           echo "MYSQL_IP=$MYSQL_IP" >> $GITHUB_ENV # Store in environment variable
 
+
+      - name: Upload MySQL IP
+        uses: actions/upload-artifact@v4
+        with:
+          name: mysql-ip
+          path: mysql_ip.txt
+
       - name: Keep Ubuntu Job Running
         run: tail -f /dev/null
 
@@ -170,7 +177,6 @@ jobs:
     runs-on: windows-latest
     needs: [build-binary-artifacts]
     env:
-      env:
       STIGMAN_DB_HOST: ${{ needs.run-mysql-on-ubuntu.outputs.mysql_ip }}
       STIGMAN_DB_PORT: 3306
     steps:
