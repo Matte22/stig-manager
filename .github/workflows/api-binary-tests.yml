@@ -155,14 +155,14 @@ jobs:
             python3
             python3-pip
             docker.io
-      - name: Ensure WSL 2 is Enabled
-        shell: pwsh
-        run: |
-          echo "Checking WSL version..."
-          wsl --set-default-version 2
-          wsl --list --verbose
-          echo "Ensuring Ubuntu is using WSL 2..."
-          wsl --set-version Ubuntu 2 || echo "Ubuntu is already on WSL 2"
+      # - name: Ensure WSL 2 is Enabled
+      #   shell: pwsh
+      #   run: |
+      #     echo "Checking WSL version..."
+      #     wsl --set-default-version 2
+      #     wsl --list --verbose
+      #     echo "Ensuring Ubuntu is using WSL 2..."
+      #     wsl --set-version Ubuntu 2 || echo "Ubuntu is already on WSL 2"
 
       - name: Start Docker Daemon in WSL
         shell: pwsh
