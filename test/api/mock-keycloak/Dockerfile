@@ -5,7 +5,7 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # Copy mock Keycloak files (update this path as needed)
-COPY test/api/mock-keycloak /app
+COPY . /app
 
 # Expose port 8080
 EXPOSE 8080
