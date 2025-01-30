@@ -140,7 +140,6 @@ jobs:
   run-test-windows-binary-artifact:
     name: Run and test Windows artifact (with WSL and Docker)
     runs-on: windows-latest
-    needs: build-binary-artifacts
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -150,8 +149,8 @@ jobs:
         with:
           distribution: "Ubuntu-22.04" # You can use "Ubuntu-20.04" if needed
           set-as-default: true
-          wsl-version: 2
-
+          additional-packages: "docker.io python3 curl"
+          
       - name: Install Docker, Python, and Curl inside WSL
         shell: pwsh
         run: |
