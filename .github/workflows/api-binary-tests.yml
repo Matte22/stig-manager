@@ -154,25 +154,25 @@ jobs:
             python3
             python3-pip
             docker.io
-      - name: Ensure WSL 2 is Enabled and Systemd is Active
-        shell: pwsh
-        run: |
-          echo "Checking WSL version..."
-          wsl --set-default-version 2
+      # - name: Ensure WSL 2 is Enabled and Systemd is Active
+      #   shell: pwsh
+      #   run: |
+      #     echo "Checking WSL version..."
+      #     wsl --set-default-version 2
           
-          echo "Listing available distributions..."
-          wsl --list --verbose
+      #     echo "Listing available distributions..."
+      #     wsl --list --verbose
 
-          echo "Ensuring Ubuntu is using WSL 2..."
-          wsl --set-version Ubuntu 2 || echo "Ubuntu is already on WSL 2"
+      #     echo "Ensuring Ubuntu is using WSL 2..."
+      #     wsl --set-version Ubuntu 2 || echo "Ubuntu is already on WSL 2"
 
-          echo "Enabling systemd in WSL..."
-          wsl -e bash -c "echo '[boot]' | sudo tee /etc/wsl.conf"
-          wsl -e bash -c "echo 'systemd=true' | sudo tee -a /etc/wsl.conf"
+      #     echo "Enabling systemd in WSL..."
+      #     wsl -e bash -c "echo '[boot]' | sudo tee /etc/wsl.conf"
+      #     wsl -e bash -c "echo 'systemd=true' | sudo tee -a /etc/wsl.conf"
           
-          echo "Restarting WSL to apply systemd changes..."
-          wsl --shutdown
-          wsl echo "WSL restarted with systemd enabled."
+      #     echo "Restarting WSL to apply systemd changes..."
+      #     wsl --shutdown
+      #     wsl echo "WSL restarted with systemd enabled."
       - name: Start Docker Service in WSL
         shell: pwsh
         run: |
