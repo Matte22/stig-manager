@@ -75,7 +75,7 @@ jobs:
   #         path: ./api/dist/
   #         if-no-files-found: error
   build-artifacts:
-    uses: nuwcdivnpt/stig-manager/.github/workflows/build-binary-artifacts.yml@test-branch
+    uses: Matte22/stig-manager/.github/workflows/build-binary-artifacts.yml@test-branch
   run-test-linux-binary-artifact:
     name: Run and test linux artifact
     runs-on: ubuntu-latest
