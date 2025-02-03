@@ -23,7 +23,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: test-branch
           fetch-depth: 0
 
       - name: Get repository metadata
