@@ -78,6 +78,7 @@ jobs:
     uses: Matte22/stig-manager/.github/workflows/build-binary-artifacts.yml@test-branch
   run-test-linux-binary-artifact:
     name: Run and test linux artifact
+    needs: build-artifacts
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
