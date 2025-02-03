@@ -43,46 +43,46 @@ jobs:
         working-directory: ./api
         run: ./build.sh
 
-      - name: Import GPG Key
-        id: import_gpg
-        run: | 
-          if ! echo "${{ secrets.STIGMAN_PRIVATE_KEY }}" | gpg --import; then
-            echo "::warning ::Private key GPG Import failed"
-            exit 1
-          fi
+      # - name: Import GPG Key
+      #   id: import_gpg
+      #   run: | 
+      #     if ! echo "${{ secrets.STIGMAN_PRIVATE_KEY }}" | gpg --import; then
+      #       echo "::warning ::Private key GPG Import failed"
+      #       exit 1
+      #     fi
 
-      - name: Get latest tag
-        id: get_tag
-        run: |
-          DESCRIBE=$(git describe --tags | sed 's/\(.*\)-.*/\1/')
-          echo "tag=$DESCRIBE" >> $GITHUB_ENV
+      # - name: Get latest tag
+      #   id: get_tag
+      #   run: |
+      #     DESCRIBE=$(git describe --tags | sed 's/\(.*\)-.*/\1/')
+      #     echo "tag=$DESCRIBE" >> $GITHUB_ENV
 
-      - name: Sign Dist Artifacts
-        id: sign_artifacts
-        working-directory: ./api/dist
-        run: |
+      # - name: Sign Dist Artifacts
+      #   id: sign_artifacts
+      #   working-directory: ./api/dist
+      #   run: |
         
-         if ! gpg --default-key nuwcdivnpt-bot@users.noreply.github.com --armor --detach-sig ./stig-manager-linux-${{ env.tag }}.tar.xz; then
-            echo "::warning ::Linux Signing failed"
-            exit 1
-          fi
-         if ! gpg --default-key nuwcdivnpt-bot@users.noreply.github.com --armor --detach-sig ./stig-manager-win-${{ env.tag }}.zip; then
-            echo "::warning ::Windows Signing failed"
-            exit 1
-         fi
+      #    if ! gpg --default-key nuwcdivnpt-bot@users.noreply.github.com --armor --detach-sig ./stig-manager-linux-${{ env.tag }}.tar.xz; then
+      #       echo "::warning ::Linux Signing failed"
+      #       exit 1
+      #     fi
+      #    if ! gpg --default-key nuwcdivnpt-bot@users.noreply.github.com --armor --detach-sig ./stig-manager-win-${{ env.tag }}.zip; then
+      #       echo "::warning ::Windows Signing failed"
+      #       exit 1
+      #    fi
         
-      - name: Verify Signatures
-        id: verify_signatures
-        working-directory: ./api/dist
-        run: |
-          if ! gpg --verify stig-manager-linux-${{ env.tag }}.tar.xz.asc stig-manager-linux-${{ env.tag }}.tar.xz; then
-            echo "::warning ::Signature verification for Linux failed"
-            exit 1
-          fi
-          if ! gpg --verify stig-manager-win-${{ env.tag }}.zip.asc stig-manager-win-${{ env.tag }}.zip; then
-            echo "::warning ::Signature verification for Windows failed"
-            exit 1
-          fi
+      # - name: Verify Signatures
+      #   id: verify_signatures
+      #   working-directory: ./api/dist
+      #   run: |
+      #     if ! gpg --verify stig-manager-linux-${{ env.tag }}.tar.xz.asc stig-manager-linux-${{ env.tag }}.tar.xz; then
+      #       echo "::warning ::Signature verification for Linux failed"
+      #       exit 1
+      #     fi
+      #     if ! gpg --verify stig-manager-win-${{ env.tag }}.zip.asc stig-manager-win-${{ env.tag }}.zip; then
+      #       echo "::warning ::Signature verification for Windows failed"
+      #       exit 1
+      #     fi
    
       - name: Upload builds
         if: always()
