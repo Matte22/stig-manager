@@ -74,179 +74,40 @@ jobs:
           path: ./api/dist/
           if-no-files-found: error
  
-  # run-test-linux-binary-artifact:
-  #   name: Run and test linux artifact
-  #   runs-on: ubuntu-latest
-  #   needs: build-binary-artifacts  
-  #   steps:
-  #     - name: Check out the repo
-  #       uses: actions/checkout@v4
-  #     - uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 18
-
-  #     - name: Run mock Keycloak
-  #       id: idp-run
-  #       working-directory: test/api/mock-keycloak
-  #       run: |
-  #         python3 -m http.server 8080 &
-
-      
-  #     - name: wait 5 seconds
-  #       run: sleep 5
-
-  #     - name: Run MySQL container
-  #       id: mysql-run
-  #       run: |
-  #         docker run -d --name stig-manager-db \
-  #         -p 3306:3306 \
-  #         -e MYSQL_ROOT_PASSWORD=rootpw \
-  #         -e MYSQL_DATABASE=stigman \
-  #         -e MYSQL_USER=stigman \
-  #         -e MYSQL_PASSWORD=stigman \
-  #         mysql:8.0.24
-
-  #     - name: wait 10 seconds
-  #       run: sleep 10
-
-  #     - name: Download builds
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: binary-artifacts  
-  #         path: ./binary-artifacts
-
-  #     - name: List downloaded files
-  #       run: ls -l ./binary-artifacts
-
-  #     - name: Set execute permissions on binary
-  #       run: chmod +x ./binary-artifacts/stig-manager-linuxstatic
-      
-  #     - name: Run linux binary 
-  #       working-directory: ./
-  #       run: |
-  #         echo "Running tests on binary artifacts"
-  #         ./binary-artifacts/stig-manager-linuxstatic &
-
-  #     - name: Wait for bootstrap
-  #       run: for i in {1..10}; do [ $i -gt 1 ] && sleep 5; curl --output /dev/null --silent --fail http://localhost:64001/api/op/configuration && s=0 && break || s=$?; printf '.'; done; (exit $s)
-          
-  #     - name: Install test dependencies
-  #       run: npm ci
-  #       working-directory: ./test/api/
-
-  #     - name: Run tests with coverage
-  #       working-directory: ./test/api/
-  #       run: npm test
-  run-test-windows-binary-artifact:
-    name: Run and test Windows artifact (with WSL 2 and Docker)
-    runs-on: windows-latest
-    needs: build-binary-artifacts
+  run-test-linux-binary-artifact:
+    name: Run and test linux artifact
+    runs-on: ubuntu-latest
+    needs: build-binary-artifacts  
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
-
-      - name: Install WSL with Ubuntu and Upgrade to WSL 2
-        uses: Vampire/setup-wsl@v4
+      - uses: actions/setup-node@v4
         with:
-          distribution: "Ubuntu-22.04"
-          set-as-default: true
-          update: true
-          additional-packages: "docker.io python3 curl"
-
-      - name: Force WSL to Use Version 2
-        shell: pwsh
-        run: |
-          echo "Checking WSL version..."
-          wsl --set-default-version 2
-          wsl --list --verbose
-          wsl --set-version Ubuntu-22.04 2 || echo "Ubuntu is already on WSL 2"
-          echo "Restarting WSL to apply changes..."
-          wsl --shutdown
-
-      - name: Start Docker in WSL
-        shell: wsl-bash {0}
-        run: |
-          echo "Starting Docker daemon in WSL..."
-          sudo nohup dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 > /dev/null 2>&1 &
-          echo "Waiting for Docker to be ready..."
-          for i in {1..10}; do
-            sleep 2
-            docker info > /dev/null 2>&1 && break || echo "Waiting..."
-          done
-          echo "Verifying Docker is running..."
-          docker ps || echo "Docker failed to start!"
-
-      - name: Start MySQL in Docker Inside WSL
-        shell: wsl-bash {0}
-        run: |
-          echo "Starting MySQL container in WSL..."
-          docker run -d --name stig-manager-db -p 3306:3306 -e MYSQL_ROOT_PASSWORD=rootpw -e MYSQL_DATABASE=stigman -e MYSQL_USER=stigman -e MYSQL_PASSWORD=stigman mysql:8.0.24
-          echo "MySQL container started in WSL."
+          node-version: 18
 
       - name: Run mock Keycloak
-        shell: wsl-bash {0}
+        id: idp-run
         working-directory: test/api/mock-keycloak
         run: |
-          echo "Starting Mock Keycloak HTTP server..."
           python3 -m http.server 8080 &
-  
-      # - name: Start Mock Keycloak HTTP Server in WSL
-      #   shell: wsl-bash {0}
-      #   working-directory: test/api/mock-keycloak
-      #   run: |
-      #     echo "Starting Mock Keycloak HTTP server again ..."
-      #     nohup python3 -m http.server 8080 --bind 0.0.0.0 > /dev/null 2>&1 &
-      #     echo "Mock Keycloak HTTP server started."
 
-      - name: Get WSL2 IP, Expose Services, and Set Environment Variables
-        shell: pwsh
+      
+      - name: wait 5 seconds
+        run: sleep 5
+
+      - name: Run MySQL container
+        id: mysql-run
         run: |
-          echo "Getting WSL2 IP..."
-          
-          # Get only the FIRST valid IP (excluding Docker network)
-          $wslIp = (wsl hostname -I).Split(" ")[0].Trim()
-          
-          echo "Using WSL2 IP: $wslIp"
+          docker run -d --name stig-manager-db \
+          -p 3306:3306 \
+          -e MYSQL_ROOT_PASSWORD=rootpw \
+          -e MYSQL_DATABASE=stigman \
+          -e MYSQL_USER=stigman \
+          -e MYSQL_PASSWORD=stigman \
+          mysql:8.0.24
 
-          echo "Updating API environment variables..."
-          echo "STIGMAN_DB_HOST=$wslIp" | Out-File -FilePath $env:GITHUB_ENV -Append
-          echo "STIGMAN_OIDC_PROVIDER=http://$wslIp:8080/auth/realms/stigman" | Out-File -FilePath $env:GITHUB_ENV -Append
-
-          echo "Ensuring MySQL and Keycloak are listening on all interfaces..."
-          wsl -e bash -c "sudo sed -i 's/bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf"
-          wsl -e bash -c "sudo service mysql restart"
-
-          echo "Setting up port forwarding from Windows to WSL..."
-          netsh interface portproxy add v4tov4 listenport=3306 listenaddress=0.0.0.0 connectport=3306 connectaddress=$wslIp
-          netsh interface portproxy add v4tov4 listenport=8080 listenaddress=0.0.0.0 connectport=8080 connectaddress=$wslIp
-
-          echo "Allowing MySQL and Keycloak through Windows Firewall..."
-          netsh advfirewall firewall add rule name="Allow MySQL" dir=in action=allow protocol=TCP localport=3306
-          netsh advfirewall firewall add rule name="Allow Keycloak" dir=in action=allow protocol=TCP localport=8080
-
-          echo "Ensuring Windows can connect to WSL..."
-          Test-NetConnection -ComputerName $wslIp -Port 3306 -InformationLevel Detailed || echo "Warning: MySQL not reachable!"
-          Test-NetConnection -ComputerName $wslIp -Port 8080 -InformationLevel Detailed || echo "Warning: Keycloak not reachable!"
-
-              
-      - name: set env vars in windows env
-        run: |
-          echo "Setting environment variables for Windows..."
-          echo "::set-env name=STIGMAN_DB_HOST::$(
-            wsl bash -c "echo $STIGMAN_DB_HOST"
-          )"
-          echo "::set-env name=STIGMAN_OIDC_PROVIDER::$(
-            wsl bash -c "echo $STIGMAN_OIDC_PROVIDER"
-          )"
-
-      - name: Verify MySQL & Mock Keycloak Are Running in WSL
-        shell: wsl-bash {0}
-        run: |
-          echo "Checking if Keycloak is running..."
-          curl -s http://localhost:8080 || echo "Keycloak is NOT responding!"
-          echo "Checking MySQL container..."
-          docker ps
-          mysql -h 127.0.0.1 -u stigman -p stigman -e "SHOW DATABASES;" || echo "MySQL connection failed!"
+      - name: wait 10 seconds
+        run: sleep 10
 
       - name: Download builds
         uses: actions/download-artifact@v4
@@ -254,13 +115,152 @@ jobs:
           name: binary-artifacts  
           path: ./binary-artifacts
 
-      - name: Run Windows binary (Direct)
-        working-directory: ./binary-artifacts
-        shell: pwsh
+      - name: List downloaded files
+        run: ls -l ./binary-artifacts
+
+      - name: Set execute permissions on binary
+        run: chmod +x ./binary-artifacts/stig-manager-linuxstatic
+      
+      - name: Run linux binary 
+        working-directory: ./
         run: |
           echo "Running tests on binary artifacts"
-          .\stig-manager-win.exe
-        env:
-          STIGMAN_DB_HOST: ${{ env.STIGMAN_DB_HOST }}
-          STIGMAN_DB_PORT: 3306
-          STIGMAN_OIDC_PROVIDER: ${{ env.STIGMAN_OIDC_PROVIDER }}
+          ./binary-artifacts/stig-manager-linuxstatic &
+
+      - name: Wait for bootstrap
+        run: for i in {1..10}; do [ $i -gt 1 ] && sleep 5; curl --output /dev/null --silent --fail http://localhost:64001/api/op/configuration && s=0 && break || s=$?; printf '.'; done; (exit $s)
+          
+      - name: Install test dependencies
+        run: npm ci
+        working-directory: ./test/api/
+
+      - name: Run tests with coverage
+        working-directory: ./test/api/
+        run: npm test
+  # run-test-windows-binary-artifact:
+  #   name: Run and test Windows artifact (with WSL 2 and Docker)
+  #   runs-on: windows-latest
+  #   needs: build-binary-artifacts
+  #   steps:
+  #     - name: Check out the repo
+  #       uses: actions/checkout@v4
+
+  #     - name: Install WSL with Ubuntu and Upgrade to WSL 2
+  #       uses: Vampire/setup-wsl@v4
+  #       with:
+  #         distribution: "Ubuntu-22.04"
+  #         set-as-default: true
+  #         update: true
+  #         additional-packages: "docker.io python3 curl"
+
+  #     - name: Force WSL to Use Version 2
+  #       shell: pwsh
+  #       run: |
+  #         echo "Checking WSL version..."
+  #         wsl --set-default-version 2
+  #         wsl --list --verbose
+  #         wsl --set-version Ubuntu-22.04 2 || echo "Ubuntu is already on WSL 2"
+  #         echo "Restarting WSL to apply changes..."
+  #         wsl --shutdown
+
+  #     - name: Start Docker in WSL
+  #       shell: wsl-bash {0}
+  #       run: |
+  #         echo "Starting Docker daemon in WSL..."
+  #         sudo nohup dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 > /dev/null 2>&1 &
+  #         echo "Waiting for Docker to be ready..."
+  #         for i in {1..10}; do
+  #           sleep 2
+  #           docker info > /dev/null 2>&1 && break || echo "Waiting..."
+  #         done
+  #         echo "Verifying Docker is running..."
+  #         docker ps || echo "Docker failed to start!"
+
+  #     - name: Start MySQL in Docker Inside WSL
+  #       shell: wsl-bash {0}
+  #       run: |
+  #         echo "Starting MySQL container in WSL..."
+  #         docker run -d --name stig-manager-db -p 3306:3306 -e MYSQL_ROOT_PASSWORD=rootpw -e MYSQL_DATABASE=stigman -e MYSQL_USER=stigman -e MYSQL_PASSWORD=stigman mysql:8.0.24
+  #         echo "MySQL container started in WSL."
+
+  #     - name: Run mock Keycloak
+  #       shell: wsl-bash {0}
+  #       working-directory: test/api/mock-keycloak
+  #       run: |
+  #         echo "Starting Mock Keycloak HTTP server..."
+  #         python3 -m http.server 8080 &
+  
+  #     # - name: Start Mock Keycloak HTTP Server in WSL
+  #     #   shell: wsl-bash {0}
+  #     #   working-directory: test/api/mock-keycloak
+  #     #   run: |
+  #     #     echo "Starting Mock Keycloak HTTP server again ..."
+  #     #     nohup python3 -m http.server 8080 --bind 0.0.0.0 > /dev/null 2>&1 &
+  #     #     echo "Mock Keycloak HTTP server started."
+
+  #     - name: Get WSL2 IP, Expose Services, and Set Environment Variables
+  #       shell: pwsh
+  #       run: |
+  #         echo "Getting WSL2 IP..."
+          
+  #         # Get only the FIRST valid IP (excluding Docker network)
+  #         $wslIp = (wsl hostname -I).Split(" ")[0].Trim()
+          
+  #         echo "Using WSL2 IP: $wslIp"
+
+  #         echo "Updating API environment variables..."
+  #         echo "STIGMAN_DB_HOST=$wslIp" | Out-File -FilePath $env:GITHUB_ENV -Append
+  #         echo "STIGMAN_OIDC_PROVIDER=http://$wslIp:8080/auth/realms/stigman" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+  #         echo "Ensuring MySQL and Keycloak are listening on all interfaces..."
+  #         wsl -e bash -c "sudo sed -i 's/bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf"
+  #         wsl -e bash -c "sudo service mysql restart"
+
+  #         echo "Setting up port forwarding from Windows to WSL..."
+  #         netsh interface portproxy add v4tov4 listenport=3306 listenaddress=0.0.0.0 connectport=3306 connectaddress=$wslIp
+  #         netsh interface portproxy add v4tov4 listenport=8080 listenaddress=0.0.0.0 connectport=8080 connectaddress=$wslIp
+
+  #         echo "Allowing MySQL and Keycloak through Windows Firewall..."
+  #         netsh advfirewall firewall add rule name="Allow MySQL" dir=in action=allow protocol=TCP localport=3306
+  #         netsh advfirewall firewall add rule name="Allow Keycloak" dir=in action=allow protocol=TCP localport=8080
+
+  #         echo "Ensuring Windows can connect to WSL..."
+  #         Test-NetConnection -ComputerName $wslIp -Port 3306 -InformationLevel Detailed || echo "Warning: MySQL not reachable!"
+  #         Test-NetConnection -ComputerName $wslIp -Port 8080 -InformationLevel Detailed || echo "Warning: Keycloak not reachable!"
+
+              
+  #     - name: set env vars in windows env
+  #       run: |
+  #         echo "Setting environment variables for Windows..."
+  #         echo "::set-env name=STIGMAN_DB_HOST::$(
+  #           wsl bash -c "echo $STIGMAN_DB_HOST"
+  #         )"
+  #         echo "::set-env name=STIGMAN_OIDC_PROVIDER::$(
+  #           wsl bash -c "echo $STIGMAN_OIDC_PROVIDER"
+  #         )"
+
+  #     - name: Verify MySQL & Mock Keycloak Are Running in WSL
+  #       shell: wsl-bash {0}
+  #       run: |
+  #         echo "Checking if Keycloak is running..."
+  #         curl -s http://localhost:8080 || echo "Keycloak is NOT responding!"
+  #         echo "Checking MySQL container..."
+  #         docker ps
+  #         mysql -h 127.0.0.1 -u stigman -p stigman -e "SHOW DATABASES;" || echo "MySQL connection failed!"
+
+  #     - name: Download builds
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: binary-artifacts  
+  #         path: ./binary-artifacts
+
+  #     - name: Run Windows binary (Direct)
+  #       working-directory: ./binary-artifacts
+  #       shell: pwsh
+  #       run: |
+  #         echo "Running tests on binary artifacts"
+  #         .\stig-manager-win.exe
+  #       env:
+  #         STIGMAN_DB_HOST: ${{ env.STIGMAN_DB_HOST }}
+  #         STIGMAN_DB_PORT: 3306
+  #         STIGMAN_OIDC_PROVIDER: ${{ env.STIGMAN_OIDC_PROVIDER }}
