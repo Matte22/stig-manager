@@ -1,4 +1,5 @@
 
+
 name: Build and Test Binary Artifacts
 on:
   workflow_dispatch:
@@ -23,13 +24,13 @@ env:
   STIGMAN_DB_HOST: localhost
   STIGMAN_DB_PORT: 3306
   STIGMAN_DB_PASSWORD: stigman
-  STIGMAN_API_AUTHORITY: http://localhost:8080/auth/realms/stigman
+  STIGMAN_API_AUTHORITY: http://127.0.0.1:8080/auth/realms/stigman
   STIGMAN_SWAGGER_ENABLED: true
-  STIGMAN_SWAGGER_SERVER: http://localhost:64001/api
-  STIGMAN_SWAGGER_REDIRECT: http://localhost:64001/api-docs/oauth2-redirect.html
+  STIGMAN_SWAGGER_SERVER: http://127.0.0.1:64001/api
+  STIGMAN_SWAGGER_REDIRECT: http://127.0.0.1:64001/api-docs/oauth2-redirect.html
   STIGMAN_DEV_RESPONSE_VALIDATION: logOnly
   STIGMAN_EXPERIMENTAL_APPDATA: 'true'
-  STIGMAN_OIDC_PROVIDER: http://localhost:8080/auth/realms/stigman
+  STIGMAN_OIDC_PROVIDER: http://127.0.0.1:8080/auth/realms/stigman
 jobs:
   build-binary-artifacts:
     name: Build binary artifacts
@@ -90,6 +91,10 @@ jobs:
         working-directory: test/api/mock-keycloak
         run: |
           python3 -m http.server 8080 &
+      
+      - name: wait 5 seconds
+        run: sleep 5
+
       - name: Run MySQL container
         id: mysql-run
         run: |
@@ -100,8 +105,8 @@ jobs:
           -e MYSQL_USER=stigman \
           -e MYSQL_PASSWORD=stigman \
           mysql:8.0.24
-      - name: wait 5 seconds
-        run: sleep 5
+      - name: wait 10 seconds
+        run: sleep 10
 
       - name: Download builds
         uses: actions/download-artifact@v4
@@ -123,6 +128,76 @@ jobs:
       - name: Wait for bootstrap
         run: for i in {1..10}; do [ $i -gt 1 ] && sleep 5; curl --output /dev/null --silent --fail http://localhost:64001/api/op/configuration && s=0 && break || s=$?; printf '.'; done; (exit $s)
           
+      - name: Install test dependencies
+        run: npm ci
+        working-directory: ./test/api/
+
+      - name: Run tests with coverage
+        working-directory: ./test/api/
+        run: npm test
+
+  run-test-windows-binary-artifact:
+    name: Run and test windows artifact
+    runs-on: windows-latest
+    needs: build-binary-artifacts  
+    steps:
+  
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Run mock Keycloak (Windows)
+        id: idp-run
+        working-directory: test/api/mock-keycloak
+        run: |
+          start /B python -m http.server 8080
+      - name: Verify Keycloak is Running
+        run: curl -v http://localhost:8080/auth/realms/stigman/.well-known/openid-configuration || exit 1
+        
+      - name: Run MySQL container (Windows)
+        id: mysql-run
+        run: |
+          docker run -d --name stig-manager-db ^
+            -p 3306:3306 ^
+            -e MYSQL_ROOT_PASSWORD=rootpw ^
+            -e MYSQL_DATABASE=stigman ^
+            -e MYSQL_USER=stigman ^
+            -e MYSQL_PASSWORD=stigman ^
+            mysql:8.0.24
+      - name: wait 5 seconds
+        run: sleep 5
+
+      - name: Download builds
+        uses: actions/download-artifact@v4
+        with:
+          name: binary-artifacts  
+          path: ./binary-artifacts
+
+      - name: List downloaded files
+        run: dir binary-artifacts
+
+      - name: Set execute permissions on binary
+        run: chmod +x ./binary-artifacts/stig-manager-linuxstatic
+      
+      - name: Run windows binary
+        working-directory: ./
+        run: |
+          echo "Running tests on binary artifacts"
+          start /B binary-artifacts\stig-manager-win.exe
+      
+
+          
+      - name: Wait for bootstrap
+        run: |
+          for /L %%i in (1,1,10) do (
+            timeout /t 5 /nobreak >nul
+            curl --output nul --silent --fail http://localhost:64001/api/op/configuration && exit /B 0
+            echo .
+          )
+          exit /B 1
+                
       - name: Install test dependencies
         run: npm ci
         working-directory: ./test/api/
