@@ -146,76 +146,6 @@ jobs:
   #         name: test-logs
   #         path: ./binary-artifacts/logs/
 
-  run-test-windows-binary-artifact:
-    name: Run and test Windows binary
-    needs: build-artifacts
-    runs-on: windows-latest
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - name: Install MySQL
-        run: |
-          choco install mysql -y
-          refreshenv
-          mysqld --initialize-insecure
-          Start-Service -Name MySQL
-
-      - name: Check MySQL Version
-        run: |
-          mysql --version
-
-      - name: Configure MySQL
-        run: |
-          Write-Output "Configuring MySQL..."
-          Start-Sleep -s 10
-          mysql -u root -e "CREATE DATABASE stigman;"
-          mysql -u root -e "CREATE USER 'stigman'@'localhost' IDENTIFIED BY 'stigman';"
-          mysql -u root -e "GRANT ALL PRIVILEGES ON stigman.* TO 'stigman'@'localhost';"
-          mysql -u root -e "FLUSH PRIVILEGES;"
-
-      - name: Run mock Keycloak
-        id: idp-run
-        working-directory: test/api/mock-keycloak
-        run: |
-          Start-Process -NoNewWindow -FilePath "powershell" -ArgumentList "-Command Start-Process python -ArgumentList '-m http.server 8080' -NoNewWindow -PassThru"
-
-      - name: Download builds
-        uses: actions/download-artifact@v4
-        with:
-          name: binary-artifacts  
-          path: ./binary-artifacts
-
-      - name: Run Windows binary and log output
-        run: |
-          Start-Process -NoNewWindow -FilePath "./binary-artifacts/stig-manager-win.exe"
-        working-directory: ./
-
-      
-      - name: Install test dependencies
-        run: npm ci
-        working-directory: ./test/api/
-
-      - name: Run tests with coverage and log output
-        working-directory: ./test/api/
-        run: |
-          npm test | Out-File -FilePath ../../binary-artifacts/logs/test-output.log
-
-      - name: Stop Windows binary
-        if: always()
-        run: |
-          Get-Process stig-manager-windows -ErrorAction SilentlyContinue | Stop-Process -Force
-          
-      - name: Upload logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-logs-windows
-          path: ./binary-artifacts/logs/
-
   # run-test-windows-binary-artifact:
   #   name: Run and test Windows binary
   #   needs: build-artifacts
@@ -227,16 +157,10 @@ jobs:
   #       with:
   #         node-version: 18
 
-  #     - name: Download MySQL 8.0.24 Installer
+  #     - name: Install MySQL
   #       run: |
-  #         Invoke-WebRequest -Uri "https://downloads.mysql.com/archives/get/p/23/file/mysql-8.0.24-winx64.msi" -OutFile "mysql-8.0.24-winx64.msi"
-
-  #     - name: Install MySQL 8.0.24
-  #       run: |
-  #         Start-Process -Wait -FilePath msiexec.exe -ArgumentList '/i mysql-8.0.24-winx64.msi /qn'
-
-  #     - name: Initialize MySQL
-  #       run: |
+  #         choco install mysql -y
+  #         refreshenv
   #         mysqld --initialize-insecure
   #         Start-Service -Name MySQL
 
@@ -267,24 +191,10 @@ jobs:
 
   #     - name: Run Windows binary and log output
   #       run: |
-         
-  #         Start-Process -NoNewWindow -FilePath "./binary-artifacts/stig-manager-windows.exe"
+  #         Start-Process -NoNewWindow -FilePath "./binary-artifacts/stig-manager-win.exe"
   #       working-directory: ./
 
-  #     - name: Wait for bootstrap
-  #       run: |
-  #         $attempts = 0
-  #         while ($attempts -lt 10) {
-  #           Start-Sleep -s 5
-  #           try {
-  #             Invoke-WebRequest -Uri http://localhost:64001/api/op/configuration -UseBasicParsing
-  #             exit 0
-  #           } catch {
-  #             $attempts++
-  #           }
-  #         }
-  #         exit 1
-
+      
   #     - name: Install test dependencies
   #       run: npm ci
   #       working-directory: ./test/api/
@@ -305,3 +215,81 @@ jobs:
   #       with:
   #         name: test-logs-windows
   #         path: ./binary-artifacts/logs/
+
+  run-test-windows-binary-artifact:
+    name: Run and test Windows binary
+    needs: build-artifacts
+    runs-on: windows-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Download MySQL 8.0.24 Installer
+        run: |
+          Invoke-WebRequest -Uri "https://downloads.mysql.com/archives/get/p/23/file/mysql-8.0.24-winx64.msi" -OutFile "mysql-8.0.24-winx64.msi"
+
+      - name: Install MySQL 8.0.24
+        run: |
+          Start-Process -Wait -FilePath msiexec.exe -ArgumentList "/i mysql-8.0.24-winx64.msi /qn"
+
+      - name: Initialize MySQL
+        run: |
+          mysqld --initialize-insecure
+          Start-Service -Name MySQL
+
+      - name: Check MySQL Version
+        run: |
+          mysql --version
+
+      - name: Configure MySQL
+        run: |
+          Write-Output "Configuring MySQL..."
+          Start-Sleep -s 10
+          mysql -u root -e "CREATE DATABASE stigman;"
+          mysql -u root -e "CREATE USER 'stigman'@'localhost' IDENTIFIED BY 'stigman';"
+          mysql -u root -e "GRANT ALL PRIVILEGES ON stigman.* TO 'stigman'@'localhost';"
+          mysql -u root -e "FLUSH PRIVILEGES;"
+
+      - name: Run mock Keycloak
+        id: idp-run
+        working-directory: test/api/mock-keycloak
+        run: |
+          Start-Process -NoNewWindow -FilePath "powershell" -ArgumentList "-Command Start-Process python -ArgumentList '-m http.server 8080' -NoNewWindow -PassThru"
+
+      - name: Download builds
+        uses: actions/download-artifact@v4
+        with:
+          name: binary-artifacts  
+          path: ./binary-artifacts
+
+      - name: Run Windows binary and log output
+        run: |
+          Start-Process -NoNewWindow -FilePath "./binary-artifacts/stig-manager-windows.exe"
+        working-directory: ./
+
+     
+
+      - name: Install test dependencies
+        run: npm ci
+        working-directory: ./test/api/
+
+      - name: Run tests with coverage and log output
+        working-directory: ./test/api/
+        run: |
+          npm test | Out-File -FilePath ../../binary-artifacts/logs/test-output.log
+
+      - name: Stop Windows binary
+        if: always()
+        run: |
+          Get-Process stig-manager-windows -ErrorAction SilentlyContinue | Stop-Process -Force
+          
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-windows
+          path: ./binary-artifacts/logs/
+
