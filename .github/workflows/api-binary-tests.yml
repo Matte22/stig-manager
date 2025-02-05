@@ -5,6 +5,7 @@ on:
   pull_request:
     branches:
       - main
+      - windows-wf
     paths:
       - "api/source/**"
       - "test/api/**"
@@ -13,6 +14,7 @@ on:
   push:
     branches:
       - main
+      - windows-wf
     paths:
       - "api/source/**"
       - "test/api/**"
@@ -32,12 +34,7 @@ env:
   STIGMAN_OIDC_PROVIDER: http://127.0.0.1:8080/auth/realms/stigman
 jobs:
   build-artifacts:
-    uses: nuwcdivnpt/stig-manager/.github/workflows/build-binary-artifacts.yml@main
-    secrets:
-      STIGMAN_PRIVATE_KEY: ${{ secrets.STIGMAN_PRIVATE_KEY }}
-  run-test-linux-binary-artifact:
-    name: Run and test linux artifact
-    needs: build-artifacts
+    name: Build binary artifacts
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -46,24 +43,145 @@ jobs:
         with:
           node-version: 18
 
+      - name: Get repository metadata
+        id: repo
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const repo = await github.rest.repos.get(context.repo)
+            return repo.data     
+      - name: install uglify
+        run: |
+          sudo npm install -g uglify-js    
+      - name: run build script
+        id: run-the-build-script
+        working-directory: ./api
+        run: ./build.sh
+    
+      - name: Upload builds
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-artifacts
+          path: ./api/bin/
+          if-no-files-found: error
+
+      - name: Upload archives
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-archives
+          path: ./api/dist/
+          if-no-files-found: error
+  # run-test-linux-binary-artifact:
+  #   name: Run and test linux artifact
+  #   needs: build-artifacts
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Check out the repo
+  #       uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 18
+
+  #     - name: Run mock Keycloak
+  #       id: idp-run
+  #       working-directory: test/api/mock-keycloak
+  #       run: |
+  #         python3 -m http.server 8080 &
+
+  #     - name: Run MySQL container
+  #       id: mysql-run
+  #       run: |
+  #         docker run -d --name stig-manager-db \
+  #         -p 3306:3306 \
+  #         -e MYSQL_ROOT_PASSWORD=rootpw \
+  #         -e MYSQL_DATABASE=stigman \
+  #         -e MYSQL_USER=stigman \
+  #         -e MYSQL_PASSWORD=stigman \
+  #         mysql:8.0.24
+  #     - name: wait 10 seconds
+  #       run: sleep 10
+
+  #     - name: Download builds
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: binary-artifacts  
+  #         path: ./binary-artifacts
+
+  #     - name: Set execute permissions on binary
+  #       run: chmod +x ./binary-artifacts/stig-manager-linuxstatic
+      
+  #     - name: Run linux binary and log output
+  #       working-directory: ./
+  #       run: |
+  #         mkdir -p ./binary-artifacts/logs
+  #         echo "Running tests on binary artifacts"
+  #         ./binary-artifacts/stig-manager-linuxstatic > ./binary-artifacts/logs/output.log 2>&1 &
+  #         echo $! > binary-artifacts/stig-manager.pid
+
+  #     - name: Wait for bootstrap
+  #       run: for i in {1..10}; do [ $i -gt 1 ] && sleep 5; curl --output /dev/null --silent --fail http://localhost:64001/api/op/configuration && s=0 && break || s=$?; printf '.'; done; (exit $s)
+          
+  #     - name: Install test dependencies
+  #       run: npm ci
+  #       working-directory: ./test/api/
+
+  #     - name: Run tests with coverage and log output
+  #       working-directory: ./test/api/
+  #       run: |
+  #         npm test > ../../binary-artifacts/logs/test-output.log 2>&1
+
+  #     - name: Stop linux binary
+  #       if: always()
+  #       run: |
+  #         if [ -f binary-artifacts/stig-manager.pid ]; then
+  #           kill $(cat binary-artifacts/stig-manager.pid) || true
+  #         fi
+
+  #     - name: Upload logs
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: test-logs
+  #         path: ./binary-artifacts/logs/
+
+  run-test-windows-binary-artifact:
+    name: Run and test Windows binary
+    needs: build-artifacts
+    runs-on: windows-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install MySQL
+        run: |
+          choco install mysql -y
+          refreshenv
+          mysqld --initialize-insecure
+          Start-Service -Name MySQL
+
+      - name: Check MySQL Version
+        run: |
+          mysql --version
+
+      - name: Configure MySQL
+        run: |
+          Write-Output "Configuring MySQL..."
+          Start-Sleep -s 10
+          mysql -u root -e "CREATE DATABASE stigman;"
+          mysql -u root -e "CREATE USER 'stigman'@'localhost' IDENTIFIED BY 'stigman';"
+          mysql -u root -e "GRANT ALL PRIVILEGES ON stigman.* TO 'stigman'@'localhost';"
+          mysql -u root -e "FLUSH PRIVILEGES;"
+
       - name: Run mock Keycloak
         id: idp-run
         working-directory: test/api/mock-keycloak
         run: |
-          python3 -m http.server 8080 &
-
-      - name: Run MySQL container
-        id: mysql-run
-        run: |
-          docker run -d --name stig-manager-db \
-          -p 3306:3306 \
-          -e MYSQL_ROOT_PASSWORD=rootpw \
-          -e MYSQL_DATABASE=stigman \
-          -e MYSQL_USER=stigman \
-          -e MYSQL_PASSWORD=stigman \
-          mysql:8.0.24
-      - name: wait 10 seconds
-        run: sleep 10
+          Start-Process -NoNewWindow -FilePath "powershell" -ArgumentList "-Command Start-Process python -ArgumentList '-m http.server 8080' -NoNewWindow -PassThru"
 
       - name: Download builds
         uses: actions/download-artifact@v4
@@ -71,20 +189,27 @@ jobs:
           name: binary-artifacts  
           path: ./binary-artifacts
 
-      - name: Set execute permissions on binary
-        run: chmod +x ./binary-artifacts/stig-manager-linuxstatic
-      
-      - name: Run linux binary and log output
-        working-directory: ./
+      - name: Run Windows binary and log output
         run: |
-          mkdir -p ./binary-artifacts/logs
-          echo "Running tests on binary artifacts"
-          ./binary-artifacts/stig-manager-linuxstatic > ./binary-artifacts/logs/output.log 2>&1 &
-          echo $! > binary-artifacts/stig-manager.pid
+          New-Item -ItemType Directory -Force -Path ./binary-artifacts/logs
+          echo "Running tests on Windows binary artifact" | Out-File -FilePath ./binary-artifacts/logs/output.log
+          Start-Process -NoNewWindow -FilePath "./binary-artifacts/stig-manager-windows.exe" -RedirectStandardOutput ./binary-artifacts/logs/output.log -RedirectStandardError ./binary-artifacts/logs/error.log
+        working-directory: ./
 
       - name: Wait for bootstrap
-        run: for i in {1..10}; do [ $i -gt 1 ] && sleep 5; curl --output /dev/null --silent --fail http://localhost:64001/api/op/configuration && s=0 && break || s=$?; printf '.'; done; (exit $s)
-          
+        run: |
+          $attempts = 0
+          while ($attempts -lt 10) {
+            Start-Sleep -s 5
+            try {
+              Invoke-WebRequest -Uri http://localhost:64001/api/op/configuration -UseBasicParsing
+              exit 0
+            } catch {
+              $attempts++
+            }
+          }
+          exit 1
+
       - name: Install test dependencies
         run: npm ci
         working-directory: ./test/api/
@@ -92,18 +217,16 @@ jobs:
       - name: Run tests with coverage and log output
         working-directory: ./test/api/
         run: |
-          npm test > ../../binary-artifacts/logs/test-output.log 2>&1
+          npm test | Out-File -FilePath ../../binary-artifacts/logs/test-output.log
 
-      - name: Stop linux binary
+      - name: Stop Windows binary
         if: always()
         run: |
-          if [ -f binary-artifacts/stig-manager.pid ]; then
-            kill $(cat binary-artifacts/stig-manager.pid) || true
-          fi
-
+          Get-Process stig-manager-windows -ErrorAction SilentlyContinue | Stop-Process -Force
+          
       - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-logs
+          name: test-logs-windows
           path: ./binary-artifacts/logs/
