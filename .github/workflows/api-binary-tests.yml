@@ -202,7 +202,7 @@ jobs:
       - name: Run tests with coverage and log output
         working-directory: ./test/api/
         run: |
-          npm test
+          npm test | Out-File -FilePath ../../binary-artifacts/logs/test-output.log
 
       - name: Stop Windows binary
         if: always()
