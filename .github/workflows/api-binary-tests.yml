@@ -191,11 +191,7 @@ jobs:
 
       - name: Run Windows binary and log output
         run: |
-          # New-Item -ItemType Directory -Force -Path ./binary-artifacts/logs
-          # echo "Running tests on Windows binary artifact" | Out-File -FilePath ./binary-artifacts/logs/output.log
-          # Start-Process -NoNewWindow -FilePath "./binary-artifacts/stig-manager-windows.exe" -RedirectStandardOutput ./binary-artifacts/logs/output.log -RedirectStandardError ./binary-artifacts/logs/error.log
           Start-Process -NoNewWindow -FilePath "./binary-artifacts/stig-manager-win.exe"
-        working-directory: ./
 
       - name: Wait for bootstrap
         run: |
