@@ -192,6 +192,7 @@ jobs:
       - name: Run Windows binary and log output
         run: |
           Start-Process -NoNewWindow -FilePath "./binary-artifacts/stig-manager-win.exe"
+          
         working-directory: ./
 
       
@@ -202,8 +203,7 @@ jobs:
       - name: Run tests with coverage and log output
         working-directory: ./test/api/
         run: |
-          npm test | Out-File -FilePath ../../binary-artifacts/logs/test-output.log
-
+          npm test
       - name: Stop Windows binary
         if: always()
         run: |
