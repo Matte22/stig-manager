@@ -159,7 +159,7 @@ jobs:
 
       - name: Install MySQL
         run: |
-          choco install mysql -y
+          choco install mysql --version=8.0.24 -y
           refreshenv
           mysqld --initialize-insecure
           Start-Service -Name MySQL
