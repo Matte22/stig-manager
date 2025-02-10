@@ -1,5 +1,5 @@
 
-name: Build and Test Binary Artifacts
+name: Build and Test Linux Binary
 on:
   workflow_dispatch:
   pull_request:
