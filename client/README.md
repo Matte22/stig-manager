@@ -22,11 +22,11 @@ $ cd client/src/js/modules
 $ npm ci
 ```
 
-and invoke the API with the envar `STIGMAN_CLIENT_DIRECTORY` set to `../../client/src`
+and invoke the API with the envar `STIGMAN_CLIENT_DIRECTORY` set to `../../../client/src`
 
 ```
 $ cd ../api/source
 $ npm ci
-$ STIGMAN_CLIENT_DIRECTORY=../../client/src node index.js
+$ STIGMAN_CLIENT_DIRECTORY=../../../client/src node index.js
 ```
 
