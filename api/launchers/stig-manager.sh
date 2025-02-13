@@ -61,7 +61,7 @@
 #
 #  | Default: "./clients" | The location of the web client files, relative to
 #  the API source directory. Note that if running source from a clone of the
-#  GitHub repository, the client is located at `../../../clients` relative to the
+#  GitHub repository, the client is located at `../../clients` relative to the
 #  API directory.
 #
 #  Affects: API, Client

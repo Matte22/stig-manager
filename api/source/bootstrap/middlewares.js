@@ -15,27 +15,25 @@ const logger = require('../utils/logger')
 
 function configureMiddleware(app) {
 
-    logger.writeInfo('middleware', 'bootstrap', {message: 'configuring middleware'})
+    const middlewareConfigFunctions = [
+      configureMulter,
+      configureExpress,
+      configureCors,
+      configureLogging,
+      configureCompression,
+      configureServiceCheck,
+      configureAuth,
+      configureOpenApi,
+      configureErrorHandlers
+  ]
 
-    configureMulter(app)
+  logger.writeInfo('middleware', 'bootstrap', { message: 'configuring middleware' })
 
-    configureExpress(app)
+  for (let i = 0; i < middlewareConfigFunctions.length; i++) {
+      middlewareConfigFunctions[i](app)
+  }
 
-    configureCors(app)
-
-    configureLogging(app)
-
-    configureCompression(app)
-
-    configureServiceCheck(app) 
-
-    configureAuth(app)
-
-    configureOpenApi(app)
-
-    configureErrorHandlers(app)
-
-    logger.writeInfo('middleware', 'bootstrap', {message: 'middleware configured'})
+  logger.writeInfo('middleware', 'bootstrap', { message: 'middleware configured' })
 }
 
 function configureMulter(app) {
@@ -124,7 +122,6 @@ function configureOpenApi(app) {
       },
       fileUploader: false
   }))
-
 }
 
 module.exports = configureMiddleware

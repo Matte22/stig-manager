@@ -62,7 +62,7 @@
 ::
 ::  | Default: "./clients" | The location of the web client files, relative to
 ::  the API source directory. Note that if running source from a clone of the
-::  GitHub repository, the client is located at `../../../clients` relative to the
+::  GitHub repository, the client is located at `../../clients` relative to the
 ::  API directory.
 ::
 ::  Affects: API, Client
@@ -281,7 +281,7 @@
 ::
 ::  | Default: "./docs" | The location of the documentation files, relative to
 ::  the API source directory. Note that if running source from a clone of the
-::  GitHub repository, the docs are located at `../../../docs/_build/html` relative
+::  GitHub repository, the docs are located at `../../docs/_build/html` relative
 ::  to the API directory.
 ::
 ::  Affects: API, documentation

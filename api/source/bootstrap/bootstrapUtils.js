@@ -42,7 +42,6 @@ function logAppConfig() {
       dirname: __dirname,
       cwd: process.cwd()
     })
-    // NOTE: this dirname and cwd have changed because we are in a new file. does that matter? dont forget this. 
     logger.writeInfo('bootstrapUtils', 'configuration', config)
   
     return config

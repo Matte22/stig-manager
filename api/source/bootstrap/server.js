@@ -7,8 +7,6 @@ const { initializeDependencies } = require('./dependencies')
 
 async function startServer(app, startTime) {
 
-  await initializeDependencies() /// moved this here because we should initialize dependencies before starting the server
-
   const server = http.createServer(app)
   const onListenError = (e) => {
     logger.writeError('server', 'shutdown', {message:`Server failed establishing or while listening on port ${config.http.port}`, error: serializeError(e)})
@@ -25,7 +23,7 @@ async function startServer(app, startTime) {
       documentation: config.docs.disabled ? undefined : '/docs',
       swagger: config.swaggerUi.enabled ? '/api-docs' : undefined
     })
-   
+    await initializeDependencies()
     // Set/change classification if indicated
     await applyConfigurationSettings()
     logStartupDuration(startTime)

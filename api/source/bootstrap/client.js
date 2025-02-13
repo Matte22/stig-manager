@@ -65,7 +65,7 @@ function serveClientEnv(app){
 }
 
 function serveStaticFiles(app){
-    const staticPath = path.join(__dirname,  config.client.directory)
+    const staticPath = path.join(__dirname, "../",  config.client.directory)
     logger.writeDebug('serveStaticFiles', 'client', {client_static: staticPath})
     const expressStatic = express.static(staticPath)
 

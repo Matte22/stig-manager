@@ -13,7 +13,7 @@ function serveDocs(app) {
         return
     }
     try {
-        app.use('/docs', express.static(path.join(__dirname, config.docs.docsDirectory)))
+        app.use('/docs', express.static(path.join(__dirname, "../", config.docs.docsDirectory)))
         logger.writeDebug('serveDocs', 'client', {message: 'succeeded setting up documentation'})
     }
     catch (err) {

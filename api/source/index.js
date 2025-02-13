@@ -4,12 +4,12 @@ const express = require('express')
 const logger = require('./utils/logger')
 const { serializeError } = require('./utils/serializeError')
 const configureMiddleware  = require('./bootstrap/middlewares.js')
-const { logAppConfig } = require('./bootstrap/bootstrapUtils.js')
-const { serveClient } = require('./bootstrap/client.js')
-const { serveDocs, serveApiDocs } = require('./bootstrap/docs.js')
+const bootstrapUtils = require('./bootstrap/bootstrapUtils.js')
+const client = require('./bootstrap/client.js')
+const docs = require('./bootstrap/docs.js')
 const startServer = require('./bootstrap/server')
 
-const config = logAppConfig()
+const config = bootstrapUtils.logAppConfig()
 
 //Catch unhandled errors. 
 process.on('uncaughtException', (err, origin) => {
@@ -25,9 +25,9 @@ run()
 
 function run() {
   try {
-    serveClient(app)
-    serveDocs(app)
-    serveApiDocs(app)
+    client.serveClient(app)
+    docs.serveDocs(app)
+    docs.serveApiDocs(app)
     startServer(app, startTime)
   }
   catch (err) {

@@ -22,7 +22,7 @@ const config = {
         authority: process.env.STIGMAN_CLIENT_OIDC_PROVIDER || process.env.STIGMAN_OIDC_PROVIDER || "http://localhost:8080/realms/stigman",
         apiBase: process.env.STIGMAN_CLIENT_API_BASE || "api",
         disabled: process.env.STIGMAN_CLIENT_DISABLED === "true",
-        directory: process.env.STIGMAN_CLIENT_DIRECTORY || '../../../client/dist',
+        directory: process.env.STIGMAN_CLIENT_DIRECTORY || '../../client/dist',
         extraScopes: process.env.STIGMAN_CLIENT_EXTRA_SCOPES,
         scopePrefix: process.env.STIGMAN_CLIENT_SCOPE_PREFIX,
         refreshToken: {
@@ -37,7 +37,7 @@ const config = {
     },
     docs: {
         disabled: process.env.STIGMAN_DOCS_DISABLED  === "true",
-        docsDirectory: process.env.STIGMAN_DOCS_DIRECTORY || '../../../docs/_build/html',
+        docsDirectory: process.env.STIGMAN_DOCS_DIRECTORY || '../../docs/_build/html',
     },    
     http: {
         address: process.env.STIGMAN_API_ADDRESS || "0.0.0.0",
