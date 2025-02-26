@@ -19,15 +19,27 @@ module.exports.createAsset = async function createAsset (req, res, next) {
     const body = req.body
     const grant = req.userObject.grants[body.collectionId]
     if (!grant || grant.roleId < 3) throw new SmError.PrivilegeError()
-    let assetId
+    let assetIds
     try {
-      assetId = await AssetService.createAsset( {body, svcStatus: res.svcStatus})
+      assetIds = await AssetService.createAsset( {body, svcStatus: res.svcStatus})
      }
     catch (err) {
       throw err.code === 'ER_DUP_ENTRY' ? new SmError.UnprocessableError('Duplicate name exists.') : err
     }
-    const asset = await AssetService.getAsset({assetId, projections, grant})
-    res.status(201).json(asset)
+    let assets = null
+    if(assetIds.length === 1) {
+      assets = await AssetService.getAsset({assetId: assetIds[0], projections, grant})
+    }
+    else 
+    {
+      assets = []
+      for(const assetId of assetIds) {
+        const asset = await AssetService.getAsset({assetId, projections, grant})
+        assets.push(asset)
+      }
+    }
+   
+    res.status(201).json(assets)
   }
   catch (err) {
     next(err)

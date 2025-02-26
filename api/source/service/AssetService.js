@@ -166,6 +166,321 @@ exports.queryAssets = async function ({projections = [], filter = {}, grant = {}
   return (rows)
 }
 
+exports.addAssets = async function ( {body, svcStatus = {}} ) {
+  let connection
+  try {
+
+    let { collectionId, assets} = body
+    // Check if we are dealing with a single asset (not an array)
+    if (!Array.isArray(assets)) {
+      assets = [body] 
+      collectionId = body.collectionId
+    }
+
+    for (let asset of assets) {
+      asset.collectionId = collectionId // Ensure each asset has the same collectionId
+      if (asset.hasOwnProperty("noncomputing")) {
+        asset.noncomputing = asset.noncomputing ? 1 : 0;
+      }
+      // if (asset.hasOwnProperty("metadata")) {
+      //   asset.metadata = JSON.stringify(asset.metadata);
+      // }
+    }
+
+    connection = await dbUtils.pool.getConnection()
+    connection.config.namedPlaceholders = true
+
+    let insertedAssetIds = []
+
+    async function transaction () {
+      await connection.query('START TRANSACTION')
+
+      // let assetJson = JSON.stringify(assets)
+
+      // const sqlSetVariables = `set @assets = ?`
+      // await connection.query(sqlSetVariables, [JSON.stringify(assetJson)])
+
+      // INSERT into assets
+      let sql = `
+        INSERT INTO asset (name, fqdn, ip, mac, description, collectionId, noncomputing, metadata)
+        SELECT 
+            name, fqdn, ip, mac, description, collectionId, noncomputing, metadata
+        FROM JSON_TABLE(:assets, '$[*]'
+          COLUMNS (
+            name VARCHAR(255) PATH '$.name',
+            fqdn VARCHAR(255) PATH '$.fqdn',
+            ip VARCHAR(255) PATH '$.ip',
+            mac VARCHAR(255) PATH '$.mac',
+            description TEXT PATH '$.description',
+            collectionId INT PATH '$.collectionId',
+            noncomputing TINYINT PATH '$.noncomputing',
+            metadata JSON PATH '$.metadata'
+          )
+        ) AS incoming_assets;`
+
+    
+      let [results] = await connection.query(sql, { assets: JSON.stringify(assets) })
+
+
+      let fetchAssetIds = `
+      SELECT assetId, name FROM asset 
+      WHERE name IN (SELECT name FROM JSON_TABLE(:assets, '$[*]'
+      COLUMNS (name VARCHAR(255) PATH '$.name')) AS jt)
+      AND collectionId = :collectionId;`
+
+      let [insertedAssets] = await connection.query(fetchAssetIds, { assets: JSON.stringify(assets), collectionId })
+
+      let assetIdMap = new Map(insertedAssets.map(asset => [asset.name, asset.assetId]))
+
+      insertedAssetIds = Array.from(assetIdMap.values())
+
+      // Extract and batch insert stigs
+      let stigsData = []
+      let labelsData = []
+
+      for (let asset of assets) {
+        let assetId = assetIdMap.get(asset.name)
+        if (!assetId) continue
+
+        if (asset.stigs?.length > 0) {
+          for (let stig of asset.stigs) {
+            stigsData.push([stig, assetId])
+          }
+        }
+
+        if (asset.labelIds?.length > 0) {
+          for (let label of asset.labelIds) {
+            labelsData.push([assetId, label])
+          }
+        }
+      }
+
+      if (stigsData.length > 0) {
+        let sqlInsertStigs = `
+          INSERT INTO stig_asset_map (benchmarkId, assetId)
+          VALUES ?`
+        await connection.query(sqlInsertStigs, [stigsData])
+      }
+
+      if (labelsData.length > 0) {
+        let sqlInsertLabels = `
+          INSERT INTO collection_label_asset_map (assetId, clId)
+          SELECT ?, clId FROM collection_label WHERE uuid IN (?) AND collectionId = ?;`
+        
+        for (let [assetId, label] of labelsData) {
+          const sqlStringLabel = dbUtils.uuidToSqlString(label)
+          const res = await connection.query(sqlInsertLabels, [assetId, sqlStringLabel, parseInt(collectionId)])
+        }
+      }
+      
+      // if (stigs) {
+      //   if (stigs.length > 0) {
+      //     // Map bind values
+      //     let stigAssetMapBinds = stigs.map( benchmarkId => [benchmarkId, assetId])
+      //     // INSERT into stig_asset_map
+      //     let sqlInsertBenchmarks = `
+      //       INSERT IGNORE INTO 
+      //         stig_asset_map (benchmarkId, assetId)
+      //       VALUES
+      //         ?`
+      //     await connection.query(sqlInsertBenchmarks, [stigAssetMapBinds])
+      //   }
+      // }
+      // if (labelIds) {
+      //   if (labelIds.length > 0) {      
+      //     let uuidBinds = labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
+      //     // INSERT into stig_asset_map
+      //     let sqlInsertLabels = `
+      //       INSERT INTO collection_label_asset_map (assetId, clId) 
+      //         SELECT
+      //           ?,
+      //           clId
+      //         FROM
+      //           collection_label
+      //         WHERE
+      //           uuid IN (?) and collectionId = ?`
+      //     await connection.query(sqlInsertLabels, [assetId, uuidBinds, assetFields.collectionId])
+      //   }
+      // }
+
+      if (stigsData) {
+        let assetIds, assetId
+        if (insertedAssetIds.length === 1) {
+          assetId = insertedAssetIds[0]; // Single asset case
+          await dbUtils.updateStatsAssetStig(connection, { assetId })
+      } else {
+          assetIds = insertedAssetIds; // Multiple assets case
+          await dbUtils.updateStatsAssetStig(connection, { assetIds })
+      }
+  
+        await dbUtils.pruneCollectionRevMap(connection)
+        await dbUtils.updateDefaultRev(connection, parseInt(collectionId))
+        //await dbUtils.updateStatsAssetStig( connection, {assetIds} ) 
+      }
+      // Commit the changes
+      await connection.commit()
+    }
+    await dbUtils.retryOnDeadlock(transaction, svcStatus)
+    return insertedAssetIds
+    
+  }
+  catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
+    throw err
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
+  }
+}
+
+exports.updateAsset2 = async function ( {writeAction, assetId, body, currentCollectionId, transferring, svcStatus = {}} ) {
+  let connection
+  try {
+    // CREATE: assetId will be null
+    // REPLACE/UPDATE: assetId is not null
+
+    // Extract or initialize non-scalar properties to separate variables
+    let binds
+    let { stigs, labelIds, ...assetFields } = body
+
+    // Convert boolean scalar values to database values (true=1 or false=0)
+    if (assetFields.hasOwnProperty('noncomputing')) {
+      assetFields.noncomputing = assetFields.noncomputing ? 1 : 0
+    }
+    if (assetFields.hasOwnProperty('metadata')) {
+      assetFields.metadata = JSON.stringify(assetFields.metadata)
+    }
+
+    connection = await dbUtils.pool.getConnection()
+    connection.config.namedPlaceholders = true
+    async function transaction () {
+      await connection.query('START TRANSACTION')
+
+      // Process scalar properties
+      binds = { ...assetFields}
+      assetFields.collectionId ??=  currentCollectionId
+
+      if (Object.keys(binds).length > 0) {
+        // UPDATE into assets
+        let sqlUpdate =
+          `UPDATE
+              asset
+            SET
+              ?
+            WHERE
+              assetId = ?`
+        await connection.query(sqlUpdate, [assetFields, assetId])
+        if (transferring) {
+          await connection.query(
+            `DELETE FROM collection_grant_acl WHERE assetId = ?`,
+            [assetId]
+          )  
+          const sqlGetAssetLabels = `SELECT name, description, color FROM collection_label_asset_map inner join collection_label using (clId) WHERE assetId = ?`
+          const [assetLabels] = await connection.query(sqlGetAssetLabels, [assetId])
+          
+          const sqlDeleteLabels = `DELETE FROM collection_label_asset_map WHERE assetId = ?`
+          await connection.query(sqlDeleteLabels, [assetId])
+
+          if (assetLabels.length) {
+            const sqlGetCollectionLabels = `SELECT clId, name, description, color FROM collection_label WHERE collectionId = ?`
+            const [collectionLabels] = await connection.query(sqlGetCollectionLabels, [transferring.newCollectionId])
+            const collectionLabelNames = collectionLabels.reduce( (a,v) => {a[v.name] = v; return a}, {})
+            
+            for (const assetLabel of assetLabels) {
+              if (collectionLabelNames[assetLabel.name]) {
+                await connection.query(`INSERT into collection_label_asset_map (assetId, clId) VALUES (?,?)`, [assetId, collectionLabelNames[assetLabel.name].clId])
+              }
+              else {
+                const [resultInsert] = await connection.query(`INSERT INTO collection_label (collectionId, name, description, color, uuid) VALUES (?, ?, ?, ?, UUID_TO_BIN(UUID(),1))`, 
+                [transferring.newCollectionId, assetLabel.name, assetLabel.description, assetLabel.color])
+                const clId = resultInsert.insertId
+                await connection.query(`INSERT into collection_label_asset_map (assetId, clId) VALUES (?,?)`, [assetId, clId])
+              }
+            } 
+          }
+        }
+      }
+      if (stigs) {
+        let sqlDeleteBenchmarks = `
+          DELETE FROM 
+            stig_asset_map
+          WHERE 
+            assetId = ?`
+        if (stigs.length > 0) {
+          sqlDeleteBenchmarks += ` and benchmarkId NOT IN ?`
+        }
+        // DELETE from stig_asset_map, which will cascade into user_stig_aset_map
+        await connection.query(sqlDeleteBenchmarks, [ assetId, [stigs] ])
+        if (stigs.length > 0) {
+          // Map bind values
+          let stigAssetMapBinds = stigs.map( benchmarkId => [benchmarkId, assetId])
+          // INSERT into stig_asset_map
+          let sqlInsertBenchmarks = `
+            INSERT IGNORE INTO 
+              stig_asset_map (benchmarkId, assetId)
+            VALUES
+              ?`
+          await connection.query(sqlInsertBenchmarks, [stigAssetMapBinds])
+        }
+      }
+  
+      // Process labelIds, spec requires for CREATE/REPLACE not for UPDATE
+      if (labelIds) {
+        let sqlDeleteLabels = `
+          DELETE FROM 
+            collection_label_asset_map
+          WHERE 
+            assetId = ?`
+        await connection.query(sqlDeleteLabels, [ assetId ])
+        if (labelIds.length > 0) {      
+          let uuidBinds = labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
+          // INSERT into stig_asset_map
+          let sqlInsertLabels = `
+            INSERT INTO collection_label_asset_map (assetId, clId) 
+              SELECT
+                ?,
+                clId
+              FROM
+                collection_label
+              WHERE
+                uuid IN (?) and collectionId = ?`
+          await connection.query(sqlInsertLabels, [assetId, uuidBinds, assetFields.collectionId])
+        }
+      }
+
+      if (stigs || transferring) {
+        await dbUtils.pruneCollectionRevMap(connection)
+        if (transferring) {
+          await dbUtils.updateDefaultRev(connection, {collectionIds: [transferring.oldCollectionId, transferring.newCollectionId]})
+        }
+        else {
+          await dbUtils.updateDefaultRev(connection, {collectionId: currentCollectionId})
+        }
+        await dbUtils.updateStatsAssetStig( connection, {assetId} ) 
+      }
+      // Commit the changes
+      await connection.commit()
+    }
+    await dbUtils.retryOnDeadlock(transaction, svcStatus)
+    return assetId
+  }
+  catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
+    throw err
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
+  }
+}
+
 exports.addOrUpdateAsset = async function ( {writeAction, assetId, body, currentCollectionId, transferring, svcStatus = {}} ) {
   let connection
   try {
@@ -1082,7 +1397,7 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
 }
 
 exports.createAsset = async function({body, svcStatus = {}}) {
-  return _this.addOrUpdateAsset({
+  return _this.addAssets({
     writeAction: dbUtils.WRITE_ACTION.CREATE,
     body,
     svcStatus
@@ -1484,7 +1799,7 @@ exports.attachAssetsToStig = async function(collectionId, benchmarkId, assetIds,
 }
 
 exports.updateAsset = async function( {assetId, body, currentCollectionId, transferring, svcStatus = {}} ) {
-  return _this.addOrUpdateAsset({
+  return _this.updateAsset2({
     writeAction: dbUtils.WRITE_ACTION.UPDATE,
     assetId, body, currentCollectionId, transferring, svcStatus
   })

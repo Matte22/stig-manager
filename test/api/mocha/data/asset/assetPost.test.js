@@ -9,6 +9,11 @@ import { expect } from 'chai'
 
 
 describe('POST - Asset', function () {
+
+  before(async function () {  
+    await utils.loadAppData()
+  })
+
   for (const iteration of iterations) {
     if (expectations[iteration.name] === undefined){
       it(`No expectations for this iteration scenario: ${iteration.name}`, async function () {})
@@ -106,6 +111,54 @@ describe('POST - Asset', function () {
             return
           }
           expect(res.status).to.eql(201)         
+        })
+        it("Create Assets in batch", async function () {
+
+          const assets = [{
+            name: 'TestAsset' + utils.getUUIDSubString(10),
+            description: 'batch',
+            ip: '1.1.1.1',
+            noncomputing: true,
+            labelIds: [reference.testCollection.fullLabel, reference.testCollection.lvl1Label],
+            metadata: {
+              batch: 'batch',
+            },
+            stigs: reference.testCollection.validStigs
+          },
+          {
+            name: 'TestAsset' + utils.getUUIDSubString(10),
+            description: 'batch',
+            ip: '1.1.1.1',
+            noncomputing: true,
+            labelIds: [reference.testCollection.fullLabel, reference.testCollection.lvl1Label],
+            metadata: {
+              batch: 'batch',
+            },
+            stigs: reference.testCollection.validStigs
+          }]
+
+          const res = await utils.executeRequest(`${config.baseUrl}/assets?projection=stigs`, 'POST', iteration.token,
+            {
+            collectionId: reference.testCollection.collectionId,
+            assets:assets
+            })
+
+          if(!distinct.canModifyCollection){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(201)
+          expect(res.body).to.be.an('array').of.length(2)
+          expect(res.body[0].name).to.equal(assets[0].name)
+          expect(res.body[1].name).to.equal(assets[1].name)
+          for(const asset of res.body) {
+            expect(asset.collection.collectionId).to.equal(reference.testCollection.collectionId)
+            expect(asset.labelIds).to.eql([reference.testCollection.fullLabel, reference.testCollection.lvl1Label])
+            expect(asset.metadata.batch).to.equal('batch')
+            for(const stig of asset.stigs) {
+              expect(stig.benchmarkId).to.be.oneOf(reference.testCollection.validStigs)
+            }
+          }
         })
       })
     })
