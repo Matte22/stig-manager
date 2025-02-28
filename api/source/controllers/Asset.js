@@ -38,7 +38,6 @@ module.exports.createAsset = async function createAsset (req, res, next) {
         assets.push(asset)
       }
     }
-   
     res.status(201).json(assets)
   }
   catch (err) {

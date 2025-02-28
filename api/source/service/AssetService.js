@@ -171,14 +171,13 @@ exports.addAssets = async function ( {body, svcStatus = {}} ) {
   try {
 
     let { collectionId, assets} = body
-    // Check if we are dealing with a single asset (not an array)
+    // cast single asset to array
     if (!Array.isArray(assets)) {
       assets = [body] 
-      collectionId = body.collectionId
     }
 
     for (let asset of assets) {
-      asset.collectionId = collectionId // Ensure each asset has the same collectionId
+      asset.collectionId = collectionId 
       if (asset.hasOwnProperty("noncomputing")) {
         asset.noncomputing = asset.noncomputing ? 1 : 0;
       }
@@ -221,7 +220,6 @@ exports.addAssets = async function ( {body, svcStatus = {}} ) {
     
       let [results] = await connection.query(sql, { assets: JSON.stringify(assets) })
 
-
       let fetchAssetIds = `
       SELECT assetId, name FROM asset 
       WHERE name IN (SELECT name FROM JSON_TABLE(:assets, '$[*]'
@@ -257,14 +255,14 @@ exports.addAssets = async function ( {body, svcStatus = {}} ) {
 
       if (stigsData.length > 0) {
         let sqlInsertStigs = `
-          INSERT INTO stig_asset_map (benchmarkId, assetId)
+          INSERT IGNORE INTO stig_asset_map (benchmarkId, assetId)
           VALUES ?`
         await connection.query(sqlInsertStigs, [stigsData])
       }
 
       if (labelsData.length > 0) {
         let sqlInsertLabels = `
-          INSERT INTO collection_label_asset_map (assetId, clId)
+          INSERT IGNORE INTO collection_label_asset_map (assetId, clId)
           SELECT ?, clId FROM collection_label WHERE uuid IN (?) AND collectionId = ?;`
         
         for (let [assetId, label] of labelsData) {
@@ -273,45 +271,15 @@ exports.addAssets = async function ( {body, svcStatus = {}} ) {
         }
       }
       
-      // if (stigs) {
-      //   if (stigs.length > 0) {
-      //     // Map bind values
-      //     let stigAssetMapBinds = stigs.map( benchmarkId => [benchmarkId, assetId])
-      //     // INSERT into stig_asset_map
-      //     let sqlInsertBenchmarks = `
-      //       INSERT IGNORE INTO 
-      //         stig_asset_map (benchmarkId, assetId)
-      //       VALUES
-      //         ?`
-      //     await connection.query(sqlInsertBenchmarks, [stigAssetMapBinds])
-      //   }
-      // }
-      // if (labelIds) {
-      //   if (labelIds.length > 0) {      
-      //     let uuidBinds = labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
-      //     // INSERT into stig_asset_map
-      //     let sqlInsertLabels = `
-      //       INSERT INTO collection_label_asset_map (assetId, clId) 
-      //         SELECT
-      //           ?,
-      //           clId
-      //         FROM
-      //           collection_label
-      //         WHERE
-      //           uuid IN (?) and collectionId = ?`
-      //     await connection.query(sqlInsertLabels, [assetId, uuidBinds, assetFields.collectionId])
-      //   }
-      // }
-
       if (stigsData) {
         let assetIds, assetId
         if (insertedAssetIds.length === 1) {
           assetId = insertedAssetIds[0]; // Single asset case
           await dbUtils.updateStatsAssetStig(connection, { assetId })
-      } else {
+        } else {
           assetIds = insertedAssetIds; // Multiple assets case
           await dbUtils.updateStatsAssetStig(connection, { assetIds })
-      }
+        }
   
         await dbUtils.pruneCollectionRevMap(connection)
         await dbUtils.updateDefaultRev(connection, parseInt(collectionId))
