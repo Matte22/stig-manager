@@ -122,6 +122,7 @@ describe('POST - Asset', function () {
             labelIds: [reference.testCollection.fullLabel, reference.testCollection.lvl1Label],
             metadata: {
               batch: 'batch',
+              batch2: 'batch2'
             },
             stigs: reference.testCollection.validStigs
           },
