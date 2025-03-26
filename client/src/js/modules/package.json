@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "@nuwcdivnpt/stig-manager-client-modules": "/home/mathew/Documents/CodeWorkspace/stig-manager-client-modules",
+    "ajv": "^8.17.1",
+    "ajv-dist": "^8.17.1",
     "chart.js": "^4.4.2",
     "serialize-error": "^11.0.0"
   }

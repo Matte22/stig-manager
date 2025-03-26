@@ -1834,6 +1834,7 @@ SM.Manage.Collection.Panel = Ext.extend(Ext.Panel, {
 
 
     this.labelGrid = new SM.Manage.Collection.LabelsGrid({
+      
       collectionId: _this.apiCollection.collectionId,
       iconCls: 'sm-label-icon',
       title: 'Labels',
@@ -3349,18 +3350,12 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
           },
           '-',
           {
-            xtype: 'fileuploadfield',
-            buttonOnly: true,
-            na_this: 'importFile',
-            accept: '.csv',
-            webkitdirectory: false,
             style: 'width: 95px;',
-            buttonText: `Import CSV`,
-            buttonCfg: {
-                icon: "img/disc_drive.png"
-            },
-            listeners: {
-                fileselected: onFileSelected
+            iconCls: 'sm-import-icon',
+            text: 'Import Assets CSV',
+            tooltip: "blah",
+            handler: function () {
+              SM.Manage.Asset.showParsedDataWithSubmission(me.collectionId)
             }
           },
           {
@@ -3368,7 +3363,7 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
             text: 'Import CKL(B) or XCCDF...',
             tooltip: SM.TipContent.ImportFromCollectionManager,
             handler: function () {
-              showImportResultFiles(me.collectionId);
+              showImportResultFiles(me.collectionId)
             }
           },
           '-',
@@ -3423,12 +3418,78 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
     SM.Dispatcher.addListener('labeldeleted', this.onLabelDeleted, this)
   }
 })
-SM.Manage.Asset.showParsedDataWithSubmission = function (parsedAssets, newLabels) {
+
+// SM.Manage.Asset.FileParserComponent = function (config) {
+//   const file = config.file
+
+//   if (!file) {
+//     console.warn("No file passed to FileParserComponent")
+//     return
+//   }
+
+//   processFile(file)
+
+//   async function processFile(file) {
+//     try {
+//       const apischema = await Ext.Ajax.requestPromise({
+//         responseType: 'json',
+//         url: `${STIGMAN.Env.apiBase}/op/definition`,
+//         method: 'GET'
+//       })
+
+//       const labels = await Ext.Ajax.requestPromise({
+//         responseType: 'json',
+//         url: `${STIGMAN.Env.apiBase}/collections/21/labels`,
+//         method: 'GET'
+//       })
+
+//       const labelNames = labels.map(label => label.name);
+      
+
+//       const parser = new STIGMAN.ClientModules.AssetParser({
+//         apischema,
+//         labelNames
+//       })
+
+//       let parsedLabels = [];
+//       let assets = [];
+      
+//       const result = await parser.parse(file);
+//       parsedLabels = result.labels
+//       assets = result.assets
+//       parsingErrors = result.errors
+
+//       if(parsingErrors.length > 0) {
+//         //console.error("Parsing errors:", parsingErrors)
+//         // msg with all errors (for now)
+//         Ext.Msg.alert("Parsing Errors", parsingErrors.join("<br>"))
+        
+//       }
+
+
+
+
+//       //SM.Manage.Asset.showParsedDataWithSubmission(assets, parsedLabels)
+//       SM.Manage.Asset.showParsedDataWithSubmission()
+//     } catch (e) {
+//       console.error("Failed to parse file or show modal:", e)
+//     }
+//   }
+// }
+
+SM.Manage.Asset.showParsedDataWithSubmission = function (collectionId) {
   try {
-      var existingWindow = Ext.getCmp('parsedDataWindow')
+      let existingWindow = Ext.getCmp('parsedDataWindow')
       if (existingWindow) {
+        if (!existingWindow.destroyed) {
           existingWindow.destroy()
+        }
       }
+
+      let parsedAssets = []
+      let newLabels = []
+      let parserErrors = []
+
 
       let assetStore = new Ext.data.JsonStore({
           fields: [
@@ -3442,23 +3503,103 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (parsedAssets, newLabels
               { name: 'metadata', type: 'auto' },
               { name: 'labelNames', type: 'auto' }
           ],
-          data: parsedAssets
+          data: []
       })
 
       let errorStore = new Ext.data.JsonStore({
-          fields: ["failure", "name", "labelName", "assetIndex", "labelIndex"],
-          data: [] 
+        fields: [
+          "failure",
+          "name",
+          "assetIndex",
+          "stig",
+          "StigIndex",
+          "labelName",
+          "labelIndex"
+        ],
+        data: []
       })
+      
 
       let labelStore = new Ext.data.JsonStore({
           fields: ["labelName"],
-          data: newLabels.map(label => ({ labelName: label }))
+          data:[]
+      })
+
+      const fileField = new Ext.form.FileUploadField({
+        buttonOnly: true,
+        buttonText: 'Select CSV File',
+        fieldLabel: 'Upload CSV',
+        anchor: '100%',
+        accept: '.csv',
+        listeners: {
+          fileselected: function (field, fileName) {
+            const file = field.fileInput.dom.files[0];
+            if (!file) return;
+  
+            processFile(file);
+            field.reset();
+          }
+        }
+      })
+
+      async function processFile(file) {
+       // try {
+       // 🧹 Reset all stores and state
+        assetStore.removeAll();
+        labelStore.removeAll();
+        errorStore.removeAll();
+        errorGrid.hide();
+        finalSubmitButton.disable();
+        Ext.getCmp('statusBox')?.update('<span style="color:#444;">🛈 Awaiting Validation.</span>');
+
+          const apischema = await Ext.Ajax.requestPromise({
+            responseType: 'json',
+            url: `${STIGMAN.Env.apiBase}/op/definition`,
+            method: 'GET'
+          });
+  
+          const labels = await Ext.Ajax.requestPromise({
+            responseType: 'json',
+            url: `${STIGMAN.Env.apiBase}/collections/21/labels`,
+            method: 'GET'
+          });
+  
+          const labelNames = labels.map(l => l.name);
+          const parser = new STIGMAN.ClientModules.AssetParser({ apischema, labelNames });
+  
+          const result = await parser.parse(file);
+          parsedAssets = result.assets
+          newLabels = result.labels
+          parserErrors = result.errors
+          if(parserErrors.length > 0) {
+            Ext.Msg.alert("Parsing Errors", parserErrors.join("<br>"));
+            return
+          }
+          assetStore.loadData(result.assets);
+          labelStore.loadData(result.labels.map(label => ({ labelName: label })));
+          Ext.getCmp('statusBox')?.update('<span style="color:yellow;">✅ File parsed. Ready to validate.</span>');
+          appwindow.doLayout();
+        // } catch (e) {
+        //   console.error("File parsing error:", e);
+        //   Ext.Msg.alert("Error", "Failed to parse file. Please check the format and try again.");
+        // }
+      }
+  
+
+      let statusBox = new Ext.Panel({
+        id: 'statusBox',
+        height: 30,
+        border: false,
+        bodyStyle: 'padding: 5px; font-weight: bold; font-size: 13px;',
+        html: '<span style="color:#444;">🛈 Awaiting Validation.</span>'
       })
 
       let assetGrid = new Ext.grid.GridPanel({
-          title: "Parsed Assets",
+        title: '<span">✅New Assets To Be Created</span>',
           store: assetStore,
-          height: 250,
+          flex: 3,
+          layout: 'fit',
+          autoScroll: true,
           columns: [
               { header: 'Asset Name', dataIndex: 'name', width: 150 },
               { header: 'IP', dataIndex: 'ip', width: 100 },
@@ -3471,44 +3612,110 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (parsedAssets, newLabels
                   renderer: function (value) {
                       return Array.isArray(value) && value.length ? value.join(', ') : 'None'
                   }
-              }
+              },
+              { header: 'Description', dataIndex: 'description', width: 200 },
+              { header: 'Noncomputing', dataIndex: 'noncomputing', width: 100, renderer: function (value) { return value ? 'Yes' : 'No' } },
+              { header: 'STIGs', dataIndex: 'stigs', width: 100, renderer: function (value) { return Array.isArray(value) ? value.length : 0 } }
           ]
       })
 
       let errorGrid = new Ext.grid.GridPanel({
-          title: "Dry Run Errors",
-          store: errorStore,
-          height: 150,
-          hidden: true, 
-          columns: [
-              { header: 'Failure Type', dataIndex: 'failure', width: 200 },
-              { header: 'Asset Name', dataIndex: 'name', width: 150 },
-              { header: 'Unknown Label', dataIndex: 'labelName', width: 150 }
-          ]
+        title: '<span style="color:#B22222;">⚠️ Error! Please Fix Your CSV</span>',
+        store: errorStore,
+        hidden: true,
+        height: 400,
+        autoScroll: true,
+        columns: [
+          { header: 'Failure Type', dataIndex: 'failure', width: 150 },
+          { header: 'Asset Name', dataIndex: 'name', width: 150 },
+          { header: 'Asset Index', dataIndex: 'assetIndex', width: 100 },
+          { header: 'STIG ID', dataIndex: 'stig', width: 150 },
+          { header: 'STIG Index', dataIndex: 'stigIndex', width: 130 },
+          { header: 'Label Name', dataIndex: 'labelName', width: 150 },
+          { header: 'Label Index', dataIndex: 'labelIndex', width: 130 }
+        ]
       })
+      
 
       let labelGrid = new Ext.grid.GridPanel({
-          title: "New Labels",
-          store: labelStore,
-          height: 100,
-          columns: [{ header: 'Label Name', dataIndex: 'labelName', width: 250 }]
+        id: 'labelGridPanel',
+        title: '<span">🏷️ New Labels To Be Created</span>',
+        store: labelStore,
+        height: 400,
+        flex: 1,
+        autoScroll: true,
+        columns: [{ header: 'Label Name', dataIndex: 'labelName', width: 250 }]
       })
 
-      var appwindow = new Ext.Window({
+      const finalSubmitButton = new Ext.Button({
+        text: 'Submit Final Batch',
+        disabled: true,
+        tooltip: 'Run a validation check first to enable submission.',
+        handler: function () {
+          Ext.Msg.confirm('Confirm Submission', 'Are you sure you want to submit this data?', function (choice) {
+            if (choice === 'yes') {
+              SM.Manage.Asset.BatchSubmitter.submitFinalBatch(parsedAssets, newLabels, appwindow)
+            }
+          })
+        }
+      })
+
+      let appwindow = new Ext.Window({
           id: 'parsedDataWindow',
           cls: 'sm-dialog-window sm-round-panel',
           title: 'Asset Data Review',
           modal: true,
           width: 1600,
-          height: 1000,
+          height: 1100,
           layout: 'vbox',
           plain: true,
+          autoScroll: true,
           bodyStyle: 'padding:10px;',
           buttonAlign: 'right',
-          items: [assetGrid, labelGrid, errorGrid],
+          items: [
+            {
+              xtype: 'container',
+              layout: 'hbox',
+              height: 30,
+              width: '100%',
+              items: [
+                {
+                  xtype: 'container',
+                  layout: 'hbox',
+                  width: '50%',
+                  items: [fileField]
+                },
+              ]
+            },
+            statusBox,
+            {
+              xtype: 'container',
+              layout: 'vbox',
+              flex: 1,
+              height: 450, 
+              width: '100%',
+              items: [assetGrid]
+            },
+            {
+              xtype: 'container',
+              layout: 'hbox',
+              height: 400,
+              width: '100%',
+              items: [
+                {
+                  width: '25%',
+                  items: [labelGrid]
+                },
+                {
+                  width: '75%',
+                  items: [errorGrid]
+                }
+              ]
+            }
+          ],
           buttons: [
               {
-                  text: 'Dry Run Submission',
+                  text: 'Validate Submission',
                   handler: async function () {
                     try {
                         Ext.Msg.wait('Validating Data...', 'Please wait');
@@ -3520,13 +3727,16 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (parsedAssets, newLabels
                             jsonData: parsedAssets
                         })
             
-                        Ext.Msg.hide();
+                        Ext.Msg.hide()
             
-                        if (dryRunResponse.status === 200) {
-                          Ext.Msg.alert('Success', 'Dry run successful! Please review and click "Submit Final Batch" to proceed.', function () {
-                              finalSubmitButton.show()
-                              appwindow.doLayout()
-                          })
+                        if (dryRunResponse === "") {
+                            finalSubmitButton.enable()
+                            errorGrid.hide()
+                            errorStore.removeAll()
+                            appwindow.doLayout()
+                            finalSubmitButton.setTooltip('✅ Ready to submit data.')
+                            finalSubmitButton.enable()
+                            Ext.getCmp('statusBox')?.update('<span style="color:green;">✅ Validation run successful. Ready to submit.</span>')
                           return
                       }
                     } catch (error) {
@@ -3542,59 +3752,82 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (parsedAssets, newLabels
                             }
             
                             if (responseData.detail) {
-                                let errorData = responseData.detail.map(err => ({
-                                    failure: err.failure,
-                                    name: err.detail.name,
-                                    labelName: err.detail.labelName,
-                                    assetIndex: err.detail.assetIndex,
-                                    labelIndex: err.detail.labelIndex
-                                }))
+                              let errorData = responseData.detail.map(err => ({
+                                failure: err.failure,
+                                name: err.detail.name,
+                                assetIndex: err.detail.assetIndex,
+                                stig: err.detail.benchmarkId,
+                                stigIndex: err.detail.benchmarkIdIndex,
+                                labelName: err.detail.labelName,
+                                labelIndex: err.detail.labelIndex
+                              }))
+                              
             
-                                errorStore.loadData(errorData)
-                                errorGrid.show()
-                                appwindow.doLayout()
+                              errorStore.loadData(errorData)
+                              errorGrid.show()
+                              errorGrid.expand()
+                              errorGrid.getEl().scrollIntoView(appwindow.body)
+                              appwindow.doLayout()
             
-                                let unknownLabels = [...new Set(errorData.map(e => e.labelName))]
-                                let missingLabels = unknownLabels.filter(l => newLabels.includes(l))
-            
-                                if (missingLabels.length > 0) {
-                                    Ext.Msg.confirm(
-                                        'Create Missing Labels?',
-                                        `The following labels are missing: ${missingLabels.join(", ")}. Do you want to create them?`,
-                                        async function (choice) {
-                                            if (choice === 'yes') {
-                                                await createLabels(missingLabels)
-            
-                                                Ext.Msg.alert('Success', 'Labels created! Retrying dry-run...', function () {
-                                                    setTimeout(() => {
-                                                        appwindow.buttons[0].handler()
-                                                    }, 1000)
-                                                })
-                                            }
-                                        }
-                                    )
-                                }
+                              let unknownLabels = [...new Set(errorData.map(e => e.labelName))]
+                              let missingLabels = unknownLabels.filter(l => newLabels.includes(l))
+                              if (missingLabels.length > 0) {
+                                const missingLabelStore = new Ext.data.JsonStore({
+                                  fields: ['labelName'],
+                                  data: missingLabels.map(label => ({ labelName: label }))
+                                })
+                              
+                                const missingLabelGrid = new Ext.grid.GridPanel({
+                                  store: missingLabelStore,
+                                  height: 200,
+                                  width: 400,
+                                  title: 'Missing Labels',
+                                  columns: [
+                                    { header: 'Label Name', dataIndex: 'labelName', width: 350 }
+                                  ],
+                                  autoScroll: true,
+                                  border: true
+                                })
+                              
+                                const confirmWindow = new Ext.Window({
+                                  title: 'Create Missing Labels?',
+                                  modal: true,
+                                  layout: 'fit',
+                                  width: 420,
+                                  height: 300,
+                                  closable: false,
+                                  items: [missingLabelGrid],
+                                  buttons: [
+                                    {
+                                      text: 'Create Labels',
+                                      handler: async function () {
+                                        confirmWindow.close()
+                                        await createLabels(missingLabels)
+                                        errorStore.removeAll()
+                                        errorGrid.hide()
+                                        Ext.Msg.alert('Success', 'Labels created! Click "Validate Submission" again to retry.')
+                                      }
+                                    },
+                                    {
+                                      text: 'Cancel',
+                                      handler: function () {
+                                        confirmWindow.close()
+                                      }
+                                    }
+                                  ]
+                                })
+                              
+                                confirmWindow.show()
+                              }
+                              
                             }
                         } else {
-                            Ext.Msg.alert('Error', `Dry run failed: ${error.responseText || error.message}`)
+                            Ext.Msg.alert('Error', `Validation run failed: ${error.responseText || error.message}`)
                         }
                     }
                 }
               },
-              {
-                text: 'Submit Final Batch',
-                handler: function () {
-                    Ext.Msg.confirm(
-                        'Confirm Submission',
-                        'Are you sure you want to submit this data?',
-                        function (choice) {
-                            if (choice === 'yes') {
-                                submitFinalBatch(parsedAssets, newLabels, appwindow)
-                            }
-                        }
-                    );
-                }
-              },
+              finalSubmitButton,
               {
                   text: 'Cancel',
                   handler: function () {
@@ -3604,54 +3837,36 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (parsedAssets, newLabels
           ]
       })
 
-      appwindow.show()
+      appwindow.show(Ext.getBody())
 
   } catch (e) {
       SM.Error.handleError(e)
   }
 }
 
-var finalSubmitButton = new Ext.Button({
-  text: 'Submit Final Batch',
-  hidden: true,
-  handler: function () {
-      Ext.Msg.confirm(
-          'Confirm Submission',
-          'Are you sure you want to submit this data?',
-          function (choice) {
-              if (choice === 'yes') {
-                  submitFinalBatch(parsedAssets, newLabels, appwindow)
-              }
-          }
-      )
-  }
-})
-
-
-async function submitFinalBatch(parsedAssets, newLabels, appwindow) {
-  try {
+SM.Manage.Asset.BatchSubmitter = {
+  async submitFinalBatch(parsedAssets, newLabels, appwindow) {
+    try {
       Ext.Msg.wait('Submitting Data...', 'Please wait')
+
       const response = await Ext.Ajax.requestPromise({
-          responseType: 'json',
-          url: `${STIGMAN.Env.apiBase}/collections/21/assets`,
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          jsonData: parsedAssets
+        responseType: 'json',
+        url: `${STIGMAN.Env.apiBase}/collections/21/assets`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        jsonData: parsedAssets
       })
 
       Ext.Msg.hide()
+      appwindow.close()
 
-      if (response.status === 200) {
-          Ext.Msg.alert('Success', 'Data successfully submitted!')
-          appwindow.close()
-      } else {
-          Ext.Msg.alert('Error', `Batch submission failed: ${response.responseText}`)
-      }
-  } catch (error) {
+    } catch (error) {
       Ext.Msg.hide()
       Ext.Msg.alert('Error', `Batch submission failed: ${error.responseText || error.message}`)
+    }
   }
 }
+
 
 async function createLabels(labels) {
   try {
@@ -3672,44 +3887,12 @@ async function createLabels(labels) {
             jsonData: postLabel
         })
     }
+    Ext.getCmp('labelGridPanel')?.setTitle('<span style="color:#228B22;">🏷️ Created Labels</span>')
   } catch (error) {
       Ext.Msg.alert('Error', `Label creation failed: ${error.responseText || error.message}`)
   }
 }
-async function onFileSelected(uploadField) {
 
-  const fileInput = uploadField.fileInput.dom
-  if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-      console.warn("No file selected!")
-      return
-  }
-
-  const file = fileInput.files[0]
-
-  const apischema = await Ext.Ajax.requestPromise({
-    responseType: 'json',
-    url: `${STIGMAN.Env.apiBase}/op/definition`,
-    method: 'GET'
-  })
-  
-  const labels = await Ext.Ajax.requestPromise({
-    responseType: 'json',
-    url: `${STIGMAN.Env.apiBase}/collections/${21}/labels`,
-    method: 'GET'
-  })
-
-  const labelNames = labels.map(label => label.name)
-
-  const tasks = new STIGMAN.ClientModules.AssetParser(apischema, labelNames)
-
-  try {
-      const { labels, assets } = await tasks.parse(file)
-      SM.Manage.Asset.showParsedDataWithSubmission(assets, labels)
-  } catch (err) {
-      console.error("Error parsing file:", err)
-  }
-
-}
 
 SM.Manage.Asset.LabelField = Ext.extend(Ext.form.Field, {
   defaultAutoCreate: { tag: "div" },
