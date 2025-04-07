@@ -3499,6 +3499,9 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
       title: '<span >✅New Labels To Be Created</span>',
       store: labelStore,
       height: 400,
+      viewConfig: {
+        forceFit: true
+      },
       autoScroll: true,
       columns: [
         { header: 'Label Name', dataIndex: 'labelName', width: 400 },
@@ -3509,30 +3512,32 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
       title: '<span">✅New Assets To Be Created</span>',
         store: assetStore,
         flex: 1,
-        layout: 'fit',
+        viewConfig: {
+          forceFit: true
+        },
         autoScroll: true,
         columns: [
-            {header: 'Csv Row #', dataIndex: 'CSVRow', width: 60},
-            { header: 'Asset Name', dataIndex: 'name', width: 120 },
-            { header: 'Description', dataIndex: 'description', width: 220 },
-            { header: 'Noncomputing', dataIndex: 'noncomputing', width: 90, renderer: function (value) { return value ? 'Yes' : 'No' } },
-            { header: 'IP', dataIndex: 'ip', width: 110 },
-            { header: 'FQDN', dataIndex: 'fqdn', width: 110 },
-            { header: 'MAC', dataIndex: 'mac', width: 120 },
+            {header: 'Csv Row #', dataIndex: 'CSVRow', width: 50},
+            { header: 'Asset Name', dataIndex: 'name',  },
+            { header: 'Description', dataIndex: 'description', width: 250, },
+            { header: 'Noncomputing', dataIndex: 'noncomputing', renderer: function (value) { return value ? 'Yes' : 'No' } },
+            { header: 'IP', dataIndex: 'ip', },
+            { header: 'FQDN', dataIndex: 'fqdn',  },
+            { header: 'MAC', dataIndex: 'mac', },
             {
                 header: 'Labels',
                 dataIndex: 'labelNames',
-                width: 300,
+                width: 150,
                 renderer: function (value) {
-                    return Array.isArray(value) && value.length ? value.join(', ') : ''
+                    return Array.isArray(value) && value.length ? `<div style="white-space: pre-wrap;">${value.join('\n')}</div>` : ''
                 }
             },
             {
               header: 'STIGs',
               dataIndex: 'stigs',
-              width: 330,
+              width: 150,
               renderer: function (value) {
-                return Array.isArray(value) ? value.join(', ') : ''
+                return Array.isArray(value) ? `<div style="white-space: pre-wrap;">${value.join('\n')}</div>` : ''
               }
             }
         ]
@@ -3547,10 +3552,13 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
       store: errorStore,
       hidden: false,
       height: 400,
+      viewConfig: {
+        forceFit: true
+      },
       autoScroll: true,
       columns: [
         { header: 'CSV Row #', dataIndex: 'row', width: 100 },
-        { header: 'Errors', dataIndex: 'messages', renderer: errorRenderer, width: 1000 }
+        { header: 'Errors', dataIndex: 'messages', renderer: errorRenderer, width: 800 }
       ]
     })
     
@@ -3579,11 +3587,11 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
       
         const statusCmp = Ext.getCmp('statusBox')
         if (hasAssets && !hasErrors) {
-          statusCmp?.update('<span style="color:green;">✅ All assets valid. Ready to submit.</span>')
+          statusCmp?.update('<span style="color:green;">✅ All rows valid. Ready to submit.</span>')
         } else if (hasAssets && hasErrors) {
-          statusCmp?.update('<span style="color:orange;">⚠️ Some assets have errors. Valid assets are ready to submit.</span>')
+          statusCmp?.update('<span style="color:orange;">⚠️ Some rows have errors. Valid assets are ready to submit.</span>')
         } else if (!hasAssets && hasErrors) {
-          statusCmp?.update('<span style="color:red;">❌ No valid assets available. Please fix all errors.</span>')
+          statusCmp?.update('<span style="color:red;">❌ No valid rows available. Please fix all errors.</span>')
         } else {
           statusCmp?.update('<span style="color:#444;">🛈 No assets to submit.</span>')
         }
@@ -3683,37 +3691,47 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
     let appwindow = new Ext.Window({
         id: 'parsedDataWindow',
         cls: 'sm-dialog-window sm-round-panel',
-        title: 'Asset CSV Data Review',
+        title: 'Import Assets From CSV',
         modal: true,
         width: 1500,
         height: 1000,
         layout: 'vbox',
         plain: true,
         autoScroll: true,
-        bodyStyle: 'padding:10px;',
+        bodyStyle: 'padding:10px 5px;',
         buttonAlign: 'right',
-        items: [
+        items: 
+        [
           statusBox,
           {
             xtype: 'container',
             layout: 'vbox',
             flex: 1,
-            height: 500,
+            margins: { top: 10, right: 0, bottom: 10, left: 0 },
             width: '100%',
             items: [assetGrid]
           },
           {
             xtype: 'container',
             layout: 'hbox',
-            height: 450,
             width: '100%',
             items: [
-              { xtype: 'container', layout: 'fit', flex: 3, items: [errorGrid] },
-              { xtype: 'container', layout: 'fit', flex: 1, items: [labelGrid] }
+              {
+                xtype: 'container',
+                layout: 'fit',
+                flex: 3,
+                items: [errorGrid],
+                style: 'padding: 0px 5px;',  // ✅ This works
+              },
+              {
+                xtype: 'container',
+                layout: 'fit',
+                flex: 1,
+                items: [labelGrid]
+              }
             ]
           }
         ],
-  
         buttons: [
           finalSubmitButton,
           {
@@ -3738,25 +3756,25 @@ SM.Manage.Asset.BatchSubmitter = {
 
     async function createLabels(labels) {
       try {
-    
-        for(const label of labels) {
-    
+        const labelPromises = labels.map(label => {
           const postLabel = {
             name: label.labelName,
             description: '',
             color: '4568F2',
           }
-  
-          const res = await Ext.Ajax.requestPromise({
-              responseType: 'json',
-              url: `${STIGMAN.Env.apiBase}/collections/21/labels`,
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              jsonData: postLabel
+    
+          return Ext.Ajax.requestPromise({
+            responseType: 'json',
+            url: `${STIGMAN.Env.apiBase}/collections/21/labels`,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            jsonData: postLabel,
           })
-        }
+        })
+    
+        await Promise.all(labelPromises)
       } catch (error) {
-          Ext.Msg.alert('Error', `Label creation failed: ${error.responseText || error.message}`)
+        Ext.Msg.alert('Error', `Label creation failed: ${error.responseText || error.message}`)
       }
     }
     
