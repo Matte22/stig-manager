@@ -3392,6 +3392,20 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
           },
           '-',
           {
+          // iconCls: 'icon-add',
+            text: 'Export Assets CSV',
+            iconCls: 'sm-export-icon',
+            tooltip: 'Export selected assets to CSV',
+            handler: function () {
+              let selectedAssets = me.getSelectionModel().getSelections().map(r => r.data)
+              if (selectedAssets.length === 0) {
+                selectedAssets = assetStore.getRange().map(r => r.data)
+              }
+              SM.Manage.Asset.ExportAssetsCSV(me.collectionId,  me.collectionName, selectedAssets)
+            },
+          },
+          '-',
+          {
             iconCls: 'sm-import-icon',
             text: 'Import CKL(B) or XCCDF...',
             tooltip: SM.TipContent.ImportFromCollectionManager,
@@ -3452,18 +3466,101 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
   }
 })
 
+SM.Manage.Asset.ExportAssetsCSV = async function (collectionId, collectionName, selectedAssets) {
+
+  // fetch all assets selected by ID. 
+  const assetIds = selectedAssets.map(a => a.assetId)
+
+  //request all assets avaible to the requester
+  const assets = await Ext.Ajax.requestPromise({
+    responseType: 'json',
+    url: `${STIGMAN.Env.apiBase}/assets?collectionId=${collectionId}`,
+    method: 'GET',
+    params: {
+      projection: ['stigs']
+    }
+  })
+  // filter the assets to only include the selected ones
+  const assetResponses = assets.filter(asset => assetIds.includes(asset.assetId))
+  // get all labels in the colleciton 
+  const labels = await Ext.Ajax.requestPromise({
+    responseType: 'json',
+    url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels`,
+    method: 'GET'
+  })
+
+  // map labelName to labelId in assetResponses 
+  assetResponses.forEach(asset => {
+    const labelIds = asset.labelIds
+    const labelNames = labels.filter(label => labelIds.includes(label.labelId)).map(label => label.name)
+    asset.labelNames = labelNames
+    delete asset.labelIds
+  })
+  const csvContent = generateCsvFromAssets(assetResponses)
+  
+  downloadCsv(csvContent, collectionName)
+
+  function downloadCsv(content, collectionName) {
+    const date = new Date().toISOString().split('T')[0]
+    const filename = `assets-${collectionName}-${date}.csv`
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.setAttribute('download', filename)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  function generateCsvFromAssets(assets) {
+    const headers = [
+      'Name',
+      'Description',
+      'IP',
+      'FQDN',
+      'MAC',
+      'Non-Computing',
+      'STIGs',
+      'Labels',
+      'Metadata',
+    ]
+  
+    const escapeCsv = (value) => {
+      if (value == null) return ''
+      const str = String(value)
+      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
+    }
+  
+    const rows = assets.map(asset => {
+      const row = {
+        Name: asset.name,
+        Description: asset.description,
+        IP: asset.ip,
+        FQDN: asset.fqdn,
+        MAC: asset.mac,
+        'Non-Computing': asset.noncomputing ? 'True' : 'False',
+        STIGs: asset.stigs ? asset.stigs.map(stig => stig.benchmarkId).join('\n') : '',
+        Labels: asset.labelNames ? asset.labelNames.join('\n') : '',
+        Metadata: asset.metadata ? JSON.stringify(asset.metadata) : ''
+      }
+  
+      return headers.map(h => escapeCsv(row[h])).join(',')
+    })
+  
+    const csvContent = [headers.join(','), ...rows].join('\n')
+    return csvContent
+  }
+}
 
 SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
   try {
 
     let parsedAssets = assets
     let parserErrors = errors
-    const erroredCsvRows = new Set(Object.keys(parserErrors).map(row => parseInt(row, 10)))
-    //let validAssets = parsedAssets.filter(asset => !erroredCsvRows.has(asset.CSVRow))
     let validAssets = []
     let newLabels = []
 
-    let assetStore = new Ext.data.JsonStore({
+    const assetStore = new Ext.data.JsonStore({
       fields: [
           { name: 'CSVRow', type: 'integer' },
           { name: 'name', type: 'string' },
@@ -3474,28 +3571,37 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
           { name: 'metadata', type: 'auto' },
           { name: 'labelNames', type: 'auto' }
       ],
-      data: []
+      data: [],
+      sortInfo: {
+        field: 'CSVRow',
+        direction: 'ASC' 
+      }
     })
 
-    let errorStore = new Ext.data.JsonStore({
+    const errorStore = new Ext.data.JsonStore({
       fields: ['row', 'messages'],
-      data: []
+      data: [],
+      sortInfo: {
+        field: 'row',
+        direction: 'ASC' 
+      }
     })
 
-    let labelStore = new Ext.data.JsonStore({
+    const labelStore = new Ext.data.JsonStore({
       fields: ['labelName'],
-      data: []
-    })
-    
-    let statusBox = new Ext.Panel({
-      id: 'statusBox',
-      height: 30,
-      border: false,
-      bodyStyle: 'padding: 5px; font-weight: bold; font-size: 13px;',
-      html: '<span style="color:#444;">🛈 Parsing Data ....</span>'
+      data: [],
+      sortInfo: {
+        field: 'labelName',
+        direction: 'ASC' 
+      }
     })
 
-    let labelGrid = new Ext.grid.GridPanel({
+    const labelTotalTextCmp = new SM.RowCountTextItem({
+      store: labelStore,
+      noun: 'label',
+    })
+
+    const labelGrid = new Ext.grid.GridPanel({
       title: '<span >✅New Labels To Be Created</span>',
       store: labelStore,
       height: 400,
@@ -3505,10 +3611,18 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
       autoScroll: true,
       columns: [
         { header: 'Label Name', dataIndex: 'labelName', width: 400 },
+      ],
+      bbar: [
+        labelTotalTextCmp
       ]
     })
 
-    let assetGrid = new Ext.grid.GridPanel({
+    const assetTotalTextCmp = new SM.RowCountTextItem({
+      store: assetStore,
+      noun: 'asset',
+    })
+
+    const assetGrid = new Ext.grid.GridPanel({
       title: '<span">✅New Assets To Be Created</span>',
         store: assetStore,
         flex: 1,
@@ -3540,14 +3654,30 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
                 return Array.isArray(value) ? `<div style="white-space: pre-wrap;">${value.join('\n')}</div>` : ''
               }
             }
+        ],
+        bbar: [
+          assetTotalTextCmp
         ]
+    })
+
+    const statusBox = new Ext.Panel({
+      id: 'statusBox',
+      height: 30,
+      border: false,
+      bodyStyle: 'padding: 5px; font-weight: bold; font-size: 13px;',
+      html: '<span style="color:#444;">🛈 Parsing Data ....</span>'
     })
 
     function errorRenderer(value) {
       return `<div style="white-space: pre-wrap; line-height: 1.5em;">${value}</div>`
     }
 
-    let errorGrid = new Ext.grid.GridPanel({
+    const errorTotalTextCmp = new SM.RowCountTextItem({
+      store: errorStore,
+      noun: 'error',
+    })
+
+    const errorGrid = new Ext.grid.GridPanel({
       title: '<span style="color:#B22222;">⚠️ File Errors</span>',
       store: errorStore,
       hidden: false,
@@ -3559,6 +3689,9 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
       columns: [
         { header: 'CSV Row #', dataIndex: 'row', width: 100 },
         { header: 'Errors', dataIndex: 'messages', renderer: errorRenderer, width: 800 }
+      ],
+      bbar: [
+        errorTotalTextCmp
       ]
     })
     
@@ -3587,26 +3720,29 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
       
         const statusCmp = Ext.getCmp('statusBox')
         if (hasAssets && !hasErrors) {
-          statusCmp?.update('<span style="color:green;">✅ All rows valid. Ready to submit.</span>')
+          statusCmp?.update('<span style="color:green;">All rows valid. Ready to submit.</span>')
         } else if (hasAssets && hasErrors) {
-          statusCmp?.update('<span style="color:orange;">⚠️ Some rows have errors. Valid assets are ready to submit.</span>')
+          statusCmp?.update('<span style="color:orange;">Some rows have errors. Valid assets are ready to submit.</span>')
         } else if (!hasAssets && hasErrors) {
-          statusCmp?.update('<span style="color:red;">❌ No valid rows available. Please fix all errors.</span>')
+          statusCmp?.update('<span style="color:red;">No valid rows available. Please fix all errors.</span>')
         } else {
           statusCmp?.update('<span style="color:#444;">🛈 No assets to submit.</span>')
         }
       }
+
       Ext.getBody().mask('Loading... ')
       assetStore.loadData(validAssets)
       errorStore.loadData(groupedErrors)
       updateButtonStates()
+
       try {
+        // remove csvrow for api call
         let parsedAssetsCopy = parsedAssets.map(asset => {
           const { CSVRow, ...rest } = asset
           return { ...rest }
         })
       
-        //Ext.Msg.wait('Validating Data...', 'Please wait');
+        // dry run 
         const dryRunResponse = await Ext.Ajax.requestPromise({
             responseType: 'json',
             url: `${STIGMAN.Env.apiBase}/collections/21/assets/?dryRun=true`,
@@ -3615,79 +3751,75 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
             jsonData: parsedAssetsCopy
         })
         Ext.getBody().unmask()
-        //Ext.Msg.hide()
   
+        // dry run success
         if (dryRunResponse === "" || Object.keys(dryRunResponse).length === 0) {
-            validAssets = parsedAssets
-            assetStore.loadData(validAssets)
-            errorStore.loadData(groupedErrors)
-            updateButtonStates()
-            appwindow.doLayout()
+          // update state 
+          validAssets = parsedAssets
+          assetStore.loadData(validAssets)
+          errorStore.loadData(groupedErrors)
+          updateButtonStates()
           return
         }
+        // dry run fail
       } catch (error) {
           Ext.getBody().unmask()
           if (error.status === 422) {
-              let responseData
-              try {
-                  responseData = JSON.parse(error.responseText)
-              } catch (parseError) {
-                  Ext.Msg.alert('Fatal Error', 'Failed to parse error response.')
-                  return
-              }
-              if (responseData.detail) {
-                const existingErrors = errorStore.getRange().map(rec => rec.data)
-                const existingKey = (row, msg) => `${row}|${msg}`
-                const existingKeys = new Set(existingErrors.map(e => existingKey(e.row, e.messages)))
-  
-                let newErrors = responseData.detail
+              let responseData = JSON.parse(error.responseText)
+              
+                 //const existingErrors = errorStore.getRange().map(rec => rec.data)
+              //  const existingKeys = new Set(existingErrors.map(e => `${e.row}|${e.messages}`))
+              // gather errors from the response
+              let newErrors = responseData.detail
+                // remove label errors
                 .filter(err => {
                   const isLabelError = err.detail && err.detail.labelName
                   return !isLabelError
                 })
                 .map(err => {
-                  const d = err.detail || {}
-                  const extra = []
-                  if (d.name) extra.push(`• Asset Effected: ${d.name}`)
-                  if (d.benchmarkId) extra.push(`• STIG Unknown: ${d.benchmarkId}`)
-                  if (d.benchmarkIdIndex != null) extra.push(`• STIG Unknown Index: ${d.benchmarkIdIndex}`)
+                  // extract error specifics
+                  const errorSpecifics = []
+                  if (err.detail.name) errorSpecifics.push(`• Asset Effected: ${err.detail.name}`)
+                  if (err.detail.benchmarkId) errorSpecifics.push(`• STIG Unknown: ${err.detail.benchmarkId}`)
+                  if (err.detail.benchmarkIdIndex != null) errorSpecifics.push(`• STIG Unknown Index: ${err.detail.benchmarkIdIndex}`)
 
+                  // determine the CSV row number 
                   let csvRow = 0
-                  if (d.name) {
-                    const matchedAsset = parsedAssets.find(asset => asset.name === d.name)
+                  if (err.detail.name) {
+                    // find the asset by name in the parsedAssets array which was returned from parsing
+                    const matchedAsset = parsedAssets.find(asset => asset.name === err.detail.name)
                     if (matchedAsset) {
                       csvRow = matchedAsset.CSVRow || "n/a"
                     }
                   }
-                  const msg = `❌Data error: ${err.failure}${extra.length ? '\n' + extra.join('\n ') : ''}`
+                  const msg = `❌Data error: ${err.failure}${errorSpecifics.length ? '\n' + errorSpecifics.join('\n ') : ''}`
                   return {
                     row: csvRow,
                     messages: msg
                   }
                 })
-                .filter(e => !existingKeys.has(existingKey(e.row, e.messages)))
-                
-                const allErrors = existingErrors.concat(newErrors)
-                errorStore.loadData(allErrors, false)
+              
+              // append new errors to the existing error store
+              const existingErrors = errorStore.getRange().map(rec => rec.data)
+              const allErrors = existingErrors.concat(newErrors)
+              errorStore.loadData(allErrors, false)
+           
+              // Remove assets in assets grid associated with these errored rows
+              const erroredRows = new Set(allErrors.map(e => e.row ))
+              validAssets = parsedAssets.filter(asset => !erroredRows.has(asset.CSVRow))
+              assetStore.loadData(validAssets)
 
-                // Remove assets associated with these error rows
-                const erroredRows = new Set(allErrors.map(e => e.row ))
-                validAssets = parsedAssets.filter(asset => !erroredRows.has(asset.CSVRow))
-                assetStore.loadData(validAssets)
-                errorGrid.expand()
-                errorGrid.getEl().scrollIntoView(appwindow.body)
-                updateButtonStates()
-                appwindow.doLayout()
+              updateButtonStates()
     
+              // get unknown labels
               let unknownLabels = [...new Set(responseData.detail.map(e => e.detail.labelName).filter(Boolean))]
               newLabels = unknownLabels.map(label => ({ labelName: label }))
               labelStore.loadData(newLabels)
-
-            }
           }
       }
     
     } 
+
     let appwindow = new Ext.Window({
         id: 'parsedDataWindow',
         cls: 'sm-dialog-window sm-round-panel',
@@ -3721,12 +3853,13 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
                 layout: 'fit',
                 flex: 3,
                 items: [errorGrid],
-                style: 'padding: 0px 5px;',  // ✅ This works
+                style: 'padding: 0px 5px;',
               },
               {
                 xtype: 'container',
                 layout: 'fit',
                 flex: 1,
+                
                 items: [labelGrid]
               }
             ]
@@ -3749,7 +3882,6 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
       SM.Error.handleError(e)
   }
 }
-
 
 SM.Manage.Asset.BatchSubmitter = {
   async submitFinalBatch(validAssets, newLabels, appwindow) {
