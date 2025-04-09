@@ -2874,7 +2874,7 @@ SM.Manage.Asset.showAssetProps = async function (assetId, initialCollectionId) {
             })
             apiAsset.collection = returnedAsset.collection
             const event = assetId ? 'assetchanged' : 'assetcreated'
-            SM.Dispatcher.fireEvent(event, apiAsset)
+            
             appwindow.close()
           }
         }
@@ -3318,7 +3318,7 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
           Ext.Msg.alert("Error", "Failed to parse the file.")
           return
         }
-        SM.Manage.Asset.showParsedDataWithSubmission(assets, errors)
+        SM.Manage.Asset.showParsedData(assets, errors)
         field.reset()
       }
       catch (e) {
@@ -3552,7 +3552,7 @@ SM.Manage.Asset.ExportAssetsCSV = async function (collectionId, collectionName, 
   }
 }
 
-SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
+SM.Manage.Asset.showParsedData = function (assets, errors) {
   try {
 
     let parsedAssets = assets
@@ -3610,8 +3610,9 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
       },
       autoScroll: true,
       columns: [
-        { header: 'Label Name', dataIndex: 'labelName', width: 400 },
+        { header: 'Label Name', dataIndex: 'labelName'},
       ],
+      flex: 1,
       bbar: [
         labelTotalTextCmp
       ]
@@ -3631,9 +3632,9 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
         },
         autoScroll: true,
         columns: [
-            {header: 'Csv Row #', dataIndex: 'CSVRow', width: 50},
-            { header: 'Asset Name', dataIndex: 'name',  },
-            { header: 'Description', dataIndex: 'description', width: 250, },
+            {header: 'Csv Row #', dataIndex: 'CSVRow', },
+            { header: 'Asset Name', dataIndex: 'name',},
+            { header: 'Description', dataIndex: 'description',  },
             { header: 'Noncomputing', dataIndex: 'noncomputing', renderer: function (value) { return value ? 'Yes' : 'No' } },
             { header: 'IP', dataIndex: 'ip', },
             { header: 'FQDN', dataIndex: 'fqdn',  },
@@ -3641,7 +3642,6 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
             {
                 header: 'Labels',
                 dataIndex: 'labelNames',
-                width: 150,
                 renderer: function (value) {
                     return Array.isArray(value) && value.length ? `<div style="white-space: pre-wrap;">${value.join('\n')}</div>` : ''
                 }
@@ -3649,7 +3649,6 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
             {
               header: 'STIGs',
               dataIndex: 'stigs',
-              width: 150,
               renderer: function (value) {
                 return Array.isArray(value) ? `<div style="white-space: pre-wrap;">${value.join('\n')}</div>` : ''
               }
@@ -3733,6 +3732,7 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
       Ext.getBody().mask('Loading... ')
       assetStore.loadData(validAssets)
       errorStore.loadData(groupedErrors)
+      labelStore.loadData([])
       updateButtonStates()
 
       try {
@@ -3758,6 +3758,7 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
           validAssets = parsedAssets
           assetStore.loadData(validAssets)
           errorStore.loadData(groupedErrors)
+          labelStore.loadData([])
           updateButtonStates()
           return
         }
@@ -3767,8 +3768,6 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
           if (error.status === 422) {
               let responseData = JSON.parse(error.responseText)
               
-                 //const existingErrors = errorStore.getRange().map(rec => rec.data)
-              //  const existingKeys = new Set(existingErrors.map(e => `${e.row}|${e.messages}`))
               // gather errors from the response
               let newErrors = responseData.detail
                 // remove label errors
@@ -3808,7 +3807,6 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
               const erroredRows = new Set(allErrors.map(e => e.row ))
               validAssets = parsedAssets.filter(asset => !erroredRows.has(asset.CSVRow))
               assetStore.loadData(validAssets)
-
               updateButtonStates()
     
               // get unknown labels
@@ -3829,8 +3827,7 @@ SM.Manage.Asset.showParsedDataWithSubmission = function (assets, errors) {
         height: 1000,
         layout: 'vbox',
         plain: true,
-        autoScroll: true,
-        bodyStyle: 'padding:10px 5px;',
+        bodyStyle: 'padding: 5px;',
         buttonAlign: 'right',
         items: 
         [
@@ -3921,7 +3918,7 @@ SM.Manage.Asset.BatchSubmitter = {
       await createLabels(newLabels)
       
 
-      const response = await Ext.Ajax.requestPromise({
+      const responses = await Ext.Ajax.requestPromise({
         responseType: 'json',
         url: `${STIGMAN.Env.apiBase}/collections/21/assets`,
         method: 'POST',
@@ -3929,12 +3926,16 @@ SM.Manage.Asset.BatchSubmitter = {
         jsonData: parsedAssetsCopy
       })
 
+      const collectionId  = responses[0].collection.collectionId
+      SM.Cache.updateCollectionLabels(collectionId)
+      SM.Cache.updateCollection(collectionId)
+      SM.Dispatcher.fireEvent('assetcreated', {collection:{collectionId}})
+      
       Ext.getBody().unmask()
       appwindow.close()
-
+   
     } catch (error) {
       Ext.getBody().unmask()
-      Ext.Msg.alert('Error', `Batch submission failed: ${error.responseText || error.message}`)
     }
   }
 }
