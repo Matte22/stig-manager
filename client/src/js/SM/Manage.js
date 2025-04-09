@@ -3298,7 +3298,7 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
         SM.Manage.Asset.showAssetProps(r.get('assetId'), me.collectionId);
       }
     })
-    const onFileSelected = async function (field, fileName) {
+    const onFileSelected = async function (field, fileName, collectionId) {
       const file = field.fileInput.dom.files[0]
       if (!file) {
         console.warn("No file selected!")
@@ -3318,7 +3318,7 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
           Ext.Msg.alert("Error", "Failed to parse the file.")
           return
         }
-        SM.Manage.Asset.showParsedData(assets, errors)
+        SM.Manage.Asset.showParsedData(assets, errors, collectionId)
         field.reset()
       }
       catch (e) {
@@ -3387,8 +3387,11 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
             tooltip: "Import New Assets from CSV",
             buttonText: 'Import Assets CSV',
             listeners: {
-              fileselected: onFileSelected
-            }
+              //fileselected: onFileSelected
+              fileselected: function (field, value) {
+                onFileSelected(field, value, me.collectionId)
+              }
+          }
           },
           '-',
           {
@@ -3401,7 +3404,7 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
               if (selectedAssets.length === 0) {
                 selectedAssets = assetStore.getRange().map(r => r.data)
               }
-              SM.Manage.Asset.ExportAssetsCSV(me.collectionId,  me.collectionName, selectedAssets)
+              SM.Manage.Asset.exportAssetsCSV(me.collectionId,  me.collectionName, selectedAssets)
             },
           },
           '-',
@@ -3466,28 +3469,38 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
   }
 })
 
-SM.Manage.Asset.ExportAssetsCSV = async function (collectionId, collectionName, selectedAssets) {
+SM.Manage.Asset.exportAssetsCSV = async function (collectionId, collectionName, selectedAssets) {
 
   // fetch all assets selected by ID. 
   const assetIds = selectedAssets.map(a => a.assetId)
 
   //request all assets avaible to the requester
-  const assets = await Ext.Ajax.requestPromise({
-    responseType: 'json',
-    url: `${STIGMAN.Env.apiBase}/assets?collectionId=${collectionId}`,
-    method: 'GET',
-    params: {
-      projection: ['stigs']
-    }
-  })
+  let assets
+  let labels
+  
+  try {
+    assets = await Ext.Ajax.requestPromise({
+      responseType: 'json',
+      url: `${STIGMAN.Env.apiBase}/assets?collectionId=${collectionId}`,
+      method: 'GET',
+      params: {
+        projection: ['stigs']
+      }
+    })
+ 
+    // get all labels in the colleciton 
+    labels = await Ext.Ajax.requestPromise({
+      responseType: 'json',
+      url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels`,
+      method: 'GET'
+    })
+  }
+  catch (e) {
+    SM.Error.handleError(e)
+  }
+  
   // filter the assets to only include the selected ones
   const assetResponses = assets.filter(asset => assetIds.includes(asset.assetId))
-  // get all labels in the colleciton 
-  const labels = await Ext.Ajax.requestPromise({
-    responseType: 'json',
-    url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels`,
-    method: 'GET'
-  })
 
   // map labelName to labelId in assetResponses 
   assetResponses.forEach(asset => {
@@ -3552,7 +3565,7 @@ SM.Manage.Asset.ExportAssetsCSV = async function (collectionId, collectionName, 
   }
 }
 
-SM.Manage.Asset.showParsedData = function (assets, errors) {
+SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
   try {
 
     let parsedAssets = assets
@@ -3632,16 +3645,18 @@ SM.Manage.Asset.showParsedData = function (assets, errors) {
         },
         autoScroll: true,
         columns: [
-            {header: 'Csv Row #', dataIndex: 'CSVRow', },
+            {header: 'Csv Row #', dataIndex: 'CSVRow', width: 75 },
             { header: 'Asset Name', dataIndex: 'name',},
-            { header: 'Description', dataIndex: 'description',  },
-            { header: 'Noncomputing', dataIndex: 'noncomputing', renderer: function (value) { return value ? 'Yes' : 'No' } },
-            { header: 'IP', dataIndex: 'ip', },
-            { header: 'FQDN', dataIndex: 'fqdn',  },
-            { header: 'MAC', dataIndex: 'mac', },
+            { header: 'Description', dataIndex: 'description', width: 200  },
+            { header: 'Noncomputing', dataIndex: 'noncomputing', width: 100, renderer: function (value) { return value ? 'Yes' : 'No' } },
+            { header: 'IP', dataIndex: 'ip', width: 100 },
+            { header: 'FQDN', dataIndex: 'fqdn', width: 100 },
+            { header: 'MAC', dataIndex: 'mac', width: 100},
+            { header: 'Metadata', dataIndex: 'metadata', width: 200, renderer: function (value) { return value ? JSON.stringify(value) : '' } },
             {
                 header: 'Labels',
                 dataIndex: 'labelNames',
+                width: 150,
                 renderer: function (value) {
                     return Array.isArray(value) && value.length ? `<div style="white-space: pre-wrap;">${value.join('\n')}</div>` : ''
                 }
@@ -3649,6 +3664,7 @@ SM.Manage.Asset.showParsedData = function (assets, errors) {
             {
               header: 'STIGs',
               dataIndex: 'stigs',
+              width: 150,
               renderer: function (value) {
                 return Array.isArray(value) ? `<div style="white-space: pre-wrap;">${value.join('\n')}</div>` : ''
               }
@@ -3698,7 +3714,7 @@ SM.Manage.Asset.showParsedData = function (assets, errors) {
       text: 'Submit',
       disabled: true,
       handler: function () {
-        SM.Manage.Asset.BatchSubmitter.submitFinalBatch(validAssets, newLabels, appwindow)
+        SM.Manage.Asset.BatchSubmitter.submitFinalBatch(validAssets, newLabels, collectionId, appwindow)
       }
     })
 
@@ -3735,21 +3751,22 @@ SM.Manage.Asset.showParsedData = function (assets, errors) {
       labelStore.loadData([])
       updateButtonStates()
 
-      try {
-        // remove csvrow for api call
-        let parsedAssetsCopy = parsedAssets.map(asset => {
-          const { CSVRow, ...rest } = asset
-          return { ...rest }
-        })
+      // remove csvrow for api call
+      let parsedAssetsCopy = parsedAssets.map(asset => {
+        const { CSVRow, ...rest } = asset
+        return { ...rest }
+      })
       
+      try {
         // dry run 
         const dryRunResponse = await Ext.Ajax.requestPromise({
-            responseType: 'json',
-            url: `${STIGMAN.Env.apiBase}/collections/21/assets/?dryRun=true`,
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            jsonData: parsedAssetsCopy
+          responseType: 'json',
+          url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/assets/?dryRun=true`,
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          jsonData: parsedAssetsCopy
         })
+     
         Ext.getBody().unmask()
   
         // dry run success
@@ -3763,59 +3780,65 @@ SM.Manage.Asset.showParsedData = function (assets, errors) {
           return
         }
         // dry run fail
-      } catch (error) {
-          Ext.getBody().unmask()
-          if (error.status === 422) {
-              let responseData = JSON.parse(error.responseText)
-              
-              // gather errors from the response
-              let newErrors = responseData.detail
-                // remove label errors
-                .filter(err => {
-                  const isLabelError = err.detail && err.detail.labelName
-                  return !isLabelError
-                })
-                .map(err => {
-                  // extract error specifics
-                  const errorSpecifics = []
-                  if (err.detail.name) errorSpecifics.push(`• Asset Effected: ${err.detail.name}`)
-                  if (err.detail.benchmarkId) errorSpecifics.push(`• STIG Unknown: ${err.detail.benchmarkId}`)
-                  if (err.detail.benchmarkIdIndex != null) errorSpecifics.push(`• STIG Unknown Index: ${err.detail.benchmarkIdIndex}`)
-
-                  // determine the CSV row number 
-                  let csvRow = 0
-                  if (err.detail.name) {
-                    // find the asset by name in the parsedAssets array which was returned from parsing
-                    const matchedAsset = parsedAssets.find(asset => asset.name === err.detail.name)
-                    if (matchedAsset) {
-                      csvRow = matchedAsset.CSVRow || "n/a"
-                    }
-                  }
-                  const msg = `❌Data error: ${err.failure}${errorSpecifics.length ? '\n' + errorSpecifics.join('\n ') : ''}`
-                  return {
-                    row: csvRow,
-                    messages: msg
-                  }
-                })
-              
-              // append new errors to the existing error store
-              const existingErrors = errorStore.getRange().map(rec => rec.data)
-              const allErrors = existingErrors.concat(newErrors)
-              errorStore.loadData(allErrors, false)
-           
-              // Remove assets in assets grid associated with these errored rows
-              const erroredRows = new Set(allErrors.map(e => e.row ))
-              validAssets = parsedAssets.filter(asset => !erroredRows.has(asset.CSVRow))
-              assetStore.loadData(validAssets)
-              updateButtonStates()
-    
-              // get unknown labels
-              let unknownLabels = [...new Set(responseData.detail.map(e => e.detail.labelName).filter(Boolean))]
-              newLabels = unknownLabels.map(label => ({ labelName: label }))
-              labelStore.loadData(newLabels)
-          }
       }
-    
+      catch (error) {
+        Ext.getBody().unmask()
+        if (error.status === 422) {
+            let responseData = JSON.parse(error.responseText)
+            
+            // gather errors from the response
+            let newErrors = responseData.detail
+              // remove label errors
+              .filter(err => {
+                const isLabelError = err.detail && err.detail.labelName
+                return !isLabelError
+              })
+              .map(err => {
+                // extract error specifics
+                const errorSpecifics = []
+                if (err.detail.name) errorSpecifics.push(`• Asset Effected: ${err.detail.name}`)
+                if (err.detail.benchmarkId) errorSpecifics.push(`• STIG Unknown: ${err.detail.benchmarkId}`)
+                if (err.detail.benchmarkIdIndex != null) errorSpecifics.push(`• STIG Unknown Index: ${err.detail.benchmarkIdIndex}`)
+
+                // determine the CSV row number 
+                let csvRow = 0
+                if (err.detail.name) {
+                  // find the asset by name in the parsedAssets array which was returned from parsing
+                  const matchedAsset = parsedAssets.find(asset => asset.name === err.detail.name)
+                  if (matchedAsset) {
+                    csvRow = matchedAsset.CSVRow || "n/a"
+                  }
+                }
+                const msg = `❌Data error: ${err.failure}${errorSpecifics.length ? '\n' + errorSpecifics.join('\n ') : ''}`
+                return {
+                  row: csvRow,
+                  messages: msg
+                }
+              })
+            
+            // append new errors to the existing error store
+            const existingErrors = errorStore.getRange().map(rec => rec.data)
+            const allErrors = existingErrors.concat(newErrors)
+            errorStore.loadData(allErrors)
+          
+            // Remove assets in assets grid associated with these errored rows
+            const erroredRows = new Set(allErrors.map(e => e.row ))
+            validAssets = parsedAssets.filter(asset => !erroredRows.has(asset.CSVRow))
+            assetStore.loadData(validAssets)
+            updateButtonStates()
+  
+            // get unknown labels
+            let unknownLabels = [...new Set(responseData.detail.map(e => e.detail.labelName).filter(Boolean))]
+            newLabels = unknownLabels.map(label => ({ labelName: label }))
+            labelStore.loadData(newLabels)
+        }
+        else {
+          SM.Error.handleError(error)
+        }
+      }
+      finally {
+        Ext.getBody().unmask()
+      }
     } 
 
     let appwindow = new Ext.Window({
@@ -3850,13 +3873,12 @@ SM.Manage.Asset.showParsedData = function (assets, errors) {
                 layout: 'fit',
                 flex: 3,
                 items: [errorGrid],
-                style: 'padding: 0px 5px;',
+                margins: { top: 0, right: 5, bottom: 0, left: 0 },
               },
               {
                 xtype: 'container',
                 layout: 'fit',
                 flex: 1,
-                
                 items: [labelGrid]
               }
             ]
@@ -3881,7 +3903,7 @@ SM.Manage.Asset.showParsedData = function (assets, errors) {
 }
 
 SM.Manage.Asset.BatchSubmitter = {
-  async submitFinalBatch(validAssets, newLabels, appwindow) {
+  async submitFinalBatch(validAssets, newLabels, collectionId, appwindow) {
 
     async function createLabels(labels) {
       try {
@@ -3894,7 +3916,7 @@ SM.Manage.Asset.BatchSubmitter = {
     
           return Ext.Ajax.requestPromise({
             responseType: 'json',
-            url: `${STIGMAN.Env.apiBase}/collections/21/labels`,
+            url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels`,
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             jsonData: postLabel,
@@ -3902,11 +3924,14 @@ SM.Manage.Asset.BatchSubmitter = {
         })
     
         await Promise.all(labelPromises)
-      } catch (error) {
-        Ext.Msg.alert('Error', `Label creation failed: ${error.responseText || error.message}`)
+      }
+      catch (e) {
+        SM.Error.handleError(e)
+      }
+      finally {
+        Ext.getBody().unmask()
       }
     }
-    
     try {
       Ext.getBody().mask('')
 
@@ -3917,29 +3942,29 @@ SM.Manage.Asset.BatchSubmitter = {
 
       await createLabels(newLabels)
       
-
       const responses = await Ext.Ajax.requestPromise({
         responseType: 'json',
-        url: `${STIGMAN.Env.apiBase}/collections/21/assets`,
+        url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/assets`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         jsonData: parsedAssetsCopy
       })
 
-      const collectionId  = responses[0].collection.collectionId
       SM.Cache.updateCollectionLabels(collectionId)
       SM.Cache.updateCollection(collectionId)
       SM.Dispatcher.fireEvent('assetcreated', {collection:{collectionId}})
       
       Ext.getBody().unmask()
       appwindow.close()
-   
-    } catch (error) {
+    }
+    catch (e) {
+      SM.Error.handleError(e)
+    }
+    finally {
       Ext.getBody().unmask()
     }
   }
 }
-
 
 SM.Manage.Asset.LabelField = Ext.extend(Ext.form.Field, {
   defaultAutoCreate: { tag: "div" },
