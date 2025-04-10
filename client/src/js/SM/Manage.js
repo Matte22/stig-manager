@@ -2874,7 +2874,7 @@ SM.Manage.Asset.showAssetProps = async function (assetId, initialCollectionId) {
             })
             apiAsset.collection = returnedAsset.collection
             const event = assetId ? 'assetchanged' : 'assetcreated'
-            
+            SM.Dispatcher.fireEvent(event, apiAsset)
             appwindow.close()
           }
         }
@@ -3387,7 +3387,6 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
             tooltip: "Import New Assets from CSV",
             buttonText: 'Import Assets CSV',
             listeners: {
-              //fileselected: onFileSelected
               fileselected: function (field, value) {
                 onFileSelected(field, value, me.collectionId)
               }
@@ -3395,7 +3394,6 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
           },
           '-',
           {
-          // iconCls: 'icon-add',
             text: 'Export Assets CSV',
             iconCls: 'sm-export-icon',
             tooltip: 'Export selected assets to CSV',
@@ -3759,25 +3757,27 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
       
       try {
         // dry run 
-        const dryRunResponse = await Ext.Ajax.requestPromise({
-          responseType: 'json',
-          url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/assets/?dryRun=true`,
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          jsonData: parsedAssetsCopy
-        })
-     
-        Ext.getBody().unmask()
-  
-        // dry run success
-        if (dryRunResponse === "" || Object.keys(dryRunResponse).length === 0) {
-          // update state 
-          validAssets = parsedAssets
-          assetStore.loadData(validAssets)
-          errorStore.loadData(groupedErrors)
-          labelStore.loadData([])
-          updateButtonStates()
-          return
+        if(parsedAssetsCopy.length) {
+          const dryRunResponse = await Ext.Ajax.requestPromise({
+            responseType: 'json',
+            url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/assets/?dryRun=true`,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            jsonData: parsedAssetsCopy
+          })
+      
+          Ext.getBody().unmask()
+    
+          // dry run success
+          if (dryRunResponse === "" || Object.keys(dryRunResponse).length === 0) {
+            // update state 
+            validAssets = parsedAssets
+            assetStore.loadData(validAssets)
+            errorStore.loadData(groupedErrors)
+            labelStore.loadData([])
+            updateButtonStates()
+            return
+          }
         }
         // dry run fail
       }
