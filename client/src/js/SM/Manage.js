@@ -3315,14 +3315,13 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
           errors = result.errors
           assets = result.assets
         } catch (e) {
-          Ext.Msg.alert("Error", "Failed to parse the file.")
+          SM.Error.handleError(e)
           return
         }
         SM.Manage.Asset.showParsedData(assets, errors, collectionId)
         field.reset()
       }
       catch (e) {
-        console.error("Error parsing file:", e)
         SM.Error.handleError(e)
       }
     }
@@ -3501,12 +3500,12 @@ SM.Manage.Asset.exportAssetsCSV = async function (collectionId, collectionName, 
   const assetResponses = assets.filter(asset => assetIds.includes(asset.assetId))
 
   // map labelName to labelId in assetResponses 
-  assetResponses.forEach(asset => {
-    const labelIds = asset.labelIds
+  for(const assetResponse of assetResponses) {
+    const labelIds = assetResponse.labelIds
     const labelNames = labels.filter(label => labelIds.includes(label.labelId)).map(label => label.name)
-    asset.labelNames = labelNames
-    delete asset.labelIds
-  })
+    assetResponse.labelNames = labelNames
+    delete assetResponse.labelIds
+  }
   const csvContent = generateCsvFromAssets(assetResponses)
   
   downloadCsv(csvContent, collectionName)
@@ -3610,10 +3609,12 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
     const labelTotalTextCmp = new SM.RowCountTextItem({
       store: labelStore,
       noun: 'label',
+      iconCls: 'sm-label-icon'
+   
     })
 
     const labelGrid = new Ext.grid.GridPanel({
-      title: '<span >✅New Labels To Be Created</span>',
+      title: '<span style="padding-left: 20px; background-size: 15px;"class="sm-label-icon">New Labels To Be Created</span>',
       store: labelStore,
       height: 400,
       viewConfig: {
@@ -3625,6 +3626,7 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
       ],
       flex: 1,
       bbar: [
+        '->',
         labelTotalTextCmp
       ]
     })
@@ -3632,18 +3634,24 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
     const assetTotalTextCmp = new SM.RowCountTextItem({
       store: assetStore,
       noun: 'asset',
+      iconCls: 'sm-asset-icon'
+
     })
 
     const assetGrid = new Ext.grid.GridPanel({
-      title: '<span">✅New Assets To Be Created</span>',
+
+        title: '<span style="padding-left: 20px; background-size: 15px;"class="sm-asset-icon">New Assets To Be Created</span>',
         store: assetStore,
+       // margins: { top: 10, right: 100, bottom: 10, left: 100 },
         flex: 1,
+        
+       // layout: 'vbox',
         viewConfig: {
           forceFit: true
         },
         autoScroll: true,
         columns: [
-            {header: 'Csv Row #', dataIndex: 'CSVRow', width: 75 },
+            { header: 'Csv Row #', dataIndex: 'CSVRow', width: 75 },
             { header: 'Asset Name', dataIndex: 'name',},
             { header: 'Description', dataIndex: 'description', width: 200  },
             { header: 'Noncomputing', dataIndex: 'noncomputing', width: 100, renderer: function (value) { return value ? 'Yes' : 'No' } },
@@ -3669,6 +3677,7 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
             }
         ],
         bbar: [
+          '->',
           assetTotalTextCmp
         ]
     })
@@ -3688,12 +3697,15 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
     const errorTotalTextCmp = new SM.RowCountTextItem({
       store: errorStore,
       noun: 'error',
+      iconCls: 'sm-error-icon'
+
     })
 
     const errorGrid = new Ext.grid.GridPanel({
-      title: '<span style="color:#B22222;">⚠️ File Errors</span>',
+      title: '<span>❌&nbsp;  File Errors</span>',
       store: errorStore,
       hidden: false,
+      margins: { top: 0, right: 10, bottom: 0, left: 0 },
       height: 400,
       viewConfig: {
         forceFit: true
@@ -3704,6 +3716,7 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
         { header: 'Errors', dataIndex: 'messages', renderer: errorRenderer, width: 800 }
       ],
       bbar: [
+      '->',
         errorTotalTextCmp
       ]
     })
@@ -3719,7 +3732,7 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
     const groupedErrors = Object.entries(parserErrors).map(([row, messages]) => {
       return {
         row: parseInt(row, 10),
-        messages: messages.map(m => `❌ ${m}`).join('\n') // proper newline format
+        messages: messages.map(m => `${m}`).join('\n') // proper newline format
       }
     })
 
@@ -3732,15 +3745,25 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
         finalSubmitButton.setDisabled(!hasAssets)
       
         const statusCmp = Ext.getCmp('statusBox')
+        // if (hasAssets && !hasErrors) {
+        //   statusCmp?.update('<span class="sm-status-csv sm-status-csv-valid">All rows valid. Ready to submit.</span>')
+        // } else if (hasAssets && hasErrors) {
+        //   statusCmp?.update('<span class="sm-status-csv sm-status-csv-mixed">Some rows have errors. Valid assets are ready to submit.</span>')
+        // } else if (!hasAssets && hasErrors) {
+        //   statusCmp?.update('<span class="sm-status-csv sm-status-csv-invalid">No valid rows available. Please fix all errors.</span>')
+        // } else {
+        //   statusCmp?.update('<span class="sm-status-csv sm-status-csv-none">🛈 No assets to submit.</span>')
+        // }
         if (hasAssets && !hasErrors) {
-          statusCmp?.update('<span style="color:green;">All rows valid. Ready to submit.</span>')
+          SM.Manage.Asset.updateStatus('valid', 'All rows valid. Ready to submit.')
         } else if (hasAssets && hasErrors) {
-          statusCmp?.update('<span style="color:orange;">Some rows have errors. Valid assets are ready to submit.</span>')
+          SM.Manage.Asset.updateStatus('mixed', 'Some rows have errors. Valid assets are ready to submit.')
         } else if (!hasAssets && hasErrors) {
-          statusCmp?.update('<span style="color:red;">No valid rows available. Please fix all errors.</span>')
+          SM.Manage.Asset.updateStatus('invalid', 'No valid rows available. Please fix all errors.')
         } else {
-          statusCmp?.update('<span style="color:#444;">🛈 No assets to submit.</span>')
+          SM.Manage.Asset.updateStatus('none', '🛈 No assets to submit.')
         }
+        
       }
 
       Ext.getBody().mask('Loading... ')
@@ -3809,7 +3832,7 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
                     csvRow = matchedAsset.CSVRow || "n/a"
                   }
                 }
-                const msg = `❌Data error: ${err.failure}${errorSpecifics.length ? '\n' + errorSpecifics.join('\n ') : ''}`
+                const msg = `Data error: ${err.failure}${errorSpecifics.length ? '\n' + errorSpecifics.join('\n ') : ''}`
                 return {
                   row: csvRow,
                   messages: msg
@@ -3850,37 +3873,22 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
         height: 1000,
         layout: 'vbox',
         plain: true,
-        bodyStyle: 'padding: 5px;',
+        layoutConfig: {
+          padding: '10 20 20 20',
+          align: 'stretch',
+        },
         buttonAlign: 'right',
         items: 
         [
           statusBox,
+          assetGrid,
           {
             xtype: 'container',
-            layout: 'vbox',
-            flex: 1,
-            margins: { top: 10, right: 0, bottom: 10, left: 0 },
-            width: '100%',
-            items: [assetGrid]
-          },
-          {
-            xtype: 'container',
+            margins: { top: 20, right: 0, bottom: 0, left: 0 },
             layout: 'hbox',
-            width: '100%',
             items: [
-              {
-                xtype: 'container',
-                layout: 'fit',
-                flex: 3,
-                items: [errorGrid],
-                margins: { top: 0, right: 5, bottom: 0, left: 0 },
-              },
-              {
-                xtype: 'container',
-                layout: 'fit',
-                flex: 1,
-                items: [labelGrid]
-              }
+              errorGrid,
+              labelGrid,
             ]
           }
         ],
@@ -3900,7 +3908,35 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
   } catch (e) {
       SM.Error.handleError(e)
   }
+
 }
+
+SM.Manage.Asset.updateStatus = function (type, message) {
+  const statusCmp = Ext.getCmp('statusBox')
+  if (!statusCmp) return
+
+  const styles = {
+    valid: 'background-color: #2e7d32; color: #fff;',      // green
+    invalid: 'background-color: #c62828; color: #fff;',    // red
+    mixed: 'background-color: #f9a825; color: #000;',      // orange/yellow
+    none: 'background-color: #757575; color: #fff;',       // gray
+  }
+
+  const icons = {
+    valid: '✅',
+    invalid: '❌',
+    mixed: '⚠️',
+    none: '🛈',
+  }
+
+  const html = `<span class="sm-status-csv" style="${styles[type] || ''}">
+    ${icons[type] || ''} ${message}
+  </span>`
+
+  statusCmp.update(html)
+}
+
+
 
 SM.Manage.Asset.BatchSubmitter = {
   async submitFinalBatch(validAssets, newLabels, collectionId, appwindow) {
