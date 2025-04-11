@@ -27,7 +27,7 @@ function escapeCsv(value) {
 }
 
 const rows = [];
-for (let i = 0; i < 500; i++) {
+for (let i = 0; i < 2000; i++) {
   const row = [
     `Asset ${i}`,
     `Asset${i} Description`,

@@ -555,11 +555,6 @@ module.exports.createCollectionLabels = async function (req, res, next) {
   try {
     const { collectionId, grant } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
 
-    // Expecting an array of labels in req.body
-    if (!Array.isArray(req.body) || req.body.length === 0) {
-      return res.status(400).json({ error: 'Request body must be a non-empty array of labels.' })
-    }
-
     // Create labels in batch
     const labelUUIDs = await CollectionService.createCollectionLabels(collectionId, req.body)
 

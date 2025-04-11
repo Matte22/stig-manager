@@ -3466,17 +3466,119 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
   }
 })
 
-SM.Manage.Asset.exportAssetsCSV = async function (collectionId, collectionName, selectedAssets) {
+// SM.Manage.Asset.exportAssetsCSV = async function (collectionId, collectionName, selectedAssets) {
 
-  // fetch all assets selected by ID. 
-  const assetIds = selectedAssets.map(a => a.assetId)
+//   // fetch all assets selected by ID. 
+//   const assetIds = selectedAssets.map(a => a.assetId)
 
-  //request all assets avaible to the requester
-  let assets
-  let labels
+//   //request all assets avaible to the requester
+//   let assets
+//   let labels
   
+//   try {
+//     assets = await Ext.Ajax.requestPromise({
+//       responseType: 'json',
+//       url: `${STIGMAN.Env.apiBase}/assets?collectionId=${collectionId}`,
+//       method: 'GET',
+//       params: {
+//         projection: ['stigs']
+//       }
+//     })
+ 
+//     // get all labels in the colleciton 
+//     labels = await Ext.Ajax.requestPromise({
+//       responseType: 'json',
+//       url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels`,
+//       method: 'GET'
+//     })
+//   }
+//   catch (e) {
+//     SM.Error.handleError(e)
+//   }
+  
+//   // filter the assets to only include the selected ones
+//   const assetResponses = assets.filter(asset => assetIds.includes(asset.assetId))
+
+//   // map labelName to labelId in assetResponses 
+//   for(const assetResponse of assetResponses) {
+//     const labelIds = assetResponse.labelIds
+//     const labelNames = labels.filter(label => labelIds.includes(label.labelId)).map(label => label.name)
+//     assetResponse.labelNames = labelNames
+//     delete assetResponse.labelIds
+//   }
+//   const csvContent = generateCsvFromAssets(assetResponses)
+  
+//   downloadCsv(csvContent, collectionName)
+
+//   function downloadCsv(content, collectionName) {
+//     const date = new Date().toISOString().split('T')[0]
+//     const filename = `assets-${collectionName}-${date}.csv`
+//     const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
+//     const link = document.createElement('a')
+//     link.href = URL.createObjectURL(blob)
+//     link.setAttribute('download', filename)
+//     document.body.appendChild(link)
+//     link.click()
+//     document.body.removeChild(link)
+//   }
+
+//   function generateCsvFromAssets(assets) {
+//     const headers = [
+//       'Name',
+//       'Description',
+//       'IP',
+//       'FQDN',
+//       'MAC',
+//       'Non-Computing',
+//       'STIGs',
+//       'Labels',
+//       'Metadata',
+//     ]
+  
+//     const escapeCsv = (value) => {
+//       if (value == null) return ''
+//       const str = String(value)
+//       return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
+//     }
+  
+//     const rows = assets.map(asset => {
+//       const row = {
+//         Name: asset.name,
+//         Description: asset.description,
+//         IP: asset.ip,
+//         FQDN: asset.fqdn,
+//         MAC: asset.mac,
+//         'Non-Computing': asset.noncomputing ? 'True' : 'False',
+//         STIGs: asset.stigs ? asset.stigs.map(stig => stig.benchmarkId).join('\n') : '',
+//         Labels: asset.labelNames ? asset.labelNames.join('\n') : '',
+//         Metadata: asset.metadata ? JSON.stringify(asset.metadata) : ''
+//       }
+  
+//       return headers.map(h => escapeCsv(row[h])).join(',')
+//     })
+  
+//     const csvContent = [headers.join(','), ...rows].join('\n')
+//     return csvContent
+//   }
+// }
+
+SM.Manage.Asset.exportAssetsCSV = async function (collectionId, collectionName, selectedAssets) {
+  // Show blocking spinner message box
+  Ext.MessageBox.wait('Preparing export...', 'Exporting Assets', {
+    closable: false
+  })
+
+  // Helper to update just the message text (keeps spinner)
+  const updateStatus = (text) => {
+    Ext.MessageBox.updateText(text)
+  }
+
   try {
-    assets = await Ext.Ajax.requestPromise({
+    updateStatus('📦 Fetching assets...')
+
+    const assetIds = selectedAssets.map(a => a.assetId)
+
+    const assets = await Ext.Ajax.requestPromise({
       responseType: 'json',
       url: `${STIGMAN.Env.apiBase}/assets?collectionId=${collectionId}`,
       method: 'GET',
@@ -3484,31 +3586,41 @@ SM.Manage.Asset.exportAssetsCSV = async function (collectionId, collectionName, 
         projection: ['stigs']
       }
     })
- 
-    // get all labels in the colleciton 
-    labels = await Ext.Ajax.requestPromise({
+
+    updateStatus('🏷️ Fetching labels...')
+
+    const labels = await Ext.Ajax.requestPromise({
       responseType: 'json',
       url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels`,
       method: 'GET'
     })
-  }
-  catch (e) {
+
+    updateStatus('🔗 Merging label names...')
+
+    const assetResponses = assets.filter(asset => assetIds.includes(asset.assetId))
+
+    for (const assetResponse of assetResponses) {
+      const labelIds = assetResponse.labelIds
+      const labelNames = labels.filter(label => labelIds.includes(label.labelId)).map(label => label.name)
+      assetResponse.labelNames = labelNames
+      delete assetResponse.labelIds
+    }
+
+    updateStatus('📄 Generating CSV...')
+
+    const csvContent = generateCsvFromAssets(assetResponses)
+
+    updateStatus('⬇️ Downloading CSV...')
+
+    downloadCsv(csvContent, collectionName)
+
+    Ext.MessageBox.hide()
+    Ext.Msg.alert('Export Complete', '✅ The CSV has been downloaded.')
+  } catch (e) {
+    Ext.MessageBox.hide()
+    Ext.Msg.alert('Export Failed', '❌ An error occurred during export.')
     SM.Error.handleError(e)
   }
-  
-  // filter the assets to only include the selected ones
-  const assetResponses = assets.filter(asset => assetIds.includes(asset.assetId))
-
-  // map labelName to labelId in assetResponses 
-  for(const assetResponse of assetResponses) {
-    const labelIds = assetResponse.labelIds
-    const labelNames = labels.filter(label => labelIds.includes(label.labelId)).map(label => label.name)
-    assetResponse.labelNames = labelNames
-    delete assetResponse.labelIds
-  }
-  const csvContent = generateCsvFromAssets(assetResponses)
-  
-  downloadCsv(csvContent, collectionName)
 
   function downloadCsv(content, collectionName) {
     const date = new Date().toISOString().split('T')[0]
@@ -3534,13 +3646,13 @@ SM.Manage.Asset.exportAssetsCSV = async function (collectionId, collectionName, 
       'Labels',
       'Metadata',
     ]
-  
+
     const escapeCsv = (value) => {
       if (value == null) return ''
       const str = String(value)
       return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
     }
-  
+
     const rows = assets.map(asset => {
       const row = {
         Name: asset.name,
@@ -3553,14 +3665,134 @@ SM.Manage.Asset.exportAssetsCSV = async function (collectionId, collectionName, 
         Labels: asset.labelNames ? asset.labelNames.join('\n') : '',
         Metadata: asset.metadata ? JSON.stringify(asset.metadata) : ''
       }
-  
+
       return headers.map(h => escapeCsv(row[h])).join(',')
     })
-  
-    const csvContent = [headers.join(','), ...rows].join('\n')
-    return csvContent
+
+    return [headers.join(','), ...rows].join('\n')
   }
 }
+
+// SM.Manage.Asset.exportAssetsCSV = async function (collectionId, collectionName, selectedAssets) {
+//   // Show a blocking modal MessageBox
+//   Ext.MessageBox.show({
+//     title: 'Exporting Assets',
+//     msg: 'Starting export...',
+//     width: 300,
+//     progress: true,
+//     closable: false,
+//     wait: true
+//   })
+
+//   // Helper to update progress
+//   const stepCount = 5
+//   let step = 0
+//   const updateProgress = (text) => {
+//     step++
+//     Ext.MessageBox.updateProgress(step / stepCount, text)
+//   }
+
+//   try {
+//     updateProgress('📦 Fetching assets...')
+
+//     const assetIds = selectedAssets.map(a => a.assetId)
+
+//     const assets = await Ext.Ajax.requestPromise({
+//       responseType: 'json',
+//       url: `${STIGMAN.Env.apiBase}/assets?collectionId=${collectionId}`,
+//       method: 'GET',
+//       params: {
+//         projection: ['stigs']
+//       }
+//     })
+
+//     updateProgress('🏷️ Fetching labels...')
+
+//     const labels = await Ext.Ajax.requestPromise({
+//       responseType: 'json',
+//       url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels`,
+//       method: 'GET'
+//     })
+
+//     updateProgress('🔗 Merging label names...')
+
+//     const assetResponses = assets.filter(asset => assetIds.includes(asset.assetId))
+
+//     for (const assetResponse of assetResponses) {
+//       const labelIds = assetResponse.labelIds
+//       const labelNames = labels.filter(label => labelIds.includes(label.labelId)).map(label => label.name)
+//       assetResponse.labelNames = labelNames
+//       delete assetResponse.labelIds
+//     }
+
+//     updateProgress('📄 Generating CSV...')
+
+//     const csvContent = generateCsvFromAssets(assetResponses)
+
+//     updateProgress('⬇️ Downloading CSV...')
+
+//     downloadCsv(csvContent, collectionName)
+
+//     Ext.MessageBox.hide()
+//     Ext.Msg.alert('Export Complete', '✅ The CSV has been downloaded.')
+//   } catch (e) {
+//     Ext.MessageBox.hide()
+//     Ext.Msg.alert('Export Failed', '❌ An error occurred during export.')
+//     SM.Error.handleError(e)
+//   }
+
+//   function downloadCsv(content, collectionName) {
+//     const date = new Date().toISOString().split('T')[0]
+//     const filename = `assets-${collectionName}-${date}.csv`
+//     const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
+//     const link = document.createElement('a')
+//     link.href = URL.createObjectURL(blob)
+//     link.setAttribute('download', filename)
+//     document.body.appendChild(link)
+//     link.click()
+//     document.body.removeChild(link)
+//   }
+
+//   function generateCsvFromAssets(assets) {
+//     const headers = [
+//       'Name',
+//       'Description',
+//       'IP',
+//       'FQDN',
+//       'MAC',
+//       'Non-Computing',
+//       'STIGs',
+//       'Labels',
+//       'Metadata',
+//     ]
+
+//     const escapeCsv = (value) => {
+//       if (value == null) return ''
+//       const str = String(value)
+//       return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
+//     }
+
+//     const rows = assets.map(asset => {
+//       const row = {
+//         Name: asset.name,
+//         Description: asset.description,
+//         IP: asset.ip,
+//         FQDN: asset.fqdn,
+//         MAC: asset.mac,
+//         'Non-Computing': asset.noncomputing ? 'True' : 'False',
+//         STIGs: asset.stigs ? asset.stigs.map(stig => stig.benchmarkId).join('\n') : '',
+//         Labels: asset.labelNames ? asset.labelNames.join('\n') : '',
+//         Metadata: asset.metadata ? JSON.stringify(asset.metadata) : ''
+//       }
+
+//       return headers.map(h => escapeCsv(row[h])).join(',')
+//     })
+
+//     return [headers.join(','), ...rows].join('\n')
+//   }
+// }
+
+
 
 SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
   try {
@@ -3771,7 +4003,7 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
         } else if (!hasAssets && hasErrors) {
           SM.Manage.Asset.updateStatus('invalid', 'No valid rows available. Please fix all errors.')
         } else {
-          SM.Manage.Asset.updateStatus('none', '🛈 No assets to submit.')
+          SM.Manage.Asset.updateStatus('none', 'No assets to submit.')
         }
         
       }
@@ -3947,7 +4179,6 @@ SM.Manage.Asset.updateStatus = function (type, message) {
 }
 
 SM.Manage.Asset.submitFinalBatch = async function (validAssets, newLabels, collectionId, appwindow){
-  //async submitFinalBatch(validAssets, newLabels, collectionId, appwindow) {
 
   async function createLabels(labels) {
     try {
@@ -3968,38 +4199,37 @@ SM.Manage.Asset.submitFinalBatch = async function (validAssets, newLabels, colle
       SM.Error.handleError(e)
     }
   }
-   
 
-    try {
-      Ext.getBody().mask('')
+  try {
+    Ext.getBody().mask('')
 
-      let parsedAssetsCopy = validAssets.map(asset => {
-        const { CSVRow, ...rest } = asset
-        return { ...rest }
-      })
+    let parsedAssetsCopy = validAssets.map(asset => {
+      const { CSVRow, ...rest } = asset
+      return { ...rest }
+    })
 
-      await createLabels(newLabels)
-      SM.Cache.updateCollectionLabels(collectionId)
+    await createLabels(newLabels)
+    SM.Cache.updateCollectionLabels(collectionId)
 
-      const responses = await Ext.Ajax.requestPromise({
-        responseType: 'json',
-        url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/assets`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        jsonData: parsedAssetsCopy
-      })
+    const responses = await Ext.Ajax.requestPromise({
+      responseType: 'json',
+      url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/assets`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      jsonData: parsedAssetsCopy
+    })
 
-   
-      SM.Dispatcher.fireEvent('assetcreated', {collection:{collectionId}})
+  
+    SM.Dispatcher.fireEvent('assetcreated', {collection:{collectionId}})
 
-      appwindow.close()
-    }
-    catch (e) {
-      SM.Error.handleError(e)
-    }
-    finally {
-      Ext.getBody().unmask()
-    }
+    appwindow.close()
+  }
+  catch (e) {
+    SM.Error.handleError(e)
+  }
+  finally {
+    Ext.getBody().unmask()
+  }
 }
 
 SM.Manage.Asset.LabelField = Ext.extend(Ext.form.Field, {

@@ -1339,10 +1339,10 @@ exports.createCollectionLabel = async function (collectionId, label) {
 }
 
 exports.createCollectionLabels = async function (collectionId, labels) {
-  if (!labels.length) return []
 
   const placeholders = labels.map(() => '(?, ?, ?, ?, UUID_TO_BIN(UUID(),1))').join(', ')
   const values = []
+  
 
   for (const label of labels) {
     values.push(collectionId, label.name, label.description, label.color)
