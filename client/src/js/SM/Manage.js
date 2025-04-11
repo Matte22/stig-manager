@@ -3658,7 +3658,17 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
             { header: 'IP', dataIndex: 'ip', width: 100 },
             { header: 'FQDN', dataIndex: 'fqdn', width: 100 },
             { header: 'MAC', dataIndex: 'mac', width: 100},
-            { header: 'Metadata', dataIndex: 'metadata', width: 200, renderer: function (value) { return value ? JSON.stringify(value) : '' } },
+            { 
+              header: 'Metadata', 
+              dataIndex: 'metadata', 
+              width: 200, 
+              renderer: function (value) {
+                if (!value || (typeof value === 'object' && Object.keys(value).length === 0)) {
+                  return ''
+                }
+                return JSON.stringify(value)
+              } 
+            },
             {
                 header: 'Labels',
                 dataIndex: 'labelNames',
@@ -3725,7 +3735,7 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
       text: 'Submit',
       disabled: true,
       handler: function () {
-        SM.Manage.Asset.BatchSubmitter.submitFinalBatch(validAssets, newLabels, collectionId, appwindow)
+        SM.Manage.Asset.submitFinalBatch(validAssets, newLabels, collectionId, appwindow)
       }
     })
 
@@ -3936,38 +3946,30 @@ SM.Manage.Asset.updateStatus = function (type, message) {
   statusCmp.update(html)
 }
 
+SM.Manage.Asset.submitFinalBatch = async function (validAssets, newLabels, collectionId, appwindow){
+  //async submitFinalBatch(validAssets, newLabels, collectionId, appwindow) {
 
-
-SM.Manage.Asset.BatchSubmitter = {
-  async submitFinalBatch(validAssets, newLabels, collectionId, appwindow) {
-
-    async function createLabels(labels) {
-      try {
-        const labelPromises = labels.map(label => {
-          const postLabel = {
-            name: label.labelName,
-            description: '',
-            color: '4568F2',
-          }
-    
-          return Ext.Ajax.requestPromise({
-            responseType: 'json',
-            url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels`,
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            jsonData: postLabel,
-          })
-        })
-    
-        await Promise.all(labelPromises)
-      }
-      catch (e) {
-        SM.Error.handleError(e)
-      }
-      finally {
-        Ext.getBody().unmask()
-      }
+  async function createLabels(labels) {
+    try {
+      const payload = labels.map(label => ({
+        name: label.labelName,
+        description: '',
+        color: '4568F2',
+      }))
+  
+      await Ext.Ajax.requestPromise({
+        responseType: 'json',
+        url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels/batch`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        jsonData: payload
+      })
+    } catch (e) {
+      SM.Error.handleError(e)
     }
+  }
+   
+
     try {
       Ext.getBody().mask('')
 
@@ -3977,7 +3979,8 @@ SM.Manage.Asset.BatchSubmitter = {
       })
 
       await createLabels(newLabels)
-      
+      SM.Cache.updateCollectionLabels(collectionId)
+
       const responses = await Ext.Ajax.requestPromise({
         responseType: 'json',
         url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/assets`,
@@ -3986,11 +3989,9 @@ SM.Manage.Asset.BatchSubmitter = {
         jsonData: parsedAssetsCopy
       })
 
-      SM.Cache.updateCollectionLabels(collectionId)
-      SM.Cache.updateCollection(collectionId)
+   
       SM.Dispatcher.fireEvent('assetcreated', {collection:{collectionId}})
-      
-      Ext.getBody().unmask()
+
       appwindow.close()
     }
     catch (e) {
@@ -3999,7 +4000,6 @@ SM.Manage.Asset.BatchSubmitter = {
     finally {
       Ext.getBody().unmask()
     }
-  }
 }
 
 SM.Manage.Asset.LabelField = Ext.extend(Ext.form.Field, {
