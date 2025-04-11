@@ -3,14 +3,15 @@
   "version": "1.0.0",
   "description": "testing",
   "scripts": {
-    "test": "mocha --reporter mochawesome --timeout 10000 --showFailed --exit './mocha/**/*.test.js'"
+    "test": "mocha --reporter mochawesome --timeout 10000 --showFailed --exit './mocha/**/*.test.js'",
+    "update-appdata": "node ../utils/appdata-update.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@nuwcdivnpt/stig-manager-client-modules": "^1.4.3",
+    "@nuwcdivnpt/stig-manager-client-modules": "^1.5.3",
     "chai": "^5.1.2",
     "chai-datetime": "^1.8.1",
     "deep-equal-in-any-order": "^2.0.6",
