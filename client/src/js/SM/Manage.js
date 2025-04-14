@@ -3515,7 +3515,6 @@ SM.Manage.Asset.exportAssetsCSV = async function (collectionId, collectionName, 
     Ext.MessageBox.hide()
   } catch (e) {
     Ext.MessageBox.hide()
-    Ext.Msg.alert('Export Failed', '❌ An error occurred during export.')
     SM.Error.handleError(e)
   }
 
@@ -3584,6 +3583,8 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
           { name: 'name', type: 'string' },
           { name: 'description', type: 'string' },
           { name: 'noncomputing', type: 'boolean' },
+          { name: 'ip', type: 'string' },
+          { name: 'fqdn', type: 'string' },
           { name: 'mac', type: 'string' },
           { name: 'stigs', type: 'auto' },
           { name: 'metadata', type: 'auto' },
@@ -3650,10 +3651,7 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
 
         title: '<span style="padding-left: 20px; background-size: 15px;"class="sm-asset-icon">New Assets To Be Created</span>',
         store: assetStore,
-       // margins: { top: 10, right: 100, bottom: 10, left: 100 },
         flex: 1,
-        
-       // layout: 'vbox',
         viewConfig: {
           forceFit: true
         },
@@ -3763,15 +3761,6 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
         finalSubmitButton.setDisabled(!hasAssets)
       
         const statusCmp = Ext.getCmp('statusBox')
-        // if (hasAssets && !hasErrors) {
-        //   statusCmp?.update('<span class="sm-status-csv sm-status-csv-valid">All rows valid. Ready to submit.</span>')
-        // } else if (hasAssets && hasErrors) {
-        //   statusCmp?.update('<span class="sm-status-csv sm-status-csv-mixed">Some rows have errors. Valid assets are ready to submit.</span>')
-        // } else if (!hasAssets && hasErrors) {
-        //   statusCmp?.update('<span class="sm-status-csv sm-status-csv-invalid">No valid rows available. Please fix all errors.</span>')
-        // } else {
-        //   statusCmp?.update('<span class="sm-status-csv sm-status-csv-none">🛈 No assets to submit.</span>')
-        // }
         if (hasAssets && !hasErrors) {
           SM.Manage.Asset.updateStatus('valid', 'All rows valid. Ready to submit.')
         } else if (hasAssets && hasErrors) {
@@ -3936,7 +3925,7 @@ SM.Manage.Asset.updateStatus = function (type, message) {
   const styles = {
     valid: 'background-color: #2e7d32; color: #fff;',      // green
     invalid: 'background-color: #c62828; color: #fff;',    // red
-    mixed: 'background-color: #f9a825; color: #000;',      // orange/yellow
+    mixed: 'background-color: #f9a825; color: #000;',      // yellowish
     none: 'background-color: #757575; color: #fff;',       // gray
   }
 

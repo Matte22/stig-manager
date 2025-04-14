@@ -1959,7 +1959,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - oauth:
-            - 'stig-manager:collection'
+            - 'stig-manager:collection:read'
   '/collections/{collectionId}/labels/{labelId}':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
