@@ -556,11 +556,11 @@ module.exports.createCollectionLabels = async function (req, res, next) {
     const { collectionId, grant } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
 
     // Create labels in batch
-    const labelUUIDs = await CollectionService.createCollectionLabels(collectionId, req.body)
+    const labelIDs = await CollectionService.createCollectionLabels(collectionId, req.body)
 
     // Fetch full label objects (with permissions)
     const responses = await Promise.all(
-      labelUUIDs.map(uuid => CollectionService.getCollectionLabelById(collectionId, uuid, grant))
+      labelIDs.map(id => CollectionService.getCollectionLabelById(collectionId, id, grant))
     )
 
     res.status(201).json(responses)

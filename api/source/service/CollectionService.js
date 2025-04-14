@@ -1342,7 +1342,6 @@ exports.createCollectionLabels = async function (collectionId, labels) {
 
   const placeholders = labels.map(() => '(?, ?, ?, ?, UUID_TO_BIN(UUID(),1))').join(', ')
   const values = []
-  
 
   for (const label of labels) {
     values.push(collectionId, label.name, label.description, label.color)
@@ -1355,7 +1354,6 @@ exports.createCollectionLabels = async function (collectionId, labels) {
 
   const [resultInsert] = await dbUtils.pool.query(insertSql, values)
 
-  // Get UUIDs of inserted labels — assume auto-increment IDs are sequential
   const [rows] = await dbUtils.pool.query(
     `SELECT BIN_TO_UUID(uuid,1) as uuid
      FROM collection_label
