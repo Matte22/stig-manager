@@ -9,12 +9,11 @@ import {expectations} from './expectations.js'
 import { reviewsFromCkl, reviewsFromScc, reviewsFromCklb } from "@nuwcdivnpt/stig-manager-client-modules"
 import deepEqualInAnyOrder from 'deep-equal-in-any-order'
 import {use, expect} from 'chai'
-import { exitCode } from 'process';
 use(deepEqualInAnyOrder)
 
 
 
-describe('POST - Collection - not all tests run for all iterations', function () { 
+describe('POST - Collection - not all tests run for all iterations', function () {
 
   before(async function () {
     await utils.loadAppData()

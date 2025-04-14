@@ -2838,6 +2838,7 @@ SM.Manage.Collection.showCreateWindow = function () {
   })
   panelWindow.show(Ext.getBody())
 }
+
 Ext.ns('SM.Manage.Asset')
 Ext.ns('SM.Manage.Stig')
 
