@@ -1,0 +1,101 @@
+const logger = require('../../utils/logger')
+const path = require('node:path')
+
+const migrationName = path.basename(__filename, '.js')
+
+const defaultImportOptions = {
+  autoStatus: 'saved',
+  unreviewed: 'commented',
+  unreviewedCommented: 'informational',
+  emptyDetail: 'replace',
+  emptyComment: 'ignore',
+  allowCustom: true
+}
+
+const schemaEnums = {
+    autoStatus: [null, 'saved', 'submitted', 'accepted'],
+    unreviewed: ['never', 'commented', 'always'],
+    unreviewedCommented: ['notchecked', 'informational'],
+    emptyDetail: ['ignore', 'import', 'replace'],
+    emptyComment: ['ignore', 'import', 'replace'],
+    allowCustom: [true, false]
+}
+
+
+const isValidImportOptions = (options) => {
+  if (!options || typeof options !== 'object') return false
+
+  const allowedKeys = Object.keys(defaultImportOptions)
+
+  // contain only the allowed keys
+  const optionKeys = Object.keys(options)
+  if (optionKeys.length !== allowedKeys.length) return false
+  if (!optionKeys.every(key => allowedKeys.includes(key))) return false
+
+  // Each value must be valid for its key
+  for (const key of allowedKeys) {
+    const allowedValues = schemaEnums[key]
+    if (!allowedValues.includes(options[key])) return false
+  }
+
+  return true
+}
+
+
+const upFn = async (pool, migrationName) => {
+ 
+    // fetch setting for all collections
+    const collectionsData = await pool.query(`SELECT c.collectionId, c.settings, c.metadata FROM collection c`)
+
+    const collections = collectionsData[0]
+
+    const updates = []
+
+    // for each collection 
+    for(const collection of collections) {
+        const { collectionId, metadata, settings } = collection
+        const { importOptions } = metadata
+        let validImportOptions = null
+        // if importOptions is not null 
+        if (metadata?.importOptions) {
+            // check if importOptions is valid
+            if (isValidImportOptions(importOptions)) {
+              validImportOptions = importOptions
+            }
+        }
+        // remove import options from old location
+        delete metadata.importOptions
+   
+        // rebuild settings but with the import option now in there 
+        const newSettings = {
+          ...settings,
+          importOptions: validImportOptions || defaultImportOptions
+        }
+        
+        updates.push(pool.query(`UPDATE collection SET settings = ?, metadata = ? WHERE collectionId = ?`,[JSON.stringify(newSettings), JSON.stringify(metadata), JSON.stringify(collectionId)]))
+    }
+
+
+  logger.writeInfo('mysql', 'migration', {
+    status: 'running',
+    name: migrationName,
+    updates: updates.length
+  })
+  await Promise.all(updates)
+}
+  
+
+module.exports = {
+  up: async pool => {
+    try {
+      logger.writeInfo('mysql', 'migration', {status: 'start', direction: 'up', migrationName })
+      await upFn(pool, migrationName)
+      logger.writeInfo('mysql', 'migration', {status: 'finish', migrationName })
+    }
+    catch (e) {
+      logger.writeError('mysql', 'migration', {status: 'error', migrationName, message: e.message })
+      throw (e)
+    }
+  },
+  down: () => {}
+}
