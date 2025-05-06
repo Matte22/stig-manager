@@ -8,7 +8,11 @@ Chart.defaults.font = {
 SM.CollectionPanel.Renderers = {
   severityCount: function (v, md) {
     return v === 0 ? '' : `<div class="sm-metrics-findings-count-cell sm-metrics-${this.dataIndex}-box">${v}</div>`
+  },
+  coraPercentage: function (v, md) {
+    return v === 0 ? '' : `<div class="sm-metrics-findings-count-cell sm-metrics-${this.dataIndex}-box">${v}%</div>`
   }
+    
 }
 
 SM.CollectionPanel.CommonFields = [
@@ -121,6 +125,16 @@ SM.CollectionPanel.CommonColumns = [
     dataIndex: 'assessments',
     align: "center",
     sortable: true
+  },
+  {
+    header: "CORA",
+    width: 50,
+    //dataIndex: 'assessments',
+    align: "center",
+    sortable: true,
+    renderer: function (v, md, r) {
+      return `<div>21%</div>`  
+    }
   },
   {
     header: 'Oldest',
