@@ -133,8 +133,41 @@ SM.CollectionPanel.CommonColumns = [
     align: "center",
     sortable: true,
     renderer: function (v, md, r) {
-      return `<div>${calculateCoraRiskRating(r).weightedAvg}</div>`  
+      const score = calculateCoraRiskRating(r.json.metrics).weightedAvg;
+      let bgColor = '';
+      let label = '';
+    
+      if (score >= 20) {
+        bgColor = '#e05757';      // Very High Risk
+        label = 'Very High Risk';
+      } else if (score >= 10) {
+        bgColor = '#e3a13c';      // High Risk
+        label = 'High Risk';
+      } else if (score > 0) {
+        bgColor = '#d5e37c';      // Moderate Risk
+        label = 'Moderate Risk';
+      } else if (score === 0) {
+        const m = calculateCoraRiskRating(r.json.metrics); // reuse to check percentages
+        const { catI, catII, catIII } = m.percentages;
+        if (catI === 0 && catII < 5 && catIII < 5) {
+          bgColor = '#93d0e4';    // Low Risk
+          label = 'Low Risk';
+        } else {
+          bgColor = '#d2e5b6';    // Very Low Risk
+          label = 'Very Low Risk';
+        }
+      }
+    
+      return `<div style="
+        background-color: ${bgColor};
+        padding: 4px;
+        border-radius: 4px;
+        color: black;
+        text-align: center;
+        font-weight: bold;
+      ">${label}: ${score.toFixed(2)}%</div>`;
     }
+    
   },
   {
     header: 'Oldest',
@@ -1242,105 +1275,31 @@ SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
     )
 
     const updateMetrics = function (metrics) {
-      const coraMetrics = calculateCoraRiskRating(metrics);
-      _this.update({
+
+      const coraMetrics = calculateCoraRiskRating(metrics)
+      const data = {
         riskRating: coraMetrics.riskRating,
-        weightedAvg: coraMetrics.weightedAvg.toFixed(2), 
+        weightedAvg: coraMetrics.weightedAvg.toFixed(2),
         catI: coraMetrics.percentages.catI.toFixed(2),
         catII: coraMetrics.percentages.catII.toFixed(2),
         catIII: coraMetrics.percentages.catIII.toFixed(2)
-      })
+      };
+
+      // Ensure body exists before attempting to overwrite
+      if (_this.rendered && _this.body) {
+        _this.tpl.overwrite(_this.body, data);
+      } else {
+        _this.on('afterrender', () => _this.tpl.overwrite(_this.body, data));
+      }
     }
-    // function calculateCoraRiskRating(metrics) {
-    //   // Define weights for each category
-    //   const weights = {
-    //       catI: 10,
-    //       catII: 4,
-    //       catIII: 1
-    //   };
-      
-    //   // // Calculate open percentages (treating "Not Reviewed" as "Open")
-    //   // // const p1 = findings.catI_total > 0 ? ((findings.catI_open + findings.catI_notReviewed) / findings.catI_total) * 100 : 0;
-    //   // // const p2 = findings.catII_total > 0 ? ((findings.catII_open + findings.catII_notReviewed) / findings.catII_total) * 100 : 0;
-    //   // // const p3 = findings.catIII_total > 0 ? ((findings.catIII_open + findings.catIII_notReviewed) / findings.catIII_total) * 100 : 0;
-      
-    //   // const p1 = ((metrics.assessmentsBySeverity.high - metrics.assessedBySeverity.high) + metrics.findings.high) / metrics.assessmentsBySeverity.high * 100
-    //   // const p2 = ((metrics.assessmentsBySeverity.medium - metrics.assessedBySeverity.medium) + metrics.findings.medium) / metrics.assessmentsBySeverity.medium * 100
-    //   // const p3 = ((metrics.assessmentsBySeverity.low - metrics.assessedBySeverity.low) + metrics.findings.low) / metrics.assessmentsBySeverity.low * 100
 
+    Ext.apply(this, {
+      title: 'CORA Panel',
+      cls: 'sm-round-inner-panel',
+      bodyStyle: 'padding: 10px;',
+      html: '<div>Loading CORA metrics...</div>' // Default filler
+    });
 
-    //   // // Calculate weighted average
-    //   // const numerator = (p1 * weights.catI) + (p2 * weights.catII) + (p3 * weights.catIII);
-    //   // const denominator = weights.catI + weights.catII + weights.catIII;
-    //   // const weightedAvg = denominator > 0 ? numerator / denominator : 0;
-      
-    //   // // Special case for Low Risk: "0 CAT Is, <5% II & III"
-    //   // const hasNoOpenCatI = (metrics.assessmentsBySeverity.high - metrics.assessedBySeverity.high) === 0;
-      
-    //   // // Calculate weighted percentage for just CAT II and III, but include CAT I weight in denominator
-    //   // let weightedIIandIIIPercent = 0;
-    //   // if (metrics.assessmentsBySeverity.medium + metrics.assessmentsBySeverity.low > 0) {
-    //   //     const p2 = metrics.assessmentsBySeverity.medium > 0 ? ((findings.catII_open + findings.catII_notReviewed) / findings.catII_total) * 100 : 0;
-    //   //     const p3 = metrics.assessmentsBySeverity.low > 0 ? ((findings.catIII_open + findings.catIII_notReviewed) / findings.catIII_total) * 100 : 0;
-          
-    //   //     const numeratorIIandIII = (p2 * weights.catII) + (p3 * weights.catIII);
-    //   //     const denominatorIIandIII = weights.catI + weights.catII + weights.catIII; // Include CAT I weight
-    //   //     weightedIIandIIIPercent = denominatorIIandIII > 0 ? numeratorIIandIII / denominatorIIandIII : 0;
-    //   // }
-      
-    //   // const lowWeightedCatIIandIII = weightedIIandIIIPercent < 5;
-      
-    //   // // Determine risk rating based on thresholds
-    //   // let riskRating;
-      
-    //   // // First check if all percentages are exactly 0 (Very Low Risk)
-    //   // if (weightedAvg === 0) {
-    //   //     riskRating = "Very Low Risk";
-    //   // }
-    //   // // Then check the special "Low Risk" case
-    //   // else if (hasNoOpenCatI && lowWeightedCatIIandIII) {
-    //   //     riskRating = "Low Risk";
-    //   // }
-    //   // // Then check the weighted average thresholds
-    //   // else if (weightedAvg >= 20) {
-    //   //     riskRating = "Very High Risk";
-    //   // } else if (weightedAvg >= 10) {
-    //   //     riskRating = "High Risk";
-    //   // } else { // weightedAvg > 0
-    //   //     riskRating = "Moderate Risk";
-    //   // }
-      
-    //   const n = (20 * weights.catI) + (21 * weights.catII) + (22 * weights.catIII);
-    //   const d = weights.catI + weights.catII + weights.catIII;
-    //   weightedAvg = d > 0 ? n / d : 0;
-    //   riskRating = weightedAvg >= 20 ? "Very High Risk" : weightedAvg >= 10 ? "High Risk" : "Moderate Risk";
-    //   return {
-    //       weightedAvg,
-    //       riskRating,
-    //        percentages: {
-    //           catI: 20,
-    //           catII: 21,
-    //           catIII: 22
-    //       },
-    //       weightedContributions: {
-    //           catI: (20 * weights.catI) / (weights.catI + weights.catII + weights.catIII),
-    //           catII: (21 * weights.catII) / (weights.catI + weights.catII + weights.catIII),
-    //           catIII: (22 * weights.catIII) / (weights.catI + weights.catII + weights.catIII)
-    //       }
-    //      // weightedAvg,
-    //       // riskRating,
-    //       // percentages: {
-    //       //     catI: p1,
-    //       //     catII: p2,
-    //       //     catIII: p3
-    //       // },
-    //       // weightedContributions: {
-    //       //     catI: (p1 * weights.catI) / (weights.catI + weights.catII + weights.catIII),
-    //       //     catII: (p2 * weights.catII) / (weights.catI + weights.catII + weights.catIII),
-    //       //     catIII: (p3 * weights.catIII) / (weights.catI + weights.catII + weights.catIII)
-    //       // }
-    //   };
-    // }
     const config = {
       tpl,
       data: this.data,
@@ -1358,7 +1317,7 @@ function calculateCoraRiskRating(metrics) {
     catIII: 1
   }
 
-  metrics = metrics.json.metrics
+  //metrics = metrics.json.metrics
 
   const totalAssessed = metrics.assessed
   if (totalAssessed === 0) {
@@ -1428,99 +1387,6 @@ function calculateCoraRiskRating(metrics) {
   }
 }
 
-// function calculateCoraRiskRating(metrics) {
-//   // Define weights for each category
-//   const weights = {
-//       catI: 10,
-//       catII: 4,
-//       catIII: 1
-//   };
-
-//   metrics = metrics.json
-  
-//   // Calculate open percentages (treating "Not Reviewed" as "Open")
-//   // const p1 = findings.catI_total > 0 ? ((findings.catI_open + findings.catI_notReviewed) / findings.catI_total) * 100 : 0;
-//   // const p2 = findings.catII_total > 0 ? ((findings.catII_open + findings.catII_notReviewed) / findings.catII_total) * 100 : 0;
-//   // const p3 = findings.catIII_total > 0 ? ((findings.catIII_open + findings.catIII_notReviewed) / findings.catIII_total) * 100 : 0;
-  
-//   const p1 = ((metrics.assessmentsBySeverity.high - metrics.assessedBySeverity.high) + metrics.findings.high) / metrics.assessmentsBySeverity.high * 100
-//   const p2 = ((metrics.assessmentsBySeverity.medium - metrics.assessedBySeverity.medium) + metrics.findings.medium) / metrics.assessmentsBySeverity.medium * 100
-//   const p3 = ((metrics.assessmentsBySeverity.low - metrics.assessedBySeverity.low) + metrics.findings.low) / metrics.assessmentsBySeverity.low * 100
-
-
-//   // Calculate weighted average
-//   const numerator = (p1 * weights.catI) + (p2 * weights.catII) + (p3 * weights.catIII);
-//   const denominator = weights.catI + weights.catII + weights.catIII;
-//   const weightedAvg = denominator > 0 ? numerator / denominator : 0;
-  
-//   // Special case for Low Risk: "0 CAT Is, <5% II & III"
-//   const hasNoOpenCatI = (metrics.assessmentsBySeverity.high - metrics.assessedBySeverity.high) === 0;
-  
-//   // Calculate weighted percentage for just CAT II and III, but include CAT I weight in denominator
-//   let weightedIIandIIIPercent = 0;
-//   if (metrics.assessmentsBySeverity.medium + metrics.assessmentsBySeverity.low > 0) {
-//       const p2 = metrics.assessmentsBySeverity.medium > 0 ? ((findings.catII_open + findings.catII_notReviewed) / findings.catII_total) * 100 : 0;
-//       const p3 = metrics.assessmentsBySeverity.low > 0 ? ((findings.catIII_open + findings.catIII_notReviewed) / findings.catIII_total) * 100 : 0;
-      
-//       const numeratorIIandIII = (p2 * weights.catII) + (p3 * weights.catIII);
-//       const denominatorIIandIII = weights.catI + weights.catII + weights.catIII; // Include CAT I weight
-//       weightedIIandIIIPercent = denominatorIIandIII > 0 ? numeratorIIandIII / denominatorIIandIII : 0;
-//   }
-  
-//   const lowWeightedCatIIandIII = weightedIIandIIIPercent < 5;
-  
-//   // Determine risk rating based on thresholds
-//   let riskRating;
-  
-//   // First check if all percentages are exactly 0 (Very Low Risk)
-//   if (weightedAvg === 0) {
-//       riskRating = "Very Low Risk";
-//   }
-//   // Then check the special "Low Risk" case
-//   else if (hasNoOpenCatI && lowWeightedCatIIandIII) {
-//       riskRating = "Low Risk";
-//   }
-//   // Then check the weighted average thresholds
-//   else if (weightedAvg >= 20) {
-//       riskRating = "Very High Risk";
-//   } else if (weightedAvg >= 10) {
-//       riskRating = "High Risk";
-//   } else { // weightedAvg > 0
-//       riskRating = "Moderate Risk";
-//   }
-  
-//   const n = (20 * weights.catI) + (21 * weights.catII) + (22 * weights.catIII);
-//   const d = weights.catI + weights.catII + weights.catIII;
-//   weightedAvg = d > 0 ? n / d : 0;
-//   riskRating = weightedAvg >= 20 ? "Very High Risk" : weightedAvg >= 10 ? "High Risk" : "Moderate Risk";
-//   return {
-//       weightedAvg,
-//       riskRating,
-//        percentages: {
-//           catI: 20,
-//           catII: 21,
-//           catIII: 22
-//       },
-//       weightedContributions: {
-//           catI: (20 * weights.catI) / (weights.catI + weights.catII + weights.catIII),
-//           catII: (21 * weights.catII) / (weights.catI + weights.catII + weights.catIII),
-//           catIII: (22 * weights.catIII) / (weights.catI + weights.catII + weights.catIII)
-//       }
-//      // weightedAvg,
-//       // riskRating,
-//       // percentages: {
-//       //     catI: p1,
-//       //     catII: p2,
-//       //     catIII: p3
-//       // },
-//       // weightedContributions: {
-//       //     catI: (p1 * weights.catI) / (weights.catI + weights.catII + weights.catIII),
-//       //     catII: (p2 * weights.catII) / (weights.catI + weights.catII + weights.catIII),
-//       //     catIII: (p3 * weights.catIII) / (weights.catI + weights.catII + weights.catIII)
-//       // }
-//   };
-// }
-
 SM.CollectionPanel.OverviewPanel = Ext.extend(Ext.Panel, {
   initComponent: function () {
     const _this = this
@@ -1552,6 +1418,7 @@ SM.CollectionPanel.OverviewPanel = Ext.extend(Ext.Panel, {
       toolTemplate,
       border: true
     })
+    
     this.coraPanel = new SM.CollectionPanel.CORAPanel({
       cls: 'sm-round-inner-panel',
       bodyStyle: 'padding: 10px;',
