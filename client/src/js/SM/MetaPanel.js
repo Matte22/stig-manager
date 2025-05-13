@@ -11,16 +11,16 @@ SM.MetaPanel.CommonColumns = [
     sortable: true,
     renderer: SM.MetaPanel.numberRenderer
   },
-  {
-    header: "CORA",
-    width: 50,
-    //dataIndex: 'assessments',
-    align: "center",
-    sortable: true,
-    renderer: function (v, md, r) {
-      return `<div>21%</div>`  
-    }
-  },
+  // {
+  //   header: "CORA",
+  //   width: 50,
+  //   //dataIndex: 'assessments',
+  //   align: "center",
+  //   sortable: true,
+  //   renderer: function (v, md, r) {
+  //     return `<div>21%</div>`  
+  //   }
+  // },
   {
     header: 'Oldest',
     width: 50,
