@@ -31,9 +31,13 @@ SM.CollectionPanel.CommonFields = [
     name: 'coraScore',
     type: 'float',
     convert: (v, r) => {
-      const metrics = r.json?.metrics
-      return metrics ? calculateCoraRiskRating(metrics).weightedAvg : 0
+      return calculateCoraRiskRating(r.metrics).weightedAvg
     }
+  },
+  {
+    name: 'coraScoreDetail',
+    type: 'auto',
+    convert: (v, r) => calculateCoraRiskRating(r.metrics)
   },
   {
     name: 'medium',
@@ -132,28 +136,21 @@ SM.CollectionPanel.CommonColumns = [
   },
   {
     header: "CORA",
-    width: 75,
+    width: 50,
     align: "center",
     dataIndex: 'coraScore',
     sortable: true,
     renderer: function (v, md, r) {
-      const { weightedAvg: score, percentages } = calculateCoraRiskRating(r.json.metrics)
+      const detailedCora = r.get('coraScoreDetail')
 
-      const bgColor = score >= 20 ? '#e05757' // Very High Risk
-        : score >= 10 ? '#e3a13c'             // High Risk
-        : score > 0  ? '#d5e37c'              // Moderate Risk
-        : (percentages.catI === 0 && percentages.catII < 5 && percentages.catIII < 5)
-          ? '#93d0e4'                         // Low Risk
-          : '#d2e5b6'                // Very Low Risk
-      
-      return `<div style="
-        background-color: ${bgColor};
-        width: 50px;
-        border-radius: 6px;
-        color: black;
-        text-align: center;
-        margin: 0 auto;
-      ">${score.toFixed(2)}%</div>`
+      let riskLevel = detailedCora.weightedAvg >= 20 ? 'cora-risk-very-high'
+      : detailedCora.weightedAvg >= 10 ? 'cora-risk-high'
+      : detailedCora.weightedAvg > 0  ? 'cora-risk-moderate'
+      : (detailedCora.percentages.catI === 0 && detailedCora.percentages.catII < 5 && detailedCora.percentages.catIII < 5)
+        ? 'cora-risk-low'
+        : 'cora-risk-very-low'
+        
+      return `<div class="cora-open-not-reviewed ${riskLevel}">${detailedCora.weightedAvg.toFixed(1)}%</div>`
     }
   },
   {
@@ -278,7 +275,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
           { name: 'name', type: 'string' },
           { name: 'labelIds', type: 'string', convert: (v, r) => r.labels.map(l => l.labelId) },
           'benchmarkIds',
-          { name: 'stigCount', convert: (v, r) => r.benchmarkIds.length },
+          { name: 'stigCount', convert: (v, r) => r.benchmarkIds.length }
         )
         columns.push(
           {
@@ -504,12 +501,6 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
       store,
       ...rowCountCfg
     })
-    store.on('load', function(store, records) {
-      records.forEach((rec) => {
-        const metrics = rec.json?.metrics;
-        rec.data.coraScore = calculateCoraRiskRating(metrics).weightedAvg
-      });
-    });
     
     const config = {
       layout: 'fit',
@@ -1248,40 +1239,46 @@ SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
 
   initComponent: function () {
     const _this = this
-  
+
     const tpl = new Ext.XTemplate(
-      '<div style="display: flex; flex-direction: row; gap: 10px;">',
+    '<div class="cora-container">',
+    '<div class="cora-box-left">',
+      '<div class="cora-box-title">Open or Not Reviewed</div>',
+      '<div class="cora-cat cat1">CAT 1: {catI}</div>',
+      '<div class="cora-cat cat2">CAT 2: {catII}</div>',
+      '<div class="cora-cat cat3">CAT 3: {catIII}</div>',
+    '</div>',
 
-        '<div style="display: flex; flex-direction: column; gap: 5px;">',
-          '<div style="background-color:rgb(175, 175, 175); color: black; padding: 5px; border-radius: 5px; text-align: center; font-weight: bold;">Open or Not Reviewed</div>',
-          '<div style="background-color: #d99873; color: black; padding: 5px; border-radius: 5px;">CAT 1: {catI}</div>',
-          '<div style="background-color: #dfc58b; color: black; padding: 5px; border-radius: 5px;">CAT 2: {catII}</div>',
-          '<div style="background-color: #bfc2e0; color: black; padding: 5px; border-radius: 5px;">CAT 3: {catIII}</div>',
-        '</div>',
+    '<div class="cora-box-right {riskClass}">',
+      '<div class="cora-score-label">CORA Score:</div>',
+      '<div class="cora-score-value">{riskRating}: {weightedAvg}&#37;</div>',
+    '</div>',
+  '</div>'
 
-        '<div style="background-color: {bgColor}; padding: 10px; border-radius: 10px; flex-grow: 1; text-align: center;">',
-          '<div style="font-weight: bold; color: black; font-size: 16px;">CORA Score:</div>',
-          '<div style="margin-top: 10px; color: black;">{riskRating}: {weightedAvg}&#37;</div>',
-        '</div>',
-      '</div>'
-    );
+    )
 
     const updateMetrics = function (metrics) {
 
       const coraMetrics = calculateCoraRiskRating(metrics)
-      const score = coraMetrics.weightedAvg
     
-      let bgColor = ''
-      if (score >= 20) {
-        bgColor = '#e05757'
-      } else if (score >= 10) {
-        bgColor = '#e3a13c'
-      } else if (score > 0) {
-        bgColor = '#d5e37c'
+      let riskRating = ''
+      if (coraMetrics.weightedAvg >= 20) {
+        riskRating = 'cora-risk-very-high';
+      } else if (coraMetrics.weightedAvg >= 10) {
+        riskRating = 'cora-risk-high';
+      } else if (coraMetrics.weightedAvg > 0) {
+        riskRating = 'cora-risk-moderate';
       } else {
         const { catI, catII, catIII } = coraMetrics.percentages
-        bgColor = (catI === 0 && catII < 5 && catIII < 5) ? '#93d0e4' : '#d2e5b6'
+        const isVeryLowRisk = catI === 0 && catII === 0 && catIII === 0;
+        const isLowRisk = catI === 0 && catII < 5 && catIII < 5;
+        if (isVeryLowRisk) {
+            riskRating = 'cora-risk-very-low'
+        } else if (isLowRisk) {
+            riskRating = 'cora-risk-low';
+        }
       }
+      
 
       const assessments = metrics.assessmentsBySeverity 
       const assessed = metrics.assessedBySeverity 
@@ -1303,11 +1300,11 @@ SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
       const NotReviewedOrOpenLowcat3 = ((assignedLow - assessedLow) + findingsLow)
       const data = {
         riskRating: coraMetrics.riskRating,
-        weightedAvg: coraMetrics.weightedAvg.toFixed(2),
+        weightedAvg: coraMetrics.weightedAvg.toFixed(1),
         catI: NotReviewedOrOpencat1,
         catII: NotReviewedOrOpenMedcat2,
         catIII: NotReviewedOrOpenLowcat3,
-        bgColor
+        riskClass
       }
 
       // Ensure body exists before attempting to overwrite
@@ -1322,7 +1319,7 @@ SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
       title: 'CORA Panel',
       cls: 'sm-round-inner-panel',
       bodyStyle: 'padding: 10px;',
-      html: '<div>Loading CORA metrics...</div>' 
+      html: '<div></div>' 
     })
 
     const config = {
@@ -1334,6 +1331,7 @@ SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
     this.superclass().initComponent.call(this)
   }
 })
+
 function calculateCoraRiskRating(metrics) {
   const weights = {
     catI: 10,
@@ -1376,18 +1374,21 @@ function calculateCoraRiskRating(metrics) {
 
   let riskRating = ''
   if (weightedAvg >= 20) {
-    riskRating = 'Very High Risk'
+    riskRating = 'Very High Risk';
   } else if (weightedAvg >= 10) {
-    riskRating = 'High Risk'
+    riskRating = 'High Risk';
   } else if (weightedAvg > 0) {
-    if (rawCatI === 0 && rawCatII < 5 && rawCatIII < 5) {
-      riskRating = 'Low Risk'
-    } else {
-      riskRating = 'Moderate Risk'
-    }
+    riskRating = 'Moderate Risk';
   } else {
-    riskRating = 'Very Low Risk'
+    const isVeryLowRisk = rawCatI === 0 && rawCatII === 0 && rawCatIII === 0;
+    const isLowRisk = rawCatI === 0 && rawCatII < 5 && rawCatIII < 5;
+    if (isVeryLowRisk) {
+        riskRating = 'Very Low Risk'
+    } else if (isLowRisk) {
+        riskRating = 'Low Risk';
+    }
   }
+  
 
   return {
     weightedAvg,
@@ -1404,7 +1405,6 @@ function calculateCoraRiskRating(metrics) {
     }
   }
 }
-
 
 SM.CollectionPanel.OverviewPanel = Ext.extend(Ext.Panel, {
   initComponent: function () {

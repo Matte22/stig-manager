@@ -2470,3 +2470,75 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .sm-error-icon {
   background-image: url(../img/x-red-svg.svg);
 }
+
+.cora-open-not-reviewed {
+  width: 40px;
+  border-radius: 6px;
+  color: black;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.cora-container {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.cora-box-left {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #bbb;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.cora-box-title {
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.cora-cat {
+  color: black;
+  border-radius: 5px;
+  font-weight: 700;
+  padding: 4px 8px;
+  margin-bottom: 4px;
+  text-align: center;
+  border: 1px solid #bbb;
+}
+
+.cat1 { background-color: hsl(0deg 36% 64%) }
+.cat2 { background-color: hsl(38deg 56% 51%) }
+.cat3 { background-color: hsl(230deg 41% 76%) }
+
+
+.cora-box-right {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #bbb;
+  flex-grow: 1;
+  text-align: center;
+}
+
+.cora-score-label {
+  font-weight: 700;
+  color: black;
+  font-size: 20px;
+}
+
+.cora-score-value {
+  margin-top: 10px;
+  color: black;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+
+.cora-risk-very-high { background-color:rgb(230, 126, 126); }
+.cora-risk-high { background-color: #e3a13c; }
+.cora-risk-moderate { background-color:rgb(219, 233, 132); }
+.cora-risk-low { background-color:rgb(149, 195, 211); }
+.cora-risk-very-low { background-color:rgb(57, 99, 59); }
+
