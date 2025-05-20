@@ -2493,10 +2493,21 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   margin: 0 auto;
 }
 
+.cora-box-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #bbb;
+  width: fit-content;
+  margin: 0 auto;
+}
+
 .cora-box-title {
   font-weight: bold;
   text-align: center;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
 }
 
 .cora-cat {
@@ -2504,7 +2515,6 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   border-radius: 5px;
   font-weight: 700;
   padding: 4px 8px;
-  margin-bottom: 4px;
   text-align: center;
   border: 1px solid #bbb;
 }
@@ -2512,29 +2522,6 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .cat1 { background-color: hsl(0deg 36% 64%) }
 .cat2 { background-color: hsl(38deg 56% 51%) }
 .cat3 { background-color: hsl(230deg 41% 76%) }
-
-/* 
-.cora-box-right {
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #bbb;
-  flex-grow: 1;
-  text-align: center;
-}
-
-.cora-score-label {
-  font-weight: 700;
-  color: black;
-  font-size: 20px;
-}
-
-.cora-score-value {
-  margin-top: 10px;
-  color: black;
-  font-weight: 600;
-  font-size: 13px;
-} */
-
 
 /* Enhanced styling for the risk box */
 .cora-box-right {
@@ -2571,24 +2558,25 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 
 /* Circular risk indicator */
 .risk-indicator {
-  width: 55px;
-  height: 55px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  //display: inline-block;
-  line-height: 55px;
+  line-height: 50px;
   margin: 5px auto;
   font-weight: bold;
   font-size: 16px;
   background-color: rgba(255, 255, 255, 0.5);
 }
 
-// border color based on risk level
+
+
+/* Risk level specific classes */
 .cora-risk-very-low .risk-indicator {
-  border: 3px solid #52c41a;
+  border: 3px solid rgb(30, 82, 5);
 } 
 
 .cora-risk-low .risk-indicator {
-  border: 3px solid #1890ff;
+  border: 3px solid rgb(14, 90, 161);
 }
 
 .cora-risk-moderate .risk-indicator {
@@ -2596,32 +2584,31 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 
 .cora-risk-high .risk-indicator {
-  border: 3px solid #fa541c; 
+  border: 3px solid rgb(146, 50, 18); 
 }
 
 .cora-risk-very-high .risk-indicator {
-  border: 3px solid #a8071a;
+  border: 3px solid rgb(88, 12, 21);
 }
 
 
-// background color based on risk level
 .cora-risk-very-high { 
-  background-color:rgba(209, 78, 78, 0.36);
-  color: #a8071a;
+  background-color: rgba(209, 22, 22, 0.7);
+  color:rgb(88, 12, 21);
  }
 .cora-risk-high {
-   background-color:rgb(183 84 2);
-   color: #fa541c;
+  background-color: rgba(212, 104, 16, 0.8);
+  color:rgb(146, 50, 18); 
 }
 .cora-risk-moderate {
-  background-color:rgb(223 188 62);
+  background-color:rgba(223, 188, 62, 0.85);
   color: #873800;
 }
 .cora-risk-low {
-  background-color:rgb(149, 195, 211); 
-  color: #1890ff;
+  background-color:rgba(149, 195, 211, 0.8); 
+  color:rgb(14, 90, 161);
 }
 .cora-risk-very-low {
-  background-color:rgb(59, 134, 62); 
-  color: #077d1d;
+  background-color:rgba(59, 134, 62, 0.8); 
+  color: rgb(30, 82, 5);
 }

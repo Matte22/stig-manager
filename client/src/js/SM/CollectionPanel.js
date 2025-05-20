@@ -150,7 +150,7 @@ SM.CollectionPanel.CommonColumns = [
         ? 'cora-risk-low'
         : 'cora-risk-very-low'
         
-      return `<div class="cora-open-not-reviewed ${riskLevel}">${detailedCora.weightedAvg.toFixed(1)}%</div>`
+      return `<div class="cora-open-not-reviewed ${riskLevel}" style="color: black">${(detailedCora.weightedAvg * 100).toFixed(1)}%</div>`
     }
   },
   {
@@ -501,7 +501,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
       store,
       ...rowCountCfg
     })
-    
+
     const config = {
       layout: 'fit',
       store,
@@ -1249,13 +1249,6 @@ SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
         '<div class="cora-cat cat3">CAT 3: {catIII}</div>',
       '</div>',
 
-      // '<div class="cora-box-right {riskClass}">',
-      //     '<div class="cora-score-label">Risk Level</div>',
-      //     '<div class="cora-score-value">',
-      //     '<div class="risk-rating">{riskRating}</div>',
-      //     '<div class="risk-percent">Weighted Score: {weightedAvg}&#37;</div>',
-      // '</div>',
-
       '<div class="cora-box-right {riskClass}">',
         '<div class="cora-score-label">Risk Level</div>',
         '<div class="risk-indicator">{weightedAvg}%</div>',
@@ -1264,9 +1257,6 @@ SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
           '<div class="risk-percent">Weighted Score: {weightedAvg}%</div>',
         '</div>',
       '</div>',
-
-
-      
     '</div>',
     )
 

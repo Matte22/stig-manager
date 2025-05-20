@@ -11,16 +11,25 @@ SM.MetaPanel.CommonColumns = [
     sortable: true,
     renderer: SM.MetaPanel.numberRenderer
   },
-  // {
-  //   header: "CORA",
-  //   width: 50,
-  //   //dataIndex: 'assessments',
-  //   align: "center",
-  //   sortable: true,
-  //   renderer: function (v, md, r) {
-  //     return `<div>21%</div>`  
-  //   }
-  // },
+  {
+    header: "CORA",
+    width: 50,
+    align: "center",
+    dataIndex: 'coraScore',
+    sortable: true,
+    renderer: function (v, md, r) {
+      const detailedCora = r.get('coraScoreDetail')
+
+      let riskLevel = detailedCora.weightedAvg >= 0.2 ? 'cora-risk-very-high'
+      : detailedCora.weightedAvg >= 0.1 ? 'cora-risk-high'
+      : detailedCora.weightedAvg > 0  ? 'cora-risk-moderate'
+      : (detailedCora.percentages.catI === 0 && detailedCora.percentages.catII < 0.05 && detailedCora.percentages.catIII < 0.05)
+        ? 'cora-risk-low'
+        : 'cora-risk-very-low'
+        
+      return `<div class="cora-open-not-reviewed ${riskLevel}" style="color: black">${(detailedCora.weightedAvg * 100).toFixed(1)}%</div>`
+    }
+  },
   {
     header: 'Oldest',
     width: 50,
@@ -850,127 +859,168 @@ SM.MetaPanel.FindingsPanel = Ext.extend(Ext.Panel, {
 })
 
 
-// SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
 
-//   initComponent: function () {
-//     const _this = this
-  
-//     const tpl = new Ext.XTemplate(
-//       '<div style="display: flex; flex-direction: row; gap: 10px;">',
+SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
 
-//         '<div style="display: flex; flex-direction: column; gap: 5px;">',
-//           '<div style="background-color:rgb(175, 175, 175); color: black; padding: 5px; border-radius: 5px; text-align: center; font-weight: bold;">Open or Not Reviewed</div>',
-//           '<div style="background-color: #d99873; color: black; padding: 5px; border-radius: 5px;">CAT 1: {catI}%</div>',
-//           '<div style="background-color: #dfc58b; color: black; padding: 5px; border-radius: 5px;">CAT 2: {catII}%</div>',
-//           '<div style="background-color: #bfc2e0; color: black; padding: 5px; border-radius: 5px;">CAT 3: {catIII}%</div>',
-//         '</div>',
+  initComponent: function () {
+    const _this = this
 
-//         '<div style="background-color: #f7f188; padding: 10px; border-radius: 10px; flex-grow: 1; text-align: center;">',
-//           '<div style="font-weight: bold; color: black; font-size: 16px;">CORA Score:</div>',
-//           '<div style="margin-top: 10px; color: black; font-weight: bold;">{riskRating}: {weightedAvg}&#37;</div>',
-//         '</div>',
+    const tpl = new Ext.XTemplate(
+    '<div class="cora-container">',
+      '<div class="cora-box-left">',
+        '<div class="cora-box-title">Open or Not Reviewed</div>',
+        '<div class="cora-cat cat1">CAT 1: {catI}</div>',
+        '<div class="cora-cat cat2">CAT 2: {catII}</div>',
+        '<div class="cora-cat cat3">CAT 3: {catIII}</div>',
+      '</div>',
 
-//       '</div>'
-//     )
+      '<div class="cora-box-right {riskClass}">',
+        '<div class="cora-score-label">Risk Level</div>',
+        '<div class="risk-indicator">{weightedAvg}%</div>',
+        '<div class="cora-score-value">',
+          '<div class="risk-rating">{riskRating}</div>',
+          '<div class="risk-percent">Weighted Score: {weightedAvg}%</div>',
+        '</div>',
+      '</div>',
+    '</div>',
+    )
 
-//     const updateMetrics = function (metrics) {
-//       const coraMetrics = calculateCoraRiskRating(metrics);
-//       _this.update({
-//         riskRating: coraMetrics.riskRating,
-//         weightedAvg: coraMetrics.weightedAvg.toFixed(2), 
-//         catI: coraMetrics.percentages.catI.toFixed(2),
-//         catII: coraMetrics.percentages.catII.toFixed(2),
-//         catIII: coraMetrics.percentages.catIII.toFixed(2)
-//       })
-//     }
+    const updateMetrics = function (metrics) {
 
-//     const config = {
-//       tpl,
-//       data: this.data,
-//       updateMetrics
-//     }
-//     Ext.apply(this, Ext.apply(this.initialConfig, config))
-//     this.superclass().initComponent.call(this)
-//   }
-// })
+      const coraMetrics = calculateCoraRiskRating(metrics)
+    
+      let riskClass = ''
+      if (coraMetrics.riskRating === 'Very High Risk') {
+        riskClass = 'cora-risk-very-high';
+      } else if (coraMetrics.riskRating === 'High Risk') {
+        riskClass = 'cora-risk-high';
+      } else if (coraMetrics.riskRating === 'Moderate Risk') {
+        riskClass = 'cora-risk-moderate';
+      } else if (coraMetrics.riskRating === 'Low Risk') {
+        riskClass = 'cora-risk-low';
+      } else if (coraMetrics.riskRating === 'Very Low Risk') {
+        riskClass = 'cora-risk-very-low';
+      }
+      
+      const { assessmentsBySeverity: assessments, assessedBySeverity: assessed, findings } = metrics
 
-// function calculateCoraRiskRating(metrics) {
-//   const weights = {
-//     catI: 10,
-//     catII: 4,
-//     catIII: 1
-//   }
+      function getUnreviewedOrOpen(severity) {
+        const assigned = assessments[severity]
+        const reviewed = assessed[severity]
+        const openFindings = findings[severity]
+        return (assigned - reviewed) + openFindings;
+      }
 
-//   metrics = metrics.json.metrics
+      const NotReviewedOrOpencat1 = getUnreviewedOrOpen('high')
+      const NotReviewedOrOpenMedcat2 = getUnreviewedOrOpen('medium')
+      const NotReviewedOrOpenLowcat3 = getUnreviewedOrOpen('low')
 
-//   const totalAssessed = metrics.assessed
-//   if (totalAssessed === 0) {
-//     return {
-//       weightedAvg: 0,
-//       riskRating: 'Very Low Risk',
-//       percentages: {
-//         catI: 0,
-//         catII: 0,
-//         catIII: 0
-//       },
-//       weightedContributions: {
-//         catI: 0,
-//         catII: 0,
-//         catIII: 0
-//       }
-//     }
-//   }
+      const data = {
+        riskRating: coraMetrics.riskRating,
+        weightedAvg: (coraMetrics.weightedAvg * 100).toFixed(1),
+        catI: NotReviewedOrOpencat1,
+        catII: NotReviewedOrOpenMedcat2,
+        catIII: NotReviewedOrOpenLowcat3,
+        riskClass
+      }
 
-//   const assessedBySeverity = metrics.assessedBySeverity || {};
-//   const high = assessedBySeverity.high || 0
-//   const medium = assessedBySeverity.medium || 0
-//   const low = assessedBySeverity.low || 0
+      // Ensure body exists before attempting to overwrite
+      if (_this.rendered && _this.body) {
+        _this.tpl.overwrite(_this.body, data)
+      } else {
+        _this.on('afterrender', () => _this.tpl.overwrite(_this.body, data))
+      }
+    }
 
-//   // Calculate percentages
-//   const p1 = (high / totalAssessed) * 100
-//   const p2 = (medium / totalAssessed) * 100
-//   const p3 = (low / totalAssessed) * 100
+    Ext.apply(this, {
+      title: 'CORA Panel',
+      cls: 'sm-round-inner-panel',
+      bodyStyle: 'padding: 10px;',
+      html: '<div></div>' 
+    })
 
-//   // Calculate weighted average
-//   const weightedAvg = (
-//     (p1 * weights.catI + p2 * weights.catII + p3 * weights.catIII) /
-//     (weights.catI + weights.catII + weights.catIII)
-//   )
+    const config = {
+      tpl,
+      data: this.data,
+      updateMetrics
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+  }
+})
 
-//   // Determine Risk Rating
-//   let riskRating = ''
-//   if (weightedAvg >= 20) {
-//     riskRating = 'Very High Risk'
-//   } else if (weightedAvg >= 10) {
-//     riskRating = 'High Risk'
-//   } else if (weightedAvg > 0) {
-//     riskRating = 'Moderate Risk'
-//   } else if ((p1 === 0) && (p2 < 5) && (p3 < 5)) {
-//     riskRating = 'Low Risk'
-//   } else {
-//     riskRating = 'Very Low Risk'
-//   }
+function calculateCoraRiskRating(metrics) {
+  const weights = {
+    catI: 10,
+    catII: 4,
+    catIII: 1
+  }
 
-//   // Calculate weighted contributions
-//   const totalWeight = weights.catI + weights.catII + weights.catIII
-//   const weightedContributions = {
-//     catI: (p1 * weights.catI) / totalWeight,
-//     catII: (p2 * weights.catII) / totalWeight,
-//     catIII: (p3 * weights.catIII) / totalWeight
-//   }
+  const totalWeight = weights.catI + weights.catII + weights.catIII
 
-//   return {
-//     weightedAvg,
-//     riskRating,
-//     percentages: {
-//       catI: p1,
-//       catII: p2,
-//       catIII: p3
-//     },
-//     weightedContributions
-//   }
-// }
+  const assessments = metrics.assessmentsBySeverity
+  const assessed = metrics.assessedBySeverity
+  const findings = metrics.findings 
 
+  // CAT I (High)
+  const assignedHigh = assessments.high
+  const assessedHigh = assessed.high
+  const findingsHigh = findings.high
+  const rawCatI = assignedHigh > 0 ? ((assignedHigh - assessedHigh) + findingsHigh) / assignedHigh: 0
+  const weightedCatI = (rawCatI * weights.catI) / totalWeight
+
+  // CAT II (Medium)
+  const assignedMed = assessments.medium
+  const assessedMed = assessed.medium
+  const findingsMed = findings.medium
+  const rawCatII = assignedMed > 0 ? ((assignedMed - assessedMed) + findingsMed) / assignedMed: 0
+  const weightedCatII = (rawCatII * weights.catII) / totalWeight
+
+  // CAT III (Low)
+  const assignedLow = assessments.low
+  const assessedLow = assessed.low
+  const findingsLow = findings.low
+  const rawCatIII = assignedLow > 0 ? ((assignedLow - assessedLow) + findingsLow) / assignedLow : 0
+  const weightedCatIII = (rawCatIII * weights.catIII) / totalWeight
+
+  const weightedAvg = (
+    (rawCatI * weights.catI) +
+    (rawCatII * weights.catII) +
+    (rawCatIII * weights.catIII)
+  ) / totalWeight
+
+ let riskRating = '';
+
+  const isVeryLowRisk = rawCatI === 0 && rawCatII === 0 && rawCatIII === 0;
+  const isLowRisk = rawCatI === 0 && rawCatII < 0.05 && rawCatIII < 0.05;
+
+  if (isVeryLowRisk) {
+    riskRating = 'Very Low Risk';
+  } else if (isLowRisk) {
+    riskRating = 'Low Risk';
+  } else if (weightedAvg >= 0.2) {
+    riskRating = 'Very High Risk';
+  } else if (weightedAvg >= 0.1) {
+    riskRating = 'High Risk';
+  } else if (weightedAvg > 0) {
+    riskRating = 'Moderate Risk';
+  }
+
+  return {
+    weightedAvg,
+    riskRating,
+    percentages: {
+      catI: rawCatI,
+      catII: rawCatII,
+      catIII: rawCatIII
+    },
+    weightedContributions: {
+      catI: weightedCatI,
+      catII: weightedCatII,
+      catIII: weightedCatIII
+    }
+  }
+}
 
 SM.MetaPanel.ExportPanel = Ext.extend(Ext.Panel, {
   initComponent: function () {
@@ -1174,14 +1224,13 @@ SM.MetaPanel.OverviewPanel = Ext.extend(Ext.Panel, {
       toolTemplate,
       border: true
     })
-    // this.coraPanel = new SM.CollectionPanel.CORAPanel({
-    //   cls: 'sm-round-inner-panel',
-    //   bodyStyle: 'padding: 10px;',
-    //   title: 'CORA',
-    //   toolTemplate,
-    //   border: true
-    // })
-
+     this.coraPanel = new SM.CollectionPanel.CORAPanel({
+      cls: 'sm-round-inner-panel',
+      bodyStyle: 'padding: 10px;',
+      title: 'CORA',
+      toolTemplate,
+      border: true
+    })
     this.progressPanel = new SM.MetaPanel.ProgressPanel({
       cls: 'sm-round-inner-panel',
       bodyStyle: 'padding: 10px;',
@@ -1222,7 +1271,7 @@ SM.MetaPanel.OverviewPanel = Ext.extend(Ext.Panel, {
       _this.progressPanel.updateMetrics(data.metrics)
       _this.agesPanel.updateMetrics(data.metrics)
       _this.findingsPanel.updateMetrics(data.metrics.findings)
-    //  _this.coraPanel.updateMetrics(data.metrics)
+      _this.coraPanel.updateMetrics(data.metrics)
       _this.lastRefreshedTextItem.update({
         date: data.date
       })
@@ -1261,7 +1310,7 @@ SM.MetaPanel.OverviewPanel = Ext.extend(Ext.Panel, {
       items: [
         this.progressPanel,
         this.inventoryPanel,
-        //this.coraPanel,
+        this.coraPanel,
         this.findingsPanel,
         this.agesPanel,
         this.exportPanel
