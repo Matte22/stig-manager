@@ -2523,7 +2523,6 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .cat2 { background-color: hsl(38deg 56% 51%) }
 .cat3 { background-color: hsl(230deg 41% 76%) }
 
-/* Enhanced styling for the risk box */
 .cora-box-right {
   padding: 10px;
   border-radius: 10px;
@@ -2532,43 +2531,31 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   text-align: center;
 }
 
-.cora-score-label {
+.cora-score-header {
   font-weight: 700;
   font-size: 14px;
   color: black;
   margin-bottom: 3px;
 }
 
-.cora-score-value {
+.cora-score-concern-indicator {
   margin-top: 8px;
   color: black;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
-}
-
-.risk-text {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 3px;
-}
-
-.risk-percent {
-  font-size: 12px;
 }
 
 /* Circular risk indicator */
 .risk-indicator {
-  width: 50px;
+  width: 60px;
   height: 50px;
   border-radius: 50%;
   line-height: 50px;
   margin: 5px auto;
   font-weight: bold;
-  font-size: 16px;
+  font-size: 14px;
   background-color: rgba(255, 255, 255, 0.5);
 }
-
-
 
 /* Risk level specific classes */
 .cora-risk-very-low .risk-indicator {

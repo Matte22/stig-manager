@@ -875,11 +875,10 @@ SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
       '</div>',
 
       '<div class="cora-box-right {riskClass}">',
-        '<div class="cora-score-label">Risk Level</div>',
+        '<div class="cora-score-header">CORA Risk Score</div>',
         '<div class="risk-indicator">{weightedAvg}%</div>',
-        '<div class="cora-score-value">',
+        '<div class="cora-score-concern-indicator">',
           '<div class="risk-rating">{riskRating}</div>',
-          '<div class="risk-percent">Weighted Score: {weightedAvg}%</div>',
         '</div>',
       '</div>',
     '</div>',
