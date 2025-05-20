@@ -2513,7 +2513,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .cat2 { background-color: hsl(38deg 56% 51%) }
 .cat3 { background-color: hsl(230deg 41% 76%) }
 
-
+/* 
 .cora-box-right {
   padding: 10px;
   border-radius: 10px;
@@ -2533,12 +2533,95 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   color: black;
   font-weight: 600;
   font-size: 13px;
+} */
+
+
+/* Enhanced styling for the risk box */
+.cora-box-right {
+  padding: 10px;
+  border-radius: 10px;
+  flex-grow: 1;
+  border: 1px solid #bbb;
+  text-align: center;
+}
+
+.cora-score-label {
+  font-weight: 700;
+  font-size: 14px;
+  color: black;
+  margin-bottom: 3px;
+}
+
+.cora-score-value {
+  margin-top: 8px;
+  color: black;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.risk-text {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.risk-percent {
+  font-size: 12px;
+}
+
+/* Circular risk indicator */
+.risk-indicator {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  //display: inline-block;
+  line-height: 55px;
+  margin: 5px auto;
+  font-weight: bold;
+  font-size: 16px;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+// border color based on risk level
+.cora-risk-very-low .risk-indicator {
+  border: 3px solid #52c41a;
+} 
+
+.cora-risk-low .risk-indicator {
+  border: 3px solid #1890ff;
+}
+
+.cora-risk-moderate .risk-indicator {
+  border: 3px solid #873800;
+}
+
+.cora-risk-high .risk-indicator {
+  border: 3px solid #fa541c; 
+}
+
+.cora-risk-very-high .risk-indicator {
+  border: 3px solid #a8071a;
 }
 
 
-.cora-risk-very-high { background-color:rgb(230, 126, 126); }
-.cora-risk-high { background-color: #e3a13c; }
-.cora-risk-moderate { background-color:rgb(219, 233, 132); }
-.cora-risk-low { background-color:rgb(149, 195, 211); }
-.cora-risk-very-low { background-color:rgb(57, 99, 59); }
-
+// background color based on risk level
+.cora-risk-very-high { 
+  background-color:rgba(209, 78, 78, 0.36);
+  color: #a8071a;
+ }
+.cora-risk-high {
+   background-color:rgb(183 84 2);
+   color: #fa541c;
+}
+.cora-risk-moderate {
+  background-color:rgb(223 188 62);
+  color: #873800;
+}
+.cora-risk-low {
+  background-color:rgb(149, 195, 211); 
+  color: #1890ff;
+}
+.cora-risk-very-low {
+  background-color:rgb(59, 134, 62); 
+  color: #077d1d;
+}

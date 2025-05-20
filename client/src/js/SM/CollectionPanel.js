@@ -143,10 +143,10 @@ SM.CollectionPanel.CommonColumns = [
     renderer: function (v, md, r) {
       const detailedCora = r.get('coraScoreDetail')
 
-      let riskLevel = detailedCora.weightedAvg >= 20 ? 'cora-risk-very-high'
-      : detailedCora.weightedAvg >= 10 ? 'cora-risk-high'
+      let riskLevel = detailedCora.weightedAvg >= 0.2 ? 'cora-risk-very-high'
+      : detailedCora.weightedAvg >= 0.1 ? 'cora-risk-high'
       : detailedCora.weightedAvg > 0  ? 'cora-risk-moderate'
-      : (detailedCora.percentages.catI === 0 && detailedCora.percentages.catII < 5 && detailedCora.percentages.catIII < 5)
+      : (detailedCora.percentages.catI === 0 && detailedCora.percentages.catII < 0.05 && detailedCora.percentages.catIII < 0.05)
         ? 'cora-risk-low'
         : 'cora-risk-very-low'
         
@@ -1242,65 +1242,67 @@ SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
 
     const tpl = new Ext.XTemplate(
     '<div class="cora-container">',
-    '<div class="cora-box-left">',
-      '<div class="cora-box-title">Open or Not Reviewed</div>',
-      '<div class="cora-cat cat1">CAT 1: {catI}</div>',
-      '<div class="cora-cat cat2">CAT 2: {catII}</div>',
-      '<div class="cora-cat cat3">CAT 3: {catIII}</div>',
-    '</div>',
+      '<div class="cora-box-left">',
+        '<div class="cora-box-title">Open or Not Reviewed</div>',
+        '<div class="cora-cat cat1">CAT 1: {catI}</div>',
+        '<div class="cora-cat cat2">CAT 2: {catII}</div>',
+        '<div class="cora-cat cat3">CAT 3: {catIII}</div>',
+      '</div>',
 
-    '<div class="cora-box-right {riskClass}">',
-      '<div class="cora-score-label">CORA Score:</div>',
-      '<div class="cora-score-value">{riskRating}: {weightedAvg}&#37;</div>',
-    '</div>',
-  '</div>'
+      // '<div class="cora-box-right {riskClass}">',
+      //     '<div class="cora-score-label">Risk Level</div>',
+      //     '<div class="cora-score-value">',
+      //     '<div class="risk-rating">{riskRating}</div>',
+      //     '<div class="risk-percent">Weighted Score: {weightedAvg}&#37;</div>',
+      // '</div>',
 
+      '<div class="cora-box-right {riskClass}">',
+        '<div class="cora-score-label">Risk Level</div>',
+        '<div class="risk-indicator">{weightedAvg}%</div>',
+        '<div class="cora-score-value">',
+          '<div class="risk-rating">{riskRating}</div>',
+          '<div class="risk-percent">Weighted Score: {weightedAvg}%</div>',
+        '</div>',
+      '</div>',
+
+
+      
+    '</div>',
     )
 
     const updateMetrics = function (metrics) {
 
       const coraMetrics = calculateCoraRiskRating(metrics)
     
-      let riskRating = ''
-      if (coraMetrics.weightedAvg >= 20) {
-        riskRating = 'cora-risk-very-high';
-      } else if (coraMetrics.weightedAvg >= 10) {
-        riskRating = 'cora-risk-high';
-      } else if (coraMetrics.weightedAvg > 0) {
-        riskRating = 'cora-risk-moderate';
-      } else {
-        const { catI, catII, catIII } = coraMetrics.percentages
-        const isVeryLowRisk = catI === 0 && catII === 0 && catIII === 0;
-        const isLowRisk = catI === 0 && catII < 5 && catIII < 5;
-        if (isVeryLowRisk) {
-            riskRating = 'cora-risk-very-low'
-        } else if (isLowRisk) {
-            riskRating = 'cora-risk-low';
-        }
+      let riskClass = ''
+      if (coraMetrics.riskRating === 'Very High Risk') {
+        riskClass = 'cora-risk-very-high';
+      } else if (coraMetrics.riskRating === 'High Risk') {
+        riskClass = 'cora-risk-high';
+      } else if (coraMetrics.riskRating === 'Moderate Risk') {
+        riskClass = 'cora-risk-moderate';
+      } else if (coraMetrics.riskRating === 'Low Risk') {
+        riskClass = 'cora-risk-low';
+      } else if (coraMetrics.riskRating === 'Very Low Risk') {
+        riskClass = 'cora-risk-very-low';
       }
       
+      const { assessmentsBySeverity: assessments, assessedBySeverity: assessed, findings } = metrics
 
-      const assessments = metrics.assessmentsBySeverity 
-      const assessed = metrics.assessedBySeverity 
-      const findings = metrics.findings
+      function getUnreviewedOrOpen(severity) {
+        const assigned = assessments[severity]
+        const reviewed = assessed[severity]
+        const openFindings = findings[severity]
+        return (assigned - reviewed) + openFindings;
+      }
 
-      const assignedHigh = assessments.high || 0
-      const assessedHigh = assessed.high || 0
-      const findingsHigh = findings.high || 0
-      const NotReviewedOrOpencat1 = ((assignedHigh - assessedHigh) + findingsHigh)
+      const NotReviewedOrOpencat1 = getUnreviewedOrOpen('high')
+      const NotReviewedOrOpenMedcat2 = getUnreviewedOrOpen('medium')
+      const NotReviewedOrOpenLowcat3 = getUnreviewedOrOpen('low')
 
-      const assignedMed = assessments.medium || 0
-      const assessedMed = assessed.medium || 0
-      const findingsMed = findings.medium || 0
-      const NotReviewedOrOpenMedcat2 = ((assignedMed - assessedMed) + findingsMed)
-
-      const assignedLow = assessments.low || 0
-      const assessedLow = assessed.low || 0
-      const findingsLow = findings.low || 0
-      const NotReviewedOrOpenLowcat3 = ((assignedLow - assessedLow) + findingsLow)
       const data = {
         riskRating: coraMetrics.riskRating,
-        weightedAvg: coraMetrics.weightedAvg.toFixed(1),
+        weightedAvg: (coraMetrics.weightedAvg * 100).toFixed(1),
         catI: NotReviewedOrOpencat1,
         catII: NotReviewedOrOpenMedcat2,
         catIII: NotReviewedOrOpenLowcat3,
@@ -1341,29 +1343,29 @@ function calculateCoraRiskRating(metrics) {
 
   const totalWeight = weights.catI + weights.catII + weights.catIII
 
-  const assessments = metrics.assessmentsBySeverity || {}
-  const assessed = metrics.assessedBySeverity || {}
-  const findings = metrics.findings || {}
+  const assessments = metrics.assessmentsBySeverity
+  const assessed = metrics.assessedBySeverity
+  const findings = metrics.findings 
 
   // CAT I (High)
-  const assignedHigh = assessments.high || 0
-  const assessedHigh = assessed.high || 0
-  const findingsHigh = findings.high || 0
-  const rawCatI = assignedHigh > 0 ? ((assignedHigh - assessedHigh) + findingsHigh) / assignedHigh * 100 : 0
+  const assignedHigh = assessments.high
+  const assessedHigh = assessed.high
+  const findingsHigh = findings.high
+  const rawCatI = assignedHigh > 0 ? ((assignedHigh - assessedHigh) + findingsHigh) / assignedHigh: 0
   const weightedCatI = (rawCatI * weights.catI) / totalWeight
 
   // CAT II (Medium)
-  const assignedMed = assessments.medium || 0
-  const assessedMed = assessed.medium || 0
-  const findingsMed = findings.medium || 0
-  const rawCatII = assignedMed > 0 ? ((assignedMed - assessedMed) + findingsMed) / assignedMed * 100 : 0
+  const assignedMed = assessments.medium
+  const assessedMed = assessed.medium
+  const findingsMed = findings.medium
+  const rawCatII = assignedMed > 0 ? ((assignedMed - assessedMed) + findingsMed) / assignedMed: 0
   const weightedCatII = (rawCatII * weights.catII) / totalWeight
 
   // CAT III (Low)
-  const assignedLow = assessments.low || 0
-  const assessedLow = assessed.low || 0
-  const findingsLow = findings.low || 0
-  const rawCatIII = assignedLow > 0 ? ((assignedLow - assessedLow) + findingsLow) / assignedLow * 100 : 0
+  const assignedLow = assessments.low
+  const assessedLow = assessed.low
+  const findingsLow = findings.low
+  const rawCatIII = assignedLow > 0 ? ((assignedLow - assessedLow) + findingsLow) / assignedLow : 0
   const weightedCatIII = (rawCatIII * weights.catIII) / totalWeight
 
   const weightedAvg = (
@@ -1372,23 +1374,22 @@ function calculateCoraRiskRating(metrics) {
     (rawCatIII * weights.catIII)
   ) / totalWeight
 
-  let riskRating = ''
-  if (weightedAvg >= 20) {
+ let riskRating = '';
+
+  const isVeryLowRisk = rawCatI === 0 && rawCatII === 0 && rawCatIII === 0;
+  const isLowRisk = rawCatI === 0 && rawCatII < 0.05 && rawCatIII < 0.05;
+
+  if (isVeryLowRisk) {
+    riskRating = 'Very Low Risk';
+  } else if (isLowRisk) {
+    riskRating = 'Low Risk';
+  } else if (weightedAvg >= 0.2) {
     riskRating = 'Very High Risk';
-  } else if (weightedAvg >= 10) {
+  } else if (weightedAvg >= 0.1) {
     riskRating = 'High Risk';
   } else if (weightedAvg > 0) {
     riskRating = 'Moderate Risk';
-  } else {
-    const isVeryLowRisk = rawCatI === 0 && rawCatII === 0 && rawCatIII === 0;
-    const isLowRisk = rawCatI === 0 && rawCatII < 5 && rawCatIII < 5;
-    if (isVeryLowRisk) {
-        riskRating = 'Very Low Risk'
-    } else if (isLowRisk) {
-        riskRating = 'Low Risk';
-    }
   }
-  
 
   return {
     weightedAvg,
