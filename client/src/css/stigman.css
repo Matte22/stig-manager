@@ -2473,12 +2473,14 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 
 .cora-open-not-reviewed {
   width: 40px;
-  border-radius: 6px;
+  border-radius: 5px;
   color: black;
+  font-weight: 600;
   text-align: center;
   margin: 0 auto;
 }
-
+    /* outline: #bbb solid 1px;
+    outline-offset: -1px; */
 .cora-container {
   display: flex;
   flex-direction: row;
@@ -2557,9 +2559,10 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   background-color: rgba(255, 255, 255, 0.5);
 }
 
+
 /* Risk level specific classes */
 .cora-risk-very-low .risk-indicator {
-  border: 3px solid rgb(30, 82, 5);
+  border: 3px solid rgb(0, 100, 0);
 } 
 
 .cora-risk-low .risk-indicator {
@@ -2567,7 +2570,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 
 .cora-risk-moderate .risk-indicator {
-  border: 3px solid #873800;
+  border: 3px solid rgb(204, 153, 0);
 }
 
 .cora-risk-high .risk-indicator {
@@ -2578,24 +2581,23 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   border: 3px solid rgb(88, 12, 21);
 }
 
-
 .cora-risk-very-high { 
-  background-color: rgba(209, 22, 22, 0.7);
+  background-color: rgb(230, 16, 16);
   color:rgb(88, 12, 21);
  }
 .cora-risk-high {
-  background-color: rgba(212, 104, 16, 0.8);
+  background-color: rgb(237, 145, 8);
   color:rgb(146, 50, 18); 
 }
 .cora-risk-moderate {
-  background-color:rgba(223, 188, 62, 0.85);
-  color: #873800;
+  background-color:rgb(253, 251, 151);
+  color:rgb(204, 153, 0);
 }
 .cora-risk-low {
-  background-color:rgba(149, 195, 211, 0.8); 
+  background-color:rgb(91, 169, 241); 
   color:rgb(14, 90, 161);
 }
 .cora-risk-very-low {
-  background-color:rgba(59, 134, 62, 0.8); 
-  color: rgb(30, 82, 5);
+  background-color:rgb(55, 128, 13); 
+  color: rgb(0, 100, 0);
 }
