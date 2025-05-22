@@ -19,20 +19,8 @@ SM.MetaPanel.CommonColumns = [
     sortable: true,
     renderer: function (v, md, r) {
       const detailedCora = r.get('coraScoreDetail')
-     let riskClass = ''
-      if (detailedCora.riskRating === 'Very High Risk') {
-        riskClass = 'cora-risk-very-high';
-      } else if (detailedCora.riskRating === 'High Risk') {
-        riskClass = 'cora-risk-high';
-      } else if (detailedCora.riskRating === 'Moderate Risk') {
-        riskClass = 'cora-risk-moderate';
-      } else if (detailedCora.riskRating === 'Low Risk') {
-        riskClass = 'cora-risk-low';
-      } else if (detailedCora.riskRating === 'Very Low Risk') {
-        riskClass = 'cora-risk-very-low';
-      }
-        
-      return `<div class="cora-open-not-reviewed ${riskClass}" style="color: black">${(detailedCora.weightedAvg * 100).toFixed(1)}%</div>`
+      let riskClass = getRiskClass(detailedCora.riskRating)
+      return `<div class="sm-cora-column ${riskClass}" style="color: black">${(detailedCora.weightedAvg * 100).toFixed(1)}%</div>`
     }
   },
   {
@@ -863,383 +851,70 @@ SM.MetaPanel.FindingsPanel = Ext.extend(Ext.Panel, {
   }
 })
 
-
-
-// SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
-
-//   initComponent: function () {
-//     const _this = this
-
-//     const tpl = new Ext.XTemplate(
-//     '<div class="cora-container">',
-//     '<span id="cora-open-help-target">Open or Not Reviewed</span>',
-//       '<div class="cora-box-left">',
-//         '<div class="cora-box-title">Open or Not Reviewed</div>',
-//         '<div class="cora-cat cat1">CAT 1: {catI}</div>',
-//         '<div class="cora-cat cat2">CAT 2: {catII}</div>',
-//         '<div class="cora-cat cat3">CAT 3: {catIII}</div>',
-//       '</div>',
-
-//       '<div class="cora-box-right {riskClass}">',
-//         '<div class="cora-score-header">CORA Risk Score</div>',
-//         '<div class="risk-indicator">{weightedAvg}%</div>',
-//         '<div class="cora-score-concern-indicator">',
-//           '<div class="risk-rating">{riskRating}</div>',
-//         '</div>',
-//       '</div>',
-//     '</div>',
-//     )
-
-//     const updateMetrics = function (metrics) {
-
-//       const coraMetrics = calculateCoraRiskRating(metrics)
-    
-//       let riskClass = ''
-//       if (coraMetrics.riskRating === 'Very High Risk') {
-//         riskClass = 'cora-risk-very-high';
-//       } else if (coraMetrics.riskRating === 'High Risk') {
-//         riskClass = 'cora-risk-high';
-//       } else if (coraMetrics.riskRating === 'Moderate Risk') {
-//         riskClass = 'cora-risk-moderate';
-//       } else if (coraMetrics.riskRating === 'Low Risk') {
-//         riskClass = 'cora-risk-low';
-//       } else if (coraMetrics.riskRating === 'Very Low Risk') {
-//         riskClass = 'cora-risk-very-low';
-//       }
-      
-//       const { assessmentsBySeverity: assessments, assessedBySeverity: assessed, findings } = metrics
-
-//       function getUnreviewedOrOpen(severity) {
-//         const assigned = assessments[severity]
-//         const reviewed = assessed[severity]
-//         const openFindings = findings[severity]
-//         return (assigned - reviewed) + openFindings;
-//       }
-
-//       const NotReviewedOrOpencat1 = getUnreviewedOrOpen('high')
-//       const NotReviewedOrOpenMedcat2 = getUnreviewedOrOpen('medium')
-//       const NotReviewedOrOpenLowcat3 = getUnreviewedOrOpen('low')
-
-//       const data = {
-//         riskRating: coraMetrics.riskRating,
-//         weightedAvg: (coraMetrics.weightedAvg * 100).toFixed(1),
-//         catI: NotReviewedOrOpencat1,
-//         catII: NotReviewedOrOpenMedcat2,
-//         catIII: NotReviewedOrOpenLowcat3,
-//         riskClass
-//       }
-
-//       // Ensure body exists before attempting to overwrite
-//             //this.on('afterrender', this.loadApplicationManagers, this)
-//       if (_this.rendered && _this.body) {
-//         _this.tpl.overwrite(_this.body, data)
-//       } else {
-//         _this.on('afterrender', () => {
-//           _this.tpl.overwrite(_this.body, data)
-//             const el = document.getElementById('cora-open-help-target');
-//             if (el) {
-//               new Ext.ToolTip({ 
-//                  target: el,
-//       html: 'This shows the number of items not reviewed or still open in each category.',
-//       showDelay: 0,
-//       dismissDelay: 0,
-//       width: 300
-//               });
-//             }
-//         })
-//       }
-//     }
-
-//     Ext.apply(this, {
-//       title: 'CORA Panel',
-//       cls: 'sm-round-inner-panel',
-//       bodyStyle: 'padding: 10px;',
-//       html: '<div></div>' 
-//     })
-
-//     const config = {
-//       tpl,
-//       data: this.data,
-//       updateMetrics
-//     }
-//     Ext.apply(this, Ext.apply(this.initialConfig, config))
-//     this.superclass().initComponent.call(this)
-//   }
-// })
-
-// SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
-//   initComponent: function () {
-//     const _this = this;
-
-//     _this.tpl = new Ext.XTemplate(
-//       '<div class="cora-container">',
-//         '<div class="cora-box-left">',
-//           '<div class="cora-box-title">Open or Not Reviewed ',
-//             '<i id="cora-help-icon" class="fa fa-question-circle sm-question-circle"></i>',
-//             '</div>',
-//           '<div class="cora-cat cat1">CAT 1: {catI}</div>',
-//           '<div class="cora-cat cat2">CAT 2: {catII}</div>',
-//           '<div class="cora-cat cat3">CAT 3: {catIII}</div>',
-//         '</div>',
-//         '<div class="cora-box-right {riskClass}">',
-//           '<div class="cora-score-header">CORA Risk Score</div>',
-//           '<div class="risk-indicator">{weightedAvg}%</div>',
-//           '<div class="cora-score-concern-indicator">',
-//             '<div class="risk-rating">{riskRating}</div>',
-//           '</div>',
-//         '</div>',
-//       '</div>'
-//     );
-
-//     const htmlContainer = new Ext.BoxComponent({
-//       tpl: _this.tpl,
-//       data: {
-//         catI: '--',
-//         catII: '--',
-//         catIII: '--',
-//         weightedAvg: '--',
-//         riskRating: '--',
-//         riskClass: ''
-//       },
-//       listeners: {
-//         afterrender: functiocmp) {
-//           const icon = document.getElementById('cora-help-icon');
-//           if (icon) {
-//             new Ext.ToolTip({
-//               target: icon,
-//               html: 'This shows the number of items not reviewed or still open in each category.',
-//               width: 300,
-//               showDelay: 0,
-//               dismissDelay: 0
-//             });
-//           }
-//         }
-//       }
-//     });
-
-//     Ext.apply(this, {
-//       title: 'CORA Panel',
-//       cls: 'sm-round-inner-panel',
-//       layout: 'fit',
-//       bodyStyle: 'padding: 10px;',
-//       items: [htmlContainer]
-//     });
-
-//     _this.updateMetrics = function (metrics) {
-//       const coraMetrics = calculateCoraRiskRating(metrics);
-
-//       const riskClass = (() => {
-//         switch (coraMetrics.riskRating) {
-//           case 'Very High Risk': return 'cora-risk-very-high';
-//           case 'High Risk': return 'cora-risk-high';
-//           case 'Moderate Risk': return 'cora-risk-moderate';
-//           case 'Low Risk': return 'cora-risk-low';
-//           case 'Very Low Risk': return 'cora-risk-very-low';
-//         }
-//       })();
-
-//       const { assessmentsBySeverity, assessedBySeverity, findings } = metrics;
-
-//       function getUnreviewedOrOpen(sev) {
-//         return (assessmentsBySeverity[sev] - assessedBySeverity[sev]) + findings[sev];
-//       }
-
-//       const data = {
-//         riskRating: coraMetrics.riskRating,
-//         weightedAvg: (coraMetrics.weightedAvg * 100).toFixed(1),
-//         catI: getUnreviewedOrOpen('high'),
-//         catII: getUnreviewedOrOpen('medium'),
-//         catIII: getUnreviewedOrOpen('low'),
-//         riskClass
-//       };
-
-//       htmlContainer.tpl.overwrite(htmlContainer.getEl(), data);
-//     };
-
-//     SM.CollectionPanel.CORAPanel.superclass.initComponent.call(this);
-//   }
-// });
-
-// SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
-//   initComponent: function () {
-//     const _this = this;
-    
-//     // Store tooltip reference at the class level
-//     _this.helpIconTooltip = null;
-
-//     _this.tpl = new Ext.XTemplate(
-//       '<div class="cora-container">',
-//         '<div class="cora-box-left">',
-//           '<div class="cora-box-title">Open or Not Reviewed ',
-//             '<i id="cora-help-icon" class="fa fa-question-circle sm-question-circle"></i>',
-//             '</div>',
-//           '<div class="cora-cat cat1">CAT 1: {catI}</div>',
-//           '<div class="cora-cat cat2">CAT 2: {catII}</div>',
-//           '<div class="cora-cat cat3">CAT 3: {catIII}</div>',
-//         '</div>',
-//         '<div class="cora-box-right {riskClass}">',
-//           '<div class="cora-score-header">CORA Risk Score</div>',
-//           '<div class="risk-indicator">{weightedAvg}%</div>',
-//           '<div class="cora-score-concern-indicator">',
-//             '<div class="risk-rating">{riskRating}</div>',
-//           '</div>',
-//         '</div>',
-//       '</div>'
-//     );
-
-//     const htmlContainer = new Ext.BoxComponent({
-//       tpl: _this.tpl,
-//       data: {
-//         catI: '--',
-//         catII: '--',
-//         catIII: '--',
-//         weightedAvg: '--',
-//         riskRating: '--',
-//         riskClass: ''
-//       },
-//       listeners: {
-//         afterrender: function (cmp) {
-//           _this.initTooltip();
-//         }
-//       }
-//     });
-
-//     Ext.apply(this, {
-//       title: 'CORA Panel',
-//       cls: 'sm-round-inner-panel',
-//       layout: 'fit',
-//       bodyStyle: 'padding: 10px;',
-//       items: [htmlContainer]
-//     });
-
-//     // Create a method to initialize or reinitialize the tooltip
-//     _this.initTooltip = function() {
-//       // If a tooltip already exists, destroy it first
-//       if (_this.helpIconTooltip) {
-//         _this.helpIconTooltip.destroy();
-//         _this.helpIconTooltip = null;
-//       }
-      
-//       // Find the icon and create a new tooltip
-//       const icon = document.getElementById('cora-help-icon');
-//       if (icon) {
-//         _this.helpIconTooltip = new Ext.ToolTip({
-//           target: icon,
-//           html: 'This shows the number of items not reviewed or still open in each category.',
-//           width: 300,
-//           showDelay: 0,
-//           dismissDelay: 0
-//         });
-//       }
-//     };
-
-//     _this.updateMetrics = function (metrics) {
-//       const coraMetrics = calculateCoraRiskRating(metrics);
-
-//       const riskClass = (() => {
-//         switch (coraMetrics.riskRating) {
-//           case 'Very High Risk': return 'cora-risk-very-high';
-//           case 'High Risk': return 'cora-risk-high';
-//           case 'Moderate Risk': return 'cora-risk-moderate';
-//           case 'Low Risk': return 'cora-risk-low';
-//           case 'Very Low Risk': return 'cora-risk-very-low';
-//         }
-//       })();
-
-//       const { assessmentsBySeverity, assessedBySeverity, findings } = metrics;
-
-//       function getUnreviewedOrOpen(sev) {
-//         return (assessmentsBySeverity[sev] - assessedBySeverity[sev]) + findings[sev];
-//       }
-
-//       const data = {
-//         riskRating: coraMetrics.riskRating,
-//         weightedAvg: (coraMetrics.weightedAvg * 100).toFixed(1),
-//         catI: getUnreviewedOrOpen('high'),
-//         catII: getUnreviewedOrOpen('medium'),
-//         catIII: getUnreviewedOrOpen('low'),
-//         riskClass
-//       };
-
-//       htmlContainer.tpl.overwrite(htmlContainer.getEl(), data);
-      
-//       // Reinitialize the tooltip after updating the content
-//       Ext.defer(_this.initTooltip, 500); // Small delay to ensure DOM is updated
-//     };
-
-//     SM.CollectionPanel.CORAPanel.superclass.initComponent.call(this);
-//   }
-// });
-SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
+SM.MetaPanel.CORAPanel = Ext.extend(Ext.Panel, {
   initComponent: function () {
-    const _this = this;
+    const _this = this
     
-    // Store tooltip reference at the class level
-    _this.helpIconTooltip = null;
+    _this.helpIconTooltip = null
 
     _this.tpl = new Ext.XTemplate(
-      '<div class="cora-container">',
-        '<div class="cora-box-left">',
-          '<div class="cora-box-title">Open or Not Reviewed</div>',
-          '<div class="cora-cat cat1">CAT 1: {catI}</div>',
-          '<div class="cora-cat cat2">CAT 2: {catII}</div>',
-          '<div class="cora-cat cat3">CAT 3: {catIII}</div>',
+      '<div class="sm-cora-container">',
+        '<div class="sm-cora-box-left">',
+          '<div class="sm-cora-box-title">Open or Not Reviewed</div>',
+          '<div class="sm-cora-cat sm-cat1">CAT 1: {catI}</div>',
+          '<div class="sm-cora-cat sm-cat2">CAT 2: {catII}</div>',
+          '<div class="sm-cora-cat sm-cat3">CAT 3: {catIII}</div>',
         '</div>',
-        '<div class="cora-box-right {riskClass}">',
-          '<div class="cora-score-header">CORA Risk Score</div>',
-          '<div class="risk-indicator">{weightedAvg}%</div>',
-          '<div class="cora-score-concern-indicator">',
-            '<div class="risk-rating">{riskRating}</div>',
+        '<div class="sm-cora-box-right {riskClass}">',
+          '<div class="sm-cora-score-header">',
+            'CORA Risk Score ',
+          '</div>',
+          '<div class="sm-risk-indicator">{weightedAvg}%</div>',
+          '<div class="sm-cora-score-risk-level">',
+            '<div>{riskRating}</div>',
           '</div>',
         '</div>',
       '</div>'
-    );
+    )
 
     const htmlContainer = new Ext.BoxComponent({
       tpl: _this.tpl,
-      data: {
-        catI: '--',
-        catII: '--',
-        catIII: '--',
-        weightedAvg: '--',
-        riskRating: '--',
-        riskClass: ''
-      }
-    });
+      data: this.data
+    })
 
     Ext.apply(this, {
-      title: 'CORA Panel',
-      cls: 'sm-round-inner-panel',
-      layout: 'fit',
-      bodyStyle: 'padding: 10px;',
+      title: 'CORA' +  '&nbsp; <i class="fa fa-question-circle sm-question-circle"></i>', 
       items: [htmlContainer],
-      tools: [{
-        id: 'help',  // This will use the built-in help icon
-        qtip: 'This shows the number of items not reviewed or still open in each category.',
-        handler: function(event, toolEl, panel) {
-          // The tooltip is already shown via qtip, but you could add extra functionality here
+      listeners: {
+        afterrender: function() {
+          _this.createTooltips()
         }
-      }]
-    });
+      }
+    })
 
-    // Create a method to initialize or reinitialize the tooltip - Not needed anymore
+    _this.createTooltips = function() {
+      setTimeout(function() {
+        const helpIcon = _this.getEl().select('.sm-question-circle').first()
+        if (helpIcon) {
+          _this.helpIconTooltip = new Ext.ToolTip({
+            target: helpIcon,
+            html: SM.TipContent.CORA,
+            showDelay: 0,
+            hideDelay: 0,
+            autoWidth: true,
+          })
+        }
+      }, 150)
+    }
+
     _this.updateMetrics = function (metrics) {
-      const coraMetrics = calculateCoraRiskRating(metrics);
+      const coraMetrics = calculateCoraRiskRating(metrics)
 
-      const riskClass = (() => {
-        switch (coraMetrics.riskRating) {
-          case 'Very High Risk': return 'cora-risk-very-high';
-          case 'High Risk': return 'cora-risk-high';
-          case 'Moderate Risk': return 'cora-risk-moderate';
-          case 'Low Risk': return 'cora-risk-low';
-          case 'Very Low Risk': return 'cora-risk-very-low';
-        }
-      })();
-
-      const { assessmentsBySeverity, assessedBySeverity, findings } = metrics;
+      const riskClass = getRiskClass(coraMetrics.riskRating)
+      const { assessmentsBySeverity, assessedBySeverity, findings } = metrics
 
       function getUnreviewedOrOpen(sev) {
-        return (assessmentsBySeverity[sev] - assessedBySeverity[sev]) + findings[sev];
+        return (assessmentsBySeverity[sev] - assessedBySeverity[sev]) + findings[sev]
       }
 
       const data = {
@@ -1249,87 +924,19 @@ SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
         catII: getUnreviewedOrOpen('medium'),
         catIII: getUnreviewedOrOpen('low'),
         riskClass
-      };
+      }
 
-      htmlContainer.tpl.overwrite(htmlContainer.getEl(), data);
-    };
-
-    SM.CollectionPanel.CORAPanel.superclass.initComponent.call(this);
-  }
-});
-
-function calculateCoraRiskRating(metrics) {
-  const weights = {
-    catI: 10,
-    catII: 4,
-    catIII: 1
-  }
-
-  const totalWeight = weights.catI + weights.catII + weights.catIII
-
-  const assessments = metrics.assessmentsBySeverity
-  const assessed = metrics.assessedBySeverity
-  const findings = metrics.findings 
-
-  // CAT I (High)
-  const assignedHigh = assessments.high
-  const assessedHigh = assessed.high
-  const findingsHigh = findings.high
-  const rawCatI = assignedHigh > 0 ? ((assignedHigh - assessedHigh) + findingsHigh) / assignedHigh: 0
-  const weightedCatI = (rawCatI * weights.catI) / totalWeight
-
-  // CAT II (Medium)
-  const assignedMed = assessments.medium
-  const assessedMed = assessed.medium
-  const findingsMed = findings.medium
-  const rawCatII = assignedMed > 0 ? ((assignedMed - assessedMed) + findingsMed) / assignedMed: 0
-  const weightedCatII = (rawCatII * weights.catII) / totalWeight
-
-  // CAT III (Low)
-  const assignedLow = assessments.low
-  const assessedLow = assessed.low
-  const findingsLow = findings.low
-  const rawCatIII = assignedLow > 0 ? ((assignedLow - assessedLow) + findingsLow) / assignedLow : 0
-  const weightedCatIII = (rawCatIII * weights.catIII) / totalWeight
-
-  const weightedAvg = (
-    (rawCatI * weights.catI) +
-    (rawCatII * weights.catII) +
-    (rawCatIII * weights.catIII)
-  ) / totalWeight
-
- let riskRating = '';
-
-  const isVeryLowRisk = rawCatI === 0 && rawCatII === 0 && rawCatIII === 0;
-  const isLowRisk = rawCatI === 0 && rawCatII < 0.05 && rawCatIII < 0.05;
-
-  if (isVeryLowRisk) {
-    riskRating = 'Very Low Risk';
-  } else if (isLowRisk) {
-    riskRating = 'Low Risk';
-  } else if (weightedAvg >= 0.2) {
-    riskRating = 'Very High Risk';
-  } else if (weightedAvg >= 0.1) {
-    riskRating = 'High Risk';
-  } else if (weightedAvg > 0) {
-    riskRating = 'Moderate Risk';
-  }
-
-  return {
-    weightedAvg,
-    riskRating,
-    percentages: {
-      catI: rawCatI,
-      catII: rawCatII,
-      catIII: rawCatIII
-    },
-    weightedContributions: {
-      catI: weightedCatI,
-      catII: weightedCatII,
-      catIII: weightedCatIII
+      htmlContainer.tpl.overwrite(htmlContainer.getEl(), data)
+      if (_this.helpIconTooltip) {
+        _this.helpIconTooltip.destroy()
+      }
+      _this.createTooltips()
     }
+    this.superclass().initComponent.call(this)
   }
-}
+})
+
+
 
 SM.MetaPanel.ExportPanel = Ext.extend(Ext.Panel, {
   initComponent: function () {
@@ -1533,7 +1140,7 @@ SM.MetaPanel.OverviewPanel = Ext.extend(Ext.Panel, {
       toolTemplate,
       border: true
     })
-     this.coraPanel = new SM.CollectionPanel.CORAPanel({
+    this.coraPanel = new SM.MetaPanel.CORAPanel({
       cls: 'sm-round-inner-panel',
       bodyStyle: 'padding: 10px;',
       title: 'CORA',

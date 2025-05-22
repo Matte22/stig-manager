@@ -3118,20 +3118,20 @@ embed[type="application/pdf"] {
 	border-radius: 5px;
 }
 
-.cora-box-left {
+.sm-cora-box-left {
     background-color: #292C2E;
     border: 1px solid #444;
 }
 
-.cora-box-title {
+.sm-cora-box-title {
     color: white;
 }
 
-.cora-cat {
+.sm-cora-cat {
     border: 1px solid #444;
 }
 
-.cora-box-right {
+.sm-cora-box-right {
     border: 1px solid #444;
 }
 
