@@ -9,8 +9,8 @@ SELECT *
 FROM collection
 WHERE state = 'enabled';
 
--- test index i made 
-CREATE INDEX idx_collectionId_state ON asset (collectionId, state);
+-- test index i made seems to be used alot  
+CREATE INDEX idx_collectionId_state ON asset (collectionId, state); 
 
 -- playing 
 explain analyze SELECT * FROM enabled_assets where collectionId = '21';
@@ -26,7 +26,8 @@ explain SELECT * FROM enabled_collection where collectionId = '21';
 
 -- -- getAssets 
 
--- get assets colleciton 21 which has 500 enabled and 500 disabled assets, statusStatus and Stigs projection
+
+-- get assets colleciton 21 which has 500 enabled and 500 disabled assets, statusStatus and Stigs projection note, status stats is SLSLLLLOOWWWW 
 SELECT 
   CAST(a.assetId as char) as assetId,
   a.name,
