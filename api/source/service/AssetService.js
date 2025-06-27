@@ -35,7 +35,7 @@ exports.queryAssets = async function ({projections = [], filter = {}, grant = {}
     'a.metadata'
   ]
   const joins = [
-    'enabled_assets a',
+    'enabled_asset a',
     'left join enabled_collection c on a.collectionId = c.collectionId',
     'left join stig_asset_map sa on a.assetId = sa.assetId'
   ]
@@ -58,7 +58,7 @@ exports.queryAssets = async function ({projections = [], filter = {}, grant = {}
         )
         from
           stig_asset_map saStatusStats
-          left join enabled_assets aStatusStats using (assetId)
+          left join enabled_asset aStatusStats using (assetId)
           left join default_rev drStatusStats on (saStatusStats.benchmarkId = drStatusStats.benchmarkId and aStatusStats.collectionId = drStatusStats.collectionId)
           left join revision rStatusStats on drStatusStats.revId = rStatusStats.revId
         where
@@ -194,7 +194,7 @@ exports.queryChecklist = async function (inPredicates) {
       'left join review on (rvcd.version = review.version and rvcd.checkDigest = review.checkDigest and review.assetId = :assetId)',
       'left join result on review.resultId=result.resultId',
       'left join status on review.statusId=status.statusId',
-      'left join enabled_assets a on review.assetId=a.assetId'
+      'left join enabled_asset a on review.assetId=a.assetId'
     ]
     const predicates = {
       statements: [],
@@ -265,7 +265,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
       }
     }
 
-    const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata from enabled_assets where assetId = ?"
+    const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata from enabled_asset where assetId = ?"
     const sqlGetChecklist =`SELECT 
       rgr.groupId,
       rgr.severity,
@@ -506,7 +506,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
       stigs: []
     }
 
-    const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata from enabled_assets where assetId = ?"
+    const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata from enabled_asset where assetId = ?"
     const sqlGetChecklist =`SELECT 
       rgr.groupId,
       rgr.severity,
@@ -707,7 +707,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
 
 exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr = 'latest') {
     // queries and query methods
-  const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata from enabled_assets where assetId = ?"
+  const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata from enabled_asset where assetId = ?"
   const sqlGetChecklist =`SELECT 
     rgr.groupId,
     rgr.groupTitle,
@@ -972,7 +972,7 @@ exports.createAssets = async function({ assets, collectionId, svcStatus = {} }) 
     // update temp table with create assets assetIds
     const updateTempWithAssetIdsSQL = `
         UPDATE temp_assets t
-        INNER JOIN enabled_assets a
+        INNER JOIN enabled_asset a
             ON a.name = t.name
             AND a.collectionId = t.collectionId
         SET t.assetId = a.assetId;`
@@ -1184,7 +1184,7 @@ exports.getAsset = async function({assetId, projections, grant}) {
 }
 
 exports.doesAssetExist = async function (assetId) {
-  const sql = `SELECT assetId FROM asset WHERE assetId = ? AND state = 'enabled'`
+  const sql = `SELECT assetId FROM enabled_asset WHERE assetId = ?`
   const [rows] = await dbUtils.pool.query(sql, [assetId])
   return rows.length > 0
 }
@@ -1206,7 +1206,7 @@ exports.getStigsByAssetSlow = async function ({assetId, grant}) {
     'rev.ruleCount as ruleCount'
   ]
   const joins = [
-    'enabled_assets a',
+    'enabled_asset a',
     'left join enabled_collection c on a.collectionId = c.collectionId',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
     'left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)',
@@ -1238,7 +1238,7 @@ exports.getStigsByAsset = async function ({assetId, grant}) {
     'rev.ruleCount as ruleCount'
   ]
   const joins = [
-    'enabled_assets a',
+    'enabled_asset a',
     'left join enabled_collection c on a.collectionId = c.collectionId',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
     'left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)',
@@ -1309,7 +1309,7 @@ exports.getAssetsByStig = async function({collectionId, benchmarkId, labels, gra
   ]
   const joins = [
     'enabled_collection c',
-    'inner join enabled_assets a on c.collectionId = a.collectionId',
+    'inner join enabled_asset a on c.collectionId = a.collectionId',
     'left join stig_asset_map sa on a.assetId = sa.assetId',
   ]
   ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
@@ -1362,7 +1362,7 @@ exports.attachAssetsToStig = async function(collectionId, benchmarkId, assetIds,
       let sqlDeleteBenchmarks = `
       DELETE stig_asset_map FROM 
         stig_asset_map
-        left join enabled_assets a on stig_asset_map.assetId = a.assetId
+        left join enabled_asset a on stig_asset_map.assetId = a.assetId
       WHERE
         a.collectionId = ?
         and stig_asset_map.benchmarkId = ?`
@@ -1564,7 +1564,7 @@ exports.getAssetMetadataKeys = async function ( assetId ) {
     select
       JSON_KEYS(metadata) as keyArray
     from 
-      enabled_assets
+      enabled_asset
     where 
       assetId = ?`
   const [rows] = await dbUtils.pool.query(sql, [assetId])
@@ -1576,7 +1576,7 @@ exports.getAssetMetadata = async function ( assetId ) {
     select
       metadata 
     from 
-      enabled_assets
+      enabled_asset
     where 
       assetId = ?`
   const [rows] = await dbUtils.pool.query(sql, [assetId])
@@ -1612,7 +1612,7 @@ exports.getAssetMetadataValue = async function ( assetId, key ) {
     select
       JSON_EXTRACT(metadata, ?) as value
     from 
-      enabled_assets
+      enabled_asset
     where 
       assetId = ?`
   const [rows] = await dbUtils.pool.query(sql, [`$."${key}"`, assetId])

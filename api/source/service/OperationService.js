@@ -503,8 +503,8 @@ exports.getAppInfo = async function() {
     COUNT(sa.assetId) as stigAssetCnt
   FROM
     collection c
-    LEFT JOIN asset a on a.collectionId = c.collectionId
-    LEFT JOIN stig_asset_map sa on sa.assetId = a.assetId
+    LEFT JOIN asset a on a.collectionId = c.collectionId and a.state = "enabled"
+    LEFT JOIN stig_asset_map sa on sa.assetId = a.assetId 
   GROUP BY
     c.collectionId,
     c.name,
@@ -548,7 +548,7 @@ exports.getAppInfo = async function() {
     collection c
     left join collection_label cl on cl.collectionId = c.collectionId
     left join collection_label_asset_map clam on clam.clId = cl.clId
-    left join asset a on clam.assetId = a.assetId
+    left join asset a on clam.assetId = a.assetId and a.state = "enabled"
   GROUP BY
     c.collectionId
   `  

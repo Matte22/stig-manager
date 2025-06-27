@@ -61,7 +61,7 @@ exports.postReviewBatch = async function ({
     else if (benchmarkIds?.length) {
       const sql = `select distinct assetId 
       from
-        enabled_assets a
+        enabled_asset a
         left join stig_asset_map sa using (assetId)
         ${roleId === 1 ? 'inner' : 'left'} join cteAclEffective cae on sa.saId = cae.saId
       where
@@ -98,7 +98,7 @@ exports.postReviewBatch = async function ({
     distinct a.assetId,
     rgr.ruleId 
   from 
-    enabled_assets a
+    enabled_asset a
     left join stig_asset_map sa using (assetId)
     ${roleId === 1 ? 'inner' : 'left'} join cteAclEffective cae on sa.saId = cae.saId
     left join revision rev on sa.benchmarkId = rev.benchmarkId
@@ -611,7 +611,7 @@ exports.getReviews = async function ({projections = [], filter = {}, grant}) {
     'left join status on r.statusId = status.statusId',
     'left join user_data ud on r.userId = ud.userId',
     'left join user_data udStatus on r.statusUserId = udStatus.userId',
-    'left join enabled_assets a on r.assetId = a.assetId',
+    'left join enabled_asset a on r.assetId = a.assetId',
     'left join default_rev dr on (rgr.revId = dr.revId and a.collectionId = dr.collectionId)',
     'left join enabled_collection c on a.collectionId = c.collectionId',
     'left join stig_asset_map sa on (r.assetId = sa.assetId and revision.benchmarkId = sa.benchmarkId)',
@@ -802,7 +802,7 @@ exports.exportReviews = async function (includeHistory = false) {
   ]
   const joins = [
     'review r',
-    'inner join enabled_assets a on r.assetId = a.assetId',
+    'inner join enabled_asset a on r.assetId = a.assetId',
     'inner join enabled_collection c on c.collectionId = a.collectionId',
     'left join result on r.resultId = result.resultId',
     'left join status on r.statusId = status.statusId',
@@ -980,7 +980,7 @@ cteGrant AS (
 select
   distinct rgr.ruleId 
 from 
-  enabled_assets a
+  enabled_asset a
   left join stig_asset_map sa using (assetId)
   ${grant.roleId === 1 ? 'inner' : 'left'} join cteAclEffective cae on sa.saId = cae.saId
   left join revision rev on sa.benchmarkId = rev.benchmarkId
@@ -1321,14 +1321,13 @@ exports.checkRuleByAssetUser = async function ({ruleId, assetId, collectionId, g
     select
       rgr.ruleId 
     from 
-      enabled_assets a
+      enabled_asset a
       left join stig_asset_map sa using (assetId)
       ${grant.roleId === 1 ? 'inner' : 'left'} join cteAclEffective cae on sa.saId = cae.saId
       left join revision rev on sa.benchmarkId = rev.benchmarkId
       left join rev_group_rule_map rgr using (revId)
     where 
       a.assetId = ?
-      and a.state = 'enabled'
       and rgr.ruleId = ?
       ${checkWritable ? "and coalesce(cae.access, 'rw') = 'rw'" : ''}
       ${collectionId ? "and a.collectionId = ?" : ''}`

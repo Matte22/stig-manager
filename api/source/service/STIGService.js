@@ -11,7 +11,7 @@ function cteStigCollection ({elevate = false, unrestrictedCollectionIds = [], ha
   ]
   const joins = [
     'stig_asset_map sa',
-    'inner join enabled_assets a on a.assetId=sa.assetId',
+    'inner join enabled_asset a on a.assetId=sa.assetId',
     'inner join enabled_collection c on c.collectionId=a.collectionId'
   ]
   const predicates = {
