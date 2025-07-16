@@ -80,6 +80,10 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     END as userGroups`)
   }
 
+  if(inProjection?.includes('webPreferences')) {
+    columns.push(`ud.webPreferences`)
+  }
+
   // PREDICATES
   let predicates = {
     statements: [],
@@ -523,4 +527,54 @@ exports.getUserObject = async function (username) {
     ud.username = ?`
   const [rows] = await dbUtils.pool.query(sql, [username])
   return rows[0]
+}
+
+exports.getUserPreferences = async function (userId) {
+  const sql = `SELECT webPreferences FROM user_data WHERE userId = ?`
+  const [rows] = await dbUtils.pool.query(sql, [userId])
+  return rows[0]?.webPreferences || {}
+}
+
+
+exports.putUserPreferences = async function (userId, preferences) {
+  const sql = `UPDATE user_data SET webPreferences = ? WHERE userId = ?`
+  await dbUtils.pool.query(sql, [JSON.stringify(preferences), userId])
+  return preferences
+}
+
+exports.patchUserPreferences = async function (userId, preferences) {
+  const sql = `UPDATE user_data SET webPreferences = JSON_MERGE_PATCH(webPreferences, ?) WHERE userId = ?`
+  await dbUtils.pool.query(sql, [JSON.stringify(preferences), userId])
+  return preferences
+}
+
+exports.getUserPreferenceKeys = async function (userId) {
+  const sql = `SELECT JSON_KEYS(webPreferences) as keyArray FROM user_data WHERE userId = ?`
+  const [rows] = await dbUtils.pool.query(sql, [userId])
+  const preferences = rows[0]?.keyArray || []
+  return preferences
+}
+
+
+exports.getUserPreferenceByKey = async function (userId, key) {
+  const sql = `SELECT JSON_EXTRACT(webPreferences, ?) as value FROM user_data WHERE userId = ?`
+  const [rows] = await dbUtils.pool.query(sql, [`$.${key}`, userId])
+  return rows[0]?.value || null
+}
+
+exports.putUserPreferenceByKey = async function (userId, key, value) {
+  let sql = `
+    update
+      user_data
+    set 
+      webPreferences = JSON_SET(webPreferences, ?, ?)
+    where 
+      userId = ?`
+  await dbUtils.pool.query(sql, [`$.${key}`, value, userId])
+  return value
+}
+
+exports.deleteUserPreferenceByKey = async function (userId, key) {
+  const sql = `UPDATE user_data SET webPreferences = JSON_REMOVE(webPreferences, ?) WHERE userId = ?`
+  await dbUtils.pool.query(sql, [`$.${key}`, userId])
 }

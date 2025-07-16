@@ -36,7 +36,7 @@ describe('user', () => {
         describe(`getUser - /user`, () => {
 
           it('Return the requesters user information - check user', async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/user`, 'GET', iteration.token)
+            const res = await utils.executeRequest(`${config.baseUrl}/user?projection=webPreferences`, 'GET', iteration.token)
 
             expect(res.status).to.eql(200)
             expect(res.body.username, "expect username to be current user").to.equal(iteration.name)
@@ -45,6 +45,9 @@ describe('user', () => {
             for(const grant of res.body.collectionGrants) {
               expect(grant.collection.collectionId).to.be.oneOf(distinct.collectionGrants)
             }
+            expect(res.body.status).to.be.eql('available')
+            expect(res.body.userId, "expect userId to be current user").to.equal(iteration.userId)
+            
           })
 
           it("Return the requesters user information verify last access and privileges data", async () => {

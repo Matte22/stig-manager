@@ -88,7 +88,12 @@ module.exports.exportUserGroups = async function exportUserGroups (projections, 
 
 module.exports.getUser = async function getUser (req, res, next) {
   try {
-    let response = await UserService.getUserByUserId(req.userObject.userId, ['collectionGrants', 'statistics', 'userGroups'])
+    const projection = ['collectionGrants', 'statistics', 'userGroups']
+    if (req.query.projection) {
+      projection.push(req.query.projection)
+    }
+
+    let response = await UserService.getUserByUserId(req.userObject.userId, projection)
     response.privileges = req.userObject.privileges
     res.json(response)
 }
@@ -344,6 +349,96 @@ module.exports.deleteUserGroup = async (req, res, next) => {
       userGroupId: req.params.userGroupId,
     })
     res.json(response[0])
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getUserPreferences = async (req, res, next) => {
+  try {
+    const response = await UserService.getUserPreferences(req.userObject.userId)
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.putUserPreferences = async (req, res, next) => {
+  try {
+    const body = req.body
+    await UserService.putUserPreferences(req.userObject.userId, body)
+    const response = await UserService.getUserPreferences(req.userObject.userId)
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.patchUserPreferences = async (req, res, next) => {
+  try {
+    const body = req.body
+    await UserService.patchUserPreferences(req.userObject.userId, body)
+    const response = await UserService.getUserPreferences(req.userObject.userId)
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getUserPreferencesKeys = async (req, res, next) => {
+  try {
+    const response = await UserService.getUserPreferenceKeys(req.userObject.userId)
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getUserPreferenceByKey = async (req, res, next) => {
+  try {
+    const key = req.params.key
+    const response = await UserService.getUserPreferenceByKey(req.userObject.userId, key)
+    if (!response) {
+      throw new SmError.NotFoundError('web preference key not found')
+    }
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.putUserPreferenceByKey = async (req, res, next) => {
+  try {
+    const key = req.params.key
+    const value = req.body
+    const currentKeyValue = await UserService.getUserPreferenceByKey(req.userObject.userId, key)
+    if (currentKeyValue === null) {
+      throw new SmError.NotFoundError('web preference key not found')
+    }
+    await UserService.putUserPreferenceByKey(req.userObject.userId, key, value)
+    res.json(value)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.deleteUserPreferenceByKey = async (req, res, next) => {
+  try {
+    const key = req.params.key
+    const currentKeyValue = await UserService.getUserPreferenceByKey(req.userObject.userId, key)
+    if (currentKeyValue === null) {
+      throw new SmError.NotFoundError('web preference key not found')
+    }
+    await UserService.deleteUserPreferenceByKey(req.userObject.userId, key)
+    // no content 
+    res.status(204).send()
   }
   catch (err) {
     next(err)
