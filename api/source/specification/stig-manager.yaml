@@ -3936,6 +3936,166 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user:read'
+  /user/web-preferences:
+    get:
+      tags:
+        - User
+      summary: Return the requester's user preferences
+      operationId: getUserWebPreferences
+      responses:
+        '200':
+          description: User Web Preferences response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebPreferences'
+      security:
+        - oauth:
+            - 'stig-manager:user:read'
+    put:
+      tags:
+        - User
+      summary: Set the requester's user preferences
+      operationId: putUserWebPreferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebPreferences'
+      responses:
+        '200':
+          description: User Web Preferences response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebPreferences'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:user:read'
+    patch:
+      tags:
+        - User
+      summary: Merge the provided object to the requester's user preferences
+      operationId: patchUserWebPreferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebPreferences'
+      responses:
+        '200':
+          description: User Web Preferences response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebPreferences'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:user:read'
+  /user/web-preferences/keys:
+    get:
+      tags:
+        - User
+      summary: Return the requester's user preferences keys
+      operationId: getUserWebPreferencesKeys
+      responses:
+        '200':
+          description: UserWebPreferencesKeys response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WebPreferenceKeys'
+      security:
+        - oauth:
+            - 'stig-manager:user:read'
+  /user/web-preferences/keys/{key}:
+    get:
+      tags:
+        - User
+      summary: Return the requester's user preference for the specified key
+      operationId: getUserWebPreferenceByKey
+      parameters:
+        - $ref: '#/components/parameters/WebPreferenceKeyPath'
+      responses:
+        '200':
+          description: UserWebPreference response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebPreferenceValue'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:user:read'
+    put:
+      tags:
+        - User
+      summary: Set the requester's user preference for the specified key
+      operationId: putUserWebPreferenceByKey
+      parameters:
+        - $ref: '#/components/parameters/WebPreferenceKeyPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebPreferenceValue'
+      responses:
+        '200':
+          description: UserPreference response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebPreferenceValue'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:user:read'
+    delete:
+      tags:
+        - User
+      summary: Delete the requester's user preference for the specified key
+      operationId: deleteUserWebPreferenceByKey
+      parameters:
+        - $ref: '#/components/parameters/WebPreferenceKeyPath'
+      responses:
+        '204':
+          description: UserWebPreference deleted
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:user:read'
   /users:
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
@@ -4087,167 +4247,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserProjected'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:user'
-  /user/preferences:
-    get:
-      tags:
-        - User
-      summary: Return the requester's user preferences
-      operationId: getUserPreferences
-      responses:
-        '200':
-          description: UserPreferences response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WebPreferences'
-      security:
-        - oauth:
-            - 'stig-manager:user:read'
-    put:
-      tags:
-        - User
-      summary: Set the requester's user preferences
-      operationId: putUserPreferences 
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WebPreferences'
-      responses:
-        '200':
-          description: UserPreferences response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WebPreferences'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:user'
-    patch:
-      tags:
-        - User
-      summary: Merge the provided object to the requester's user preferences
-      operationId: patchUserPreferences
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WebPreferences'
-      responses:
-        '200':
-          description: UserPreferences response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WebPreferences'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:user'
-  /user/preferences/keys:
-    get:
-      tags:
-        - User
-      summary: Return the requester's user preferences keys
-      operationId: getUserPreferencesKeys
-      responses:
-        '200':
-          description: UserPreferencesKeys response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/WebPreferenceKeys'
-      security:
-        - oauth:
-            - 'stig-manager:user:read'
-  /user/preferences/keys/{key}:
-    get:
-      tags:
-        - User
-      summary: Return the requester's user preference for the specified key
-      operationId: getUserPreferenceByKey
-      parameters:
-        - $ref: '#/components/parameters/WebPreferenceKeyPath'
-      responses:
-        '200':
-          description: UserPreference response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WebPreferenceValue'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:user:read'
-            - 'stig-manager:user'
-    put:
-      tags:
-        - User
-      summary: Set the requester's user preference for the specified key
-      operationId: putUserPreferenceByKey
-      parameters:
-        - $ref: '#/components/parameters/WebPreferenceKeyPath'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WebPreferenceValue'
-      responses:
-        '200':
-          description: UserPreference response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WebPreferenceValue'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:user'
-    delete:
-      tags:
-        - User
-      summary: Delete the requester's user preference for the specified key
-      operationId: deleteUserPreferenceByKey
-      parameters:
-        - $ref: '#/components/parameters/WebPreferenceKeyPath'
-      responses:
-        '204':
-          description: UserPreference deleted
         default:
           description: unexpected error
           content:

@@ -355,9 +355,9 @@ module.exports.deleteUserGroup = async (req, res, next) => {
   }
 }
 
-module.exports.getUserPreferences = async (req, res, next) => {
+module.exports.getUserWebPreferences = async (req, res, next) => {
   try {
-    const response = await UserService.getUserPreferences(req.userObject.userId)
+    const response = await UserService.getUserWebPreferences(req.userObject.userId)
     res.json(response)
   }
   catch (err) {
@@ -365,11 +365,11 @@ module.exports.getUserPreferences = async (req, res, next) => {
   }
 }
 
-module.exports.putUserPreferences = async (req, res, next) => {
+module.exports.putUserWebPreferences = async (req, res, next) => {
   try {
     const body = req.body
-    await UserService.putUserPreferences(req.userObject.userId, body)
-    const response = await UserService.getUserPreferences(req.userObject.userId)
+    await UserService.putUserWebPreferences(req.userObject.userId, body)
+    const response = await UserService.getUserWebPreferences(req.userObject.userId)
     res.json(response)
   }
   catch (err) {
@@ -377,11 +377,11 @@ module.exports.putUserPreferences = async (req, res, next) => {
   }
 }
 
-module.exports.patchUserPreferences = async (req, res, next) => {
+module.exports.patchUserWebPreferences = async (req, res, next) => {
   try {
     const body = req.body
-    await UserService.patchUserPreferences(req.userObject.userId, body)
-    const response = await UserService.getUserPreferences(req.userObject.userId)
+    await UserService.patchUserWebPreferences(req.userObject.userId, body)
+    const response = await UserService.getUserWebPreferences(req.userObject.userId)
     res.json(response)
   }
   catch (err) {
@@ -389,9 +389,9 @@ module.exports.patchUserPreferences = async (req, res, next) => {
   }
 }
 
-module.exports.getUserPreferencesKeys = async (req, res, next) => {
+module.exports.getUserWebPreferencesKeys = async (req, res, next) => {
   try {
-    const response = await UserService.getUserPreferenceKeys(req.userObject.userId)
+    const response = await UserService.getUserWebPreferenceKeys(req.userObject.userId)
     res.json(response)
   }
   catch (err) {
@@ -399,11 +399,11 @@ module.exports.getUserPreferencesKeys = async (req, res, next) => {
   }
 }
 
-module.exports.getUserPreferenceByKey = async (req, res, next) => {
+module.exports.getUserWebPreferenceByKey = async (req, res, next) => {
   try {
-    const key = req.params.key
-    const response = await UserService.getUserPreferenceByKey(req.userObject.userId, key)
-    if (!response) {
+    const key = req.params.key[0]
+    const response = await UserService.getUserWebPreferenceByKey(req.userObject.userId, key)
+    if (response === null) {
       throw new SmError.NotFoundError('web preference key not found')
     }
     res.json(response)
@@ -413,15 +413,15 @@ module.exports.getUserPreferenceByKey = async (req, res, next) => {
   }
 }
 
-module.exports.putUserPreferenceByKey = async (req, res, next) => {
+module.exports.putUserWebPreferenceByKey = async (req, res, next) => {
   try {
     const key = req.params.key
     const value = req.body
-    const currentKeyValue = await UserService.getUserPreferenceByKey(req.userObject.userId, key)
+    const currentKeyValue = await UserService.getUserWebPreferenceByKey(req.userObject.userId, key)
     if (currentKeyValue === null) {
       throw new SmError.NotFoundError('web preference key not found')
     }
-    await UserService.putUserPreferenceByKey(req.userObject.userId, key, value)
+    await UserService.putUserWebPreferenceByKey(req.userObject.userId, key, value)
     res.json(value)
   }
   catch (err) {
@@ -429,15 +429,15 @@ module.exports.putUserPreferenceByKey = async (req, res, next) => {
   }
 }
 
-module.exports.deleteUserPreferenceByKey = async (req, res, next) => {
+module.exports.deleteUserWebPreferenceByKey = async (req, res, next) => {
   try {
     const key = req.params.key
-    const currentKeyValue = await UserService.getUserPreferenceByKey(req.userObject.userId, key)
+    const currentKeyValue = await UserService.getUserWebPreferenceByKey(req.userObject.userId, key)
     if (currentKeyValue === null) {
       throw new SmError.NotFoundError('web preference key not found')
     }
-    await UserService.deleteUserPreferenceByKey(req.userObject.userId, key)
-    // no content 
+    await UserService.deleteUserWebPreferenceByKey(req.userObject.userId, key)
+    // no content
     res.status(204).send()
   }
   catch (err) {

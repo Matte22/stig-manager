@@ -501,6 +501,7 @@ const reference = {
   wfTest: {
     username: "wf-test",
     userId: "22",
+    webPreferences: {},
   },
   deleteUser: {
     username: "workforce-60",
