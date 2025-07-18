@@ -580,8 +580,31 @@ SM.WhatsNew.showDialog = function (lastDate) {
 
   const btnRemember = new Ext.Button({
     text: `&nbsp;Don't show these features again&nbsp;`,
-    handler: function (b, e) {
+    handler: async function (b, e) {
       localStorage.setItem('lastWhatsNew', SM.WhatsNew.Sources[0].date)
+      
+      // Check if user has the :user scope and update webPreferences
+      const user = await SM.GetUserObject()
+      if (user && user?.statistics?.lastClaims?.scope) {
+        let scopes = user.statistics.lastClaims.scope
+        // Check if scopes string has 'stig-manager:user'
+        if (scopes.includes('stig-manager:user')) {
+          // Make Put request to update webPreferences with new lastWhatsNew date
+          const lastWhatsNew = SM.WhatsNew.Sources[0].date
+          try {
+            await Ext.Ajax.requestPromise({
+              responseType: 'json',
+              url: `${STIGMAN.Env.apiBase}/user/web-preferences/keys/lastWhatsNew`,
+              method: 'PUT',
+              jsonData: JSON.stringify(lastWhatsNew),
+            })
+          } catch (error) {
+              SM.Error.handleError(error)
+          }
+          
+        }
+      }
+      
       fpwindow.close()
     }
   })
@@ -607,13 +630,19 @@ SM.WhatsNew.showDialog = function (lastDate) {
 
 }
 
-SM.WhatsNew.autoShow = function () {
+SM.WhatsNew.autoShow = async function () {
   let lastWhatsNew = localStorage.getItem('lastWhatsNew') || '0000-00-00'
 
   // Get lastWhatsNew from the current user via API
-  const user = SM.GetUserObject()
-  if (user && user.lastWhatsNew) {
-    lastWhatsNew = user.lastWhatsNew
+  const user = await SM.GetUserObject()
+  if (user && user?.webPreferences?.lastWhatsNew) {
+    // check for user scope 
+    let scopes = user.statistics.lastClaims.scope
+    // check if scopes string has 'stig-manager:user'
+    if (scopes && scopes.includes('stig-manager:user')) {
+      // if so, use the user's lastWhatsNew
+      lastWhatsNew = user.webPreferences.lastWhatsNew
+    }
   }
 
   // transform any non-standard date from a previous release

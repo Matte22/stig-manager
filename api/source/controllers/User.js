@@ -7,6 +7,7 @@ const CollectionService = require(`../service/CollectionService`)
 const SmError = require('../utils/error')
 const dbUtils = require('../service/utils')
 
+
 /*  */
 module.exports.createUser = async function createUser (req, res, next) {
   try {
@@ -414,6 +415,24 @@ module.exports.getUserWebPreferenceByKey = async (req, res, next) => {
 }
 
 module.exports.putUserWebPreferenceByKey = async (req, res, next) => {
+
+  const preferenceTypes = {
+    darkMode: 'boolean',
+    lastWhatsNew: 'date',
+  }
+
+  function isValidValue(value, expectedType) {
+    if (expectedType === 'boolean') {
+      return typeof value === 'boolean'
+    }
+
+    if (expectedType === 'date') {
+      // YYYY-MM-DD format
+      return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+    }
+    return false
+  }
+
   try {
     const key = req.params.key
     const value = req.body
@@ -421,6 +440,12 @@ module.exports.putUserWebPreferenceByKey = async (req, res, next) => {
     if (currentKeyValue === null) {
       throw new SmError.NotFoundError('web preference key not found')
     }
+
+    const expectedType = preferenceTypes[key]
+    if (!isValidValue(value, expectedType)) {
+      throw new SmError.ClientError(`web preference value must be of type ${expectedType}`)
+    }
+
     await UserService.putUserWebPreferenceByKey(req.userObject.userId, key, value)
     res.json(value)
   }

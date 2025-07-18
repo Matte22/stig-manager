@@ -207,7 +207,7 @@ async function loadApp () {
 		new Ext.Viewport(viewportConfig)
 		if (contentPanel) SM.contentEl = contentPanel.getEl()
 
-		SM.WhatsNew.autoShow()
+		await SM.WhatsNew.autoShow()
 	
 		Ext.get('loading').remove();
 		Ext.get('loading-mask').fadeOut({duration: 0.5, remove:true});
