@@ -31,6 +31,7 @@ SM.GetUserObject = async function () {
     })
     return curUser
 }
+
 SM.CtrlAGridHandler = function (e) {
     if (e.browserEvent.key === 'a' && e.browserEvent.ctrlKey) {
         e.stopPropagation()
@@ -703,3 +704,48 @@ SM.RoleComboBox = Ext.extend(Ext.form.ComboBox, {
 //         this.textNode = cs[index].firstChild;
 //     }, 
 // })
+
+SM.getUserPreference = async function (preferenceKey) {
+    const user = curUser
+    if (!user?.statistics?.lastClaims?.scope) {
+        return null
+    }
+    
+    const scopes = user.statistics.lastClaims.scope
+    if (!scopes.includes('stig-manager:user')) {
+        return null
+    }
+    
+    if (user.webPreferences && user.webPreferences[preferenceKey] !== undefined) {
+        return user.webPreferences[preferenceKey]
+    }
+    
+    return null
+}
+
+SM.setUserPreference = async function (preferenceKey, value) {
+    localStorage.setItem(preferenceKey, value)
+    
+    const user = curUser
+    if (!user?.statistics?.lastClaims?.scope) {
+        return false
+    }
+    
+    const scopes = user.statistics.lastClaims.scope
+    if (!scopes.includes('stig-manager:user')) {
+        return false
+    }
+    
+    try {
+        await Ext.Ajax.requestPromise({
+            responseType: 'json',
+            url: `${STIGMAN.Env.apiBase}/user/web-preferences/keys/${preferenceKey}`,
+            method: 'PUT',
+            jsonData: JSON.stringify(value),
+        })
+        return true
+    } catch (error) {
+        SM.Error.handleError(error)
+        return false
+    }
+}

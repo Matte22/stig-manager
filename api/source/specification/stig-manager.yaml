@@ -3978,6 +3978,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - oauth:
+        # not semantically correct but needed 
             - 'stig-manager:user:read'
     patch:
       tags:
@@ -4005,6 +4006,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - oauth:
+        # not semantically correct but needed 
             - 'stig-manager:user:read'
   /user/web-preferences/keys:
     get:
@@ -4076,25 +4078,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - oauth:
-            - 'stig-manager:user:read'
-    delete:
-      tags:
-        - User
-      summary: Delete the requester's user preference for the specified key
-      operationId: deleteUserWebPreferenceByKey
-      parameters:
-        - $ref: '#/components/parameters/WebPreferenceKeyPath'
-      responses:
-        '204':
-          description: UserWebPreference deleted
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
+        # not semantically correct but needed 
             - 'stig-manager:user:read'
   /users:
     parameters:
@@ -9715,7 +9699,7 @@ components:
       required: true
       description: A path parameter that specifies a web preference key
       schema:
-        $ref: '#/components/schemas/WebPreferenceKeys'
+        type: string
   responses:
     Forbidden:
       description: The requesting User does not have access rights to the content

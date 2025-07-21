@@ -37,6 +37,7 @@ async function start () {
 		el.innerHTML += "<br/><br/>Fetching user data"
 		try {
 			await SM.GetUserObject()
+			
 		}
 		catch (e) {
 			el.innerHTML += `<br/><br/>Error Fetching user data`
@@ -207,7 +208,7 @@ async function loadApp () {
 		new Ext.Viewport(viewportConfig)
 		if (contentPanel) SM.contentEl = contentPanel.getEl()
 
-		await SM.WhatsNew.autoShow()
+		SM.WhatsNew.autoShow()
 	
 		Ext.get('loading').remove();
 		Ext.get('loading-mask').fadeOut({duration: 0.5, remove:true});

@@ -13,8 +13,8 @@ export const expectations = {
       create_collection: true,
     },
     webPreferences: {
-      darkMode: false,
-      lastWhatsNew: "2024-10-23"
+      darkMode: true,
+      lastWhatsNew: "01-01-2000"
     }
   },
   lvl1: {
@@ -128,7 +128,10 @@ export const expectations = {
       admin: false,
       create_collection: false,
     },
-    webPreferences: {}
+    webPreferences: {
+      darkMode: true,
+      lastWhatsNew: "01-01-2000"
+    }
    
   },
   lvl2: {
@@ -143,7 +146,10 @@ export const expectations = {
       admin: false,
       create_collection: false,
     },
-    webPreferences: {}
+    webPreferences: {
+      darkMode: true,
+      lastWhatsNew: "01-01-2000"
+    }
   },
   lvl3: {
     iteration: "lvl3",
@@ -157,7 +163,10 @@ export const expectations = {
       admin: false,
       create_collection: false,
     },
-    webPreferences: {}
+    webPreferences: {
+      darkMode: true,
+      lastWhatsNew: "01-01-2000"
+    }
   },
   lvl4: {
     iteration: "lvl4",
@@ -171,7 +180,10 @@ export const expectations = {
       admin: false,
       create_collection: false,
     },
-    webPreferences: {}
+    webPreferences: {
+      darkMode: true,
+      lastWhatsNew: "01-01-2000"
+    }
   },
   collectioncreator: {
     iteration: "collectioncreator",
@@ -182,6 +194,9 @@ export const expectations = {
       admin: false,
       create_collection: true,
     },
-    webPreferences: {}
+    webPreferences: {
+      darkMode: true,
+      lastWhatsNew: "01-01-2000"
+    }
   },
 }

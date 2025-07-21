@@ -572,7 +572,3 @@ exports.putUserWebPreferenceByKey = async function (userId, key, value) {
   return value
 }
 
-exports.deleteUserWebPreferenceByKey = async function (userId, key) {
-  const sql = `UPDATE user_data SET webPreferences = JSON_REMOVE(webPreferences, ?) WHERE userId = ?`
-  await dbUtils.pool.query(sql, [`$.${key}`, userId])
-}

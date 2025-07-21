@@ -494,14 +494,17 @@ const reference = {
     username: "stigmanadmin",
     userId: "1",
     webPreferences: {
-      darkMode: false,
-      lastWhatsNew: "2024-10-23"
+      darkMode: true,
+      lastWhatsNew: "01-01-2000"
     }
   },
   wfTest: {
     username: "wf-test",
     userId: "22",
-    webPreferences: {},
+    webPreferences: {
+      darkMode: true,
+      lastWhatsNew: "01-01-2000"
+    }
   },
   deleteUser: {
     username: "workforce-60",

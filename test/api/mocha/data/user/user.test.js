@@ -245,7 +245,7 @@ describe('user', () => {
             expect(res.body.username, "expect username to be wf-Test").to.equal(reference.wfTest.username)
             expect(res.body.userId, "expect userId to be wf-Test userId (22)").to.equal(reference.wfTest.userId)
             expect(res.body.privileges).to.eql({admin: false, create_collection: false})
-            expect(res.body.webPreferences).to.be.an('object').that.is.empty
+            expect(res.body.webPreferences).eql(reference.wfTest.webPreferences)
           })
           it("return adminBurke user and verify its privileges", async () => {
 
@@ -287,13 +287,8 @@ describe('user', () => {
         describe(`getUserWebPreferencesKeys - /user/web-preferences/keys`, () => {
           it("should return user web preferences keys for user", async () => {
             const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys`, 'GET', iteration.token)
-            if(iteration.name != "stigmanadmin"){
-              expect(res.status).to.eql(200)
-              expect(res.body).to.be.an('array').that.is.empty
-              return
-            }
             expect(res.status).to.eql(200)
-            expect(res.body).to.be.an('array')
+            expect(res.body).to.be.an('array').to.have.lengthOf(2)
             expect(res.body).to.include.members(['darkMode', 'lastWhatsNew'])
           })
         })
@@ -301,17 +296,12 @@ describe('user', () => {
         describe(`getUserWebPreferenceByKey - /user/web-preferences/{key}`, () => {
           it("should return user web preference by key for user", async () => {
             const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/darkMode`, 'GET', iteration.token)
-            if(iteration.name != "stigmanadmin"){
-              expect(res.status).to.eql(404)
-              // resource not found
-              return
-            }
             expect(res.status).to.eql(200)
             expect(res.body).to.eql(distinct.webPreferences.darkMode)
           })
           it("should throw SmError.NotFoundError for non-existing key", async () => {
             const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/non-existing-key`, 'GET', iteration.token)
-            expect(res.status).to.eql(400)
+            expect(res.status).to.eql(422)
           })
         })
       })
@@ -740,15 +730,6 @@ describe('user', () => {
                 expect(res.status).to.eql(200)
             })
           }
-        })
-
-        describe(`DELETE - deleteUserWebPreferencesByKey - /users/web-preferences/keys/{key}`, () => {
-          
-          it("should delete user web preference for user by key", async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/darkMode`, 'DELETE', iteration.token)
-            expect(res.status).to.eql(204)
-          })
-
         })
       })
     })
