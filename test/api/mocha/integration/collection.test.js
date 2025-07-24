@@ -1860,7 +1860,7 @@ describe('updateStatsAssetStig - NA - Check that disabled collection does not up
         const dbConfig = {
             host: appinfo.nodejs.environment.STIGMAN_DB_HOST,
             port: appinfo.nodejs.environment.STIGMAN_DB_PORT,
-            user: appinfo.nodejs.environment.STIGMAN_DB_USER,
+            user: "stigman",
             password: config.db.password,
             database: appinfo.nodejs.environment.STIGMAN_DB_SCHEMA
         }
