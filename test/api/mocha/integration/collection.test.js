@@ -1857,15 +1857,12 @@ describe('updateStatsAssetStig - NA - Check that disabled collection does not up
         await utils.loadAppData()
         // get db config info from appinfo 
         const appinfo = await utils.getAppInfo()
-        console.log("appinfo", appinfo)
-
-        console.log(JSON.stringify(appinfo.nodejs.environment, null, 2))
         const dbConfig = {
             host: appinfo.nodejs.environment.STIGMAN_DB_HOST,
             port: appinfo.nodejs.environment.STIGMAN_DB_PORT,
-            user: "stigman",
+            user: appinfo.nodejs.environment.STIGMAN_DB_USER,
             password: config.db.password,
-            database: "stigman"
+            database: appinfo.nodejs.environment.STIGMAN_DB_SCHEMA
         }
         connection = await mysql.createConnection(dbConfig)
     })
