@@ -10,7 +10,7 @@ import reference from '../referenceData.js'
 import { expect } from 'chai'
 import { v4 as uuidv4 } from 'uuid'
 import mysql from 'mysql2/promise'
-import { updateStatsAssetStig } from '../../../../api/source/service/utils.js';
+import dbUtils from '../../../../api/source/service/utils.js'
 
 const user = {
   name: "admin",
@@ -1868,12 +1868,12 @@ describe('updateStatsAssetStig - NA - Check that disabled collection does not up
     })
 
     it("should  not update any stats when giving collectionId of disabled collection and benchmarkID", async function () {
-        const mysql2metadata = await updateStatsAssetStig(connection, {collectionId: reference.deletedCollection.collectionId, benchmarkId: reference.benchmark})
+        const mysql2metadata = await dbUtils.updateStatsAssetStig(connection, {collectionId: reference.deletedCollection.collectionId, benchmarkId: reference.benchmark})
         expect(mysql2metadata.affectedRows).to.eql(0)
     })
 
     it("should update stats asset stig with test collection and test benchmark", async function () {
-        const mysql2metadata = await updateStatsAssetStig(connection, {collectionId: reference.testCollection.collectionId, benchmarkId: reference.benchmark})
+        const mysql2metadata = await dbUtils.updateStatsAssetStig(connection, {collectionId: reference.testCollection.collectionId, benchmarkId: reference.benchmark})
         expect(mysql2metadata.affectedRows).to.not.eql(0)
     })
 })
