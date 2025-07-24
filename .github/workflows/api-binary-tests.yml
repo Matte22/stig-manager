@@ -16,6 +16,7 @@ on:
   push:
     branches:
       - main
+      - test
     paths:
       - "api/source/**"
       - "test/api/**"
