@@ -35,10 +35,10 @@ describe('DELETE - Asset', function () {
           const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.testAsset.assetId}/metadata/keys/${reference.testAsset.metadataKey}`, 'DELETE', iteration.token)
 
           if(!distinct.canModifyCollection){
-            expect(res.status).to.eql(300)
+            expect(res.status).to.eql(403)
             return
           }
-          expect(res.status).to.eql(300)
+          expect(res.status).to.eql(204)
           
           const asset = await utils.getAsset(reference.testAsset.assetId)
           expect(asset.metadata).to.not.have.property(reference.testAsset.metadataKey)
