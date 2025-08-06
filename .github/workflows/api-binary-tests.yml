@@ -5,6 +5,7 @@ on:
   pull_request:
     branches:
       - main
+      - fix-binary-workflow
     paths:
       - "api/source/**"
       - "test/api/**"
@@ -16,6 +17,7 @@ on:
   push:
     branches:
       - main
+      - fix-binary-workflow
     paths:
       - "api/source/**"
       - "test/api/**"
