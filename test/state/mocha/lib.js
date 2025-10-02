@@ -6,7 +6,8 @@ import { fileURLToPath } from 'url'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // workaround PATH envvar not being honored by spawn within github actions
-const nodeCmd = process.env.GITHUB_RUN_ID ? '/usr/local/bin/node':'node'
+//const nodeCmd = process.env.GITHUB_RUN_ID ? '/usr/local/bin/node':'node'
+  const nodeCmd = process.execPath;
 const pythonCmd = process.env.GITHUB_RUN_ID ? '/usr/bin/python3':'python3'
 const dockerCmd = process.env.GITHUB_RUN_ID ? '/usr/bin/docker':'docker'
 const iptablesCmd = process.env.GITHUB_RUN_ID ? 'sudo /usr/sbin/iptables':'sudo iptables'
